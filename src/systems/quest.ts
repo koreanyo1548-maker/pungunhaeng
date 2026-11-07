@@ -1,3 +1,4 @@
+import { done } from './scene-flow';
 import { on } from '../core/events';
 import { G } from '../core/context';
 import { chime } from '../core/audio';
@@ -5,8 +6,7 @@ import { BR, COND } from '../data/branches';
 import { NPCS } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { label, ring } from '../render/fx';
-import { resumePlay } from '../scenes/choice';
-import { beginStage, region } from './flow';
+import { region } from './flow';
 import { announce, syncHUD } from '../ui/hud';
 
 export function questTarget(c) {
@@ -80,8 +80,7 @@ export function acceptQuest(id, qmode) {
   };
   G.state.path.push({ stage: G.state.stage, npc: id, mode: qmode, t: c.t, result: '진행 중' });
   G.state.questPath = G.state.path[G.state.path.length - 1];
-  resumePlay();
-  beginStage();
+  done('crossroads');
   label((qmode === 'follow' ? '따른다' : '거스른다') + ' · ' + n.name, 240, 430, BR[G.state.quest.br].color, 20);
 }
 

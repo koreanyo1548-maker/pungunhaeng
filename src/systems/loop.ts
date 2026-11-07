@@ -9,10 +9,10 @@ import { addPickup, collect } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { draw } from '../render/renderer';
-import { openDono } from '../scenes/dono';
 import { hasSkill, updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
-import { afterClear, difficulty, region, stageDuration } from './flow';
+import { difficulty, region, stageDuration } from './flow';
+import { done, go } from './scene-flow';
 import { traitOn } from './formation';
 import { syncHUD } from '../ui/hud';
 
@@ -69,7 +69,7 @@ export function update(dt) {
     G.state.donoDelay -= realDt;
     dt *= 0.25;
     if (G.state.donoDelay <= 0) {
-      openDono();
+      go('dono');
       return;
     }
   }
@@ -112,7 +112,7 @@ export function update(dt) {
   } else if (G.state.phase === 'clear') {
     G.state.phaseTimer -= dt;
     if (G.state.phaseTimer <= 0 && G.state.donoDelay <= 0) {
-      afterClear();
+      done('stage');
       return;
     }
   }

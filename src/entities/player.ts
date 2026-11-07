@@ -2,12 +2,13 @@ import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { reduced } from '../core/dom';
-import { fxRnd, rnd } from '../core/math';
+import { fxRnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { clearBullets, shotPower } from '../systems/combat';
-import { end, movementTier } from '../systems/flow';
+import { movementTier } from '../systems/flow';
+import { go } from '../systems/scene-flow';
 import { activeHeroId } from '../systems/formation';
 
 export function damagePlayer() {
@@ -46,7 +47,7 @@ export function damagePlayer() {
   ring(G.player.x, G.player.y, '#b4ffff', 10, 100, 0.4);
   boom(true);
   if (navigator.vibrate) navigator.vibrate(40);
-  if (G.player.hp <= 0) end();
+  if (G.player.hp <= 0) go('result', false);
   else label('피격', G.player.x, G.player.y - 55, '#ffac96', 21);
 }
 export function shoot() {

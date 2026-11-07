@@ -1,10 +1,10 @@
+import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { npcPictures, skillPictures } from '../core/assets';
 import { chime } from '../core/audio';
 import { NPCS, NPC_LINK } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
-import { openCrossroads } from './crossroads';
 import { region } from '../systems/flow';
 import { nextNpcOf } from '../systems/relationship';
 
@@ -91,7 +91,7 @@ export function openInn() {
         tag: '출발',
         title: '길을 나선다',
         desc: region().final ? '최종 관문으로 향한다' : '다음 인연을 만나러 간다',
-        onPick: () => openCrossroads(),
+        onPick: () => done('inn'),
       },
     ],
   });

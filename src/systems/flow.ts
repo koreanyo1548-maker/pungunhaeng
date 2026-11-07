@@ -1,3 +1,4 @@
+import { go } from './scene-flow';
 import { seedRun } from '../core/rng';
 import { G } from '../core/context';
 import { chime, initAudio, tone } from '../core/audio';
@@ -5,10 +6,7 @@ import { $, PLAYER_Y, W } from '../core/dom';
 import { fmt, rnd } from '../core/math';
 import { COURSES } from '../data/courses';
 import { FINAL_STAGE, TUNE } from '../data/tune';
-import { openInn } from '../scenes/inn';
 import { dominantTitle, runSummary } from '../scenes/result';
-import { openCourseSelect } from '../scenes/setup';
-import { openTuhak } from '../scenes/tuhak';
 import { hasSkill } from './abilities';
 import { closeQuest } from './quest';
 import { announce, showBest, syncHUD } from '../ui/hud';
@@ -143,7 +141,7 @@ export function start() {
   showBest();
   syncHUD();
   tone(440, 0.2, 'triangle', 0.2, 880);
-  openCourseSelect();
+  go('course');
 }
 export function pause() {
   if (G.mode === 'play') {
@@ -202,6 +200,7 @@ export function end(victory = false) {
 }
 export function home() {
   G.mode = 'title';
+  G.scene = 'title';
   G.banner = null;
   $('result').classList.add('hidden');
   $('hud').classList.add('hidden');
@@ -235,7 +234,6 @@ export function nextStage() {
   for (const s of G.state.skills) s.used = false;
   G.state.negate = hasSkill('hoechun');
   syncHUD();
-  openInn();
 }
 export function beginStage() {
   const r = region(),
@@ -255,11 +253,4 @@ export function beginStage() {
   );
   chime();
   syncHUD();
-}
-export function afterClear() {
-  if (region().final) {
-    end(true);
-    return;
-  }
-  openTuhak();
 }

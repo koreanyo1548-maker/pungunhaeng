@@ -1,3 +1,4 @@
+import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { skillImage } from '../core/assets';
 import { rnd } from '../core/math';
@@ -5,7 +6,7 @@ import { BR, TRIG_NAME } from '../data/branches';
 import { NPCS } from '../data/npcs';
 import { SKILLS } from '../data/skills';
 import { TUNE } from '../data/tune';
-import { openChoice, resumePlay } from './choice';
+import { openChoice } from './choice';
 import { learn } from '../systems/abilities';
 
 export function openDono() {
@@ -20,7 +21,7 @@ export function openDono() {
   G.state.meditate = false;
   while (opts.length < want && pool.length) opts.push(pool.splice(Math.floor(rnd(0, pool.length)), 1)[0]);
   if (!opts.length) {
-    resumePlay();
+    done('dono');
     return;
   }
   openChoice({
@@ -42,7 +43,7 @@ export function openDono() {
         desc: d.desc,
         onPick: () => {
           learn(id);
-          resumePlay();
+          done('dono');
         },
       };
     }),

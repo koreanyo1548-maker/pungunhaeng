@@ -2,8 +2,9 @@ import { G } from '../core/context';
 import { relText } from '../core/math';
 import { BR } from '../data/branches';
 import { NPCS } from '../data/npcs';
-import { openChoice, resumePlay } from './choice';
-import { beginStage, region } from '../systems/flow';
+import { openChoice } from './choice';
+import { region } from '../systems/flow';
+import { done } from '../systems/scene-flow';
 
 export function openFinalGate() {
   const pick = s => Object.keys(G.state.rel).filter(k => s * G.state.rel[k] > 0),
@@ -23,10 +24,7 @@ export function openFinalGate() {
         tag: '인연의 결산',
         title: region().enter,
         desc: '<b>조력:</b> ' + list(pick(1)) + '<br><b>방해:</b> ' + list(pick(-1)),
-        onPick: () => {
-          resumePlay();
-          beginStage();
-        },
+        onPick: () => done('finalGate'),
       },
     ],
   });

@@ -1,3 +1,4 @@
+import { buildStagePlan, isFinal } from './run-plan';
 // Run flow as a scene state machine. Every screen of a run is a scene. A scene only reports that it finished
 // (done), and this file alone decides what comes next, so changing the order of a run — e.g. an endless mode that
 // alternates 땅 and 하늘 — means editing the transitions below, not the scenes.
@@ -18,13 +19,13 @@ import { openFinalGate } from '../scenes/final-gate';
 import { openInn } from '../scenes/inn';
 import { openCourseSelect, openFormation } from '../scenes/setup';
 import { openTuhak } from '../scenes/tuhak';
-import { beginStage, end, nextStage, region } from './flow';
+import { beginStage, end, nextStage } from './flow';
 
 export type Scene =
   'title' | 'course' | 'formation' | 'crossroads' | 'finalGate' | 'stage' | 'dono' | 'tuhak' | 'inn' | 'result';
 
-/** the gate scene for the current region: the 3 gates meet an 인연, the last one is the final gate */
-const gate = (): Scene => (region().final ? 'finalGate' : 'crossroads');
+/** the scene that opens the current gate of the plan: an 인연 for a gate, the 최종 관문 for the final */
+const gate = (): Scene => (isFinal() ? 'finalGate' : 'crossroads');
 
 function enter(scene: Scene) {
   G.scene = scene;
@@ -62,6 +63,7 @@ export function go(scene: Scene, arg?: any): void {
 export function done(scene: Scene, outcome?: any): void {
   switch (scene) {
     case 'course':
+      G.state.plan = buildStagePlan(G.state.course);
       return go('formation', 0);
     case 'formation': // outcome: the slot that was just filled
       return outcome === 0 ? go('formation', 1) : go(gate());
@@ -72,7 +74,7 @@ export function done(scene: Scene, outcome?: any): void {
       enter('stage');
       return resumePlay();
     case 'stage':
-      return region().final ? go('result', true) : go('tuhak');
+      return isFinal() ? go('result', true) : go('tuhak');
     case 'tuhak':
       G.mode = 'play';
       nextStage();

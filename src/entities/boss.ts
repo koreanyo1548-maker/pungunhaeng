@@ -1,3 +1,4 @@
+import { isFinal } from '../systems/run-plan';
 import { G } from '../core/context';
 import { boom, tone } from '../core/audio';
 import { BOSS_Y, W, reduced } from '../core/dom';
@@ -23,7 +24,7 @@ export function bossSpawn() {
 }
 /** boss phase: spawn the gate boss (entered via setPhase('boss')) */
 export function createBoss() {
-  const hp = 580 * (1 + 0.36 * difficulty()) * (region().final ? TUNE.bossHpFinal : 1);
+  const hp = 580 * (1 + 0.36 * difficulty()) * (isFinal() ? TUNE.bossHpFinal : 1);
   G.player.weapon = 3;
   G.enemies.push({
     x: 240,

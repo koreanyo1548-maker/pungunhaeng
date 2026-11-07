@@ -1,3 +1,4 @@
+import { isFinal } from '../systems/run-plan';
 import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { npcPictures, skillPictures } from '../core/assets';
@@ -5,12 +6,11 @@ import { chime } from '../core/audio';
 import { NPCS, NPC_LINK } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
-import { region } from '../systems/flow';
 import { nextNpcOf } from '../systems/relationship';
 
 export function innAlternative() {
   const last = G.state.path[G.state.path.length - 1];
-  if (!last || region().final) return null;
+  if (!last || isFinal()) return null;
   const cur = last.result === '미달' ? last.npc : nextNpcOf(last.npc, last.mode);
   const alt =
     last.result === '미달' ? NPC_LINK[last.npc] : nextNpcOf(last.npc, last.mode === 'follow' ? 'defy' : 'follow');
@@ -47,7 +47,7 @@ export function openInn() {
       image: skillPictures[15],
       cost: TUNE.innMeditate,
       done: G.state.meditate,
-      ok: !G.state.meditate && !region().final,
+      ok: !G.state.meditate && !isFinal(),
       buy: () => {
         G.state.meditate = true;
       },
@@ -90,7 +90,7 @@ export function openInn() {
         color: '#a6c8bf',
         tag: '출발',
         title: '길을 나선다',
-        desc: region().final ? '최종 관문으로 향한다' : '다음 인연을 만나러 간다',
+        desc: isFinal() ? '최종 관문으로 향한다' : '다음 인연을 만나러 간다',
         onPick: () => done('inn'),
       },
     ],

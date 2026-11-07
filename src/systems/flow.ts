@@ -1,3 +1,4 @@
+import { currentGate, isFinal } from './run-plan';
 import { setPhase } from './stage-phases';
 import { go } from './scene-flow';
 import { seedRun } from '../core/rng';
@@ -6,7 +7,7 @@ import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
 import { fmt, rnd } from '../core/math';
 import { COURSES } from '../data/courses';
-import { FINAL_STAGE, TUNE } from '../data/tune';
+import { TUNE } from '../data/tune';
 import { dominantTitle, runSummary } from '../scenes/result';
 import { hasSkill } from './abilities';
 import { closeQuest } from './quest';
@@ -18,14 +19,15 @@ export function movementTier() {
 export function movementName() {
   return ['질주', '경공', '어검'][movementTier()];
 }
+/** region data of the current gate (see run-plan.ts) */
 export function region() {
-  return COURSES[G.state?.course || 'ground'].regions[Math.min(G.state.stage, FINAL_STAGE) - 1];
+  return currentGate().region;
 }
 export function difficulty() {
   return Math.log2(G.state.stage + 1) - 1;
 }
 export function stageDuration() {
-  return region().final ? TUNE.finalFlight : 34 + Math.min(8, G.state.stage - 1);
+  return isFinal() ? TUNE.finalFlight : 34 + Math.min(8, G.state.stage - 1);
 }
 export function start() {
   if (!G.loaded) return;
@@ -181,7 +183,7 @@ export function end(victory = false) {
     ? dominantTitle()
     : COURSES[G.state.course].label +
       ' · ' +
-      (region().final ? region().name : '관문 ' + G.state.stage) +
+      (isFinal() ? region().name : '관문 ' + G.state.stage) +
       ' · ' +
       G.state.cleared +
       '개 관문 돌파';
@@ -240,7 +242,7 @@ export function beginStage() {
   const r = region(),
     tierUp = G.state.ascend > 0 && movementTier() > G.state.previousTier;
   announce(
-    r.final
+    isFinal()
       ? '최종 관문'
       : G.state.stage === 1
         ? COURSES[G.state.course].label

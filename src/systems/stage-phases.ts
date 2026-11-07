@@ -1,3 +1,4 @@
+import { isFinal } from './run-plan';
 // Phases of one stage (one gate): flight → warning → boss → clear. Each phase has an optional enter (runs once
 // when the phase starts) and update (runs every simulation step while the phase is active). setPhase is the only
 // way to change phase, so every transition inside a stage is listed here. Leaving the stage (clear → 투학/결과,
@@ -133,9 +134,9 @@ function enterClear() {
   G.player.inv = 4;
   closeQuest();
   announce(
-    region().final ? region().name + ' 돌파' : '관문 ' + G.state.stage + ' 돌파',
+    isFinal() ? region().name + ' 돌파' : '관문 ' + G.state.stage + ' 돌파',
     region().boss + ' 격파',
-    region().final ? region().winLine : '쓰러진 자의 무공이 눈에 들어온다',
+    isFinal() ? region().winLine : '쓰러진 자의 무공이 눈에 들어온다',
     region().color,
     2.6,
   );

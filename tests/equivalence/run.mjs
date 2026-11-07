@@ -1,29 +1,34 @@
 // Deterministic equivalence check: two builds get the same seeded Math.random, the same synthetic clock
 // (requestAnimationFrame / performance.now driven by __step) and the same scripted input.
 // Snapshots of game state are compared; any divergence means the builds do not behave identically.
-// usage: node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps]
+// usage: node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps] [course]
+// env FRAME_MS (default 1000/60): display frame interval; each scripted step always covers 100 ms of game time.
+// FRAME_MS_B overrides it for build B, e.g. to compare 60 Hz against 120 Hz.
 import { createRequire } from 'module';
 const { chromium } = createRequire(import.meta.url)('playwright'); // resolved via NODE_PATH or a local install
 import path from 'path';
 
 const [, , A, B, seedArg = '12345', stepsArg = '2400', courseArg = '0'] = process.argv;
 
-const init = seed => `(() => {
+const frameMsA = Number(process.env.FRAME_MS || 1000 / 60);
+const frameMsB = Number(process.env.FRAME_MS_B || frameMsA);
+
+const init = (seed, frameMs) => `(() => {
   let s = ${seed} | 0;
   Math.random = function () { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   let now = 0, q = [];
   window.requestAnimationFrame = cb => { q.push(cb); return q.length; };
   window.cancelAnimationFrame = () => {};
   performance.now = () => now;
-  window.__step = n => { for (let i = 0; i < n; i++) { now += 1000 / 60; const c = q; q = []; for (const f of c) f(now); } };
+  window.__step = n => { for (let i = 0; i < n; i++) { now += ${frameMs}; const c = q; q = []; for (const f of c) f(now); } };
 })();`;
 
-async function run(file, seed, steps, course) {
+async function run(file, seed, steps, course, frameMs) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 480, height: 800 } });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  await page.addInitScript(init(seed));
+  await page.addInitScript(init(seed, frameMs));
   await page.goto('file://' + path.resolve(file) + '#debug');
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
   await page.evaluate(() => document.getElementById('start').click());
@@ -55,7 +60,7 @@ async function run(file, seed, steps, course) {
     if (k % 97 === 50) await page.keyboard.press(' ');
     if (k % 151 === 80) await page.keyboard.press('q');
     if (k % 23 === 11 && course === 1) await page.keyboard.press('ArrowUp');
-    await page.evaluate(() => window.__step(6));
+    await page.evaluate(n => window.__step(n), Math.round(100 / frameMs));
     if (k % 40 === 0)
       snaps.push(
         await page.evaluate(() => {
@@ -92,7 +97,7 @@ async function run(file, seed, steps, course) {
 const steps = +stepsArg,
   seed = +seedArg,
   course = +courseArg;
-const [ra, rb] = await Promise.all([run(A, seed, steps, course), run(B, seed, steps, course)]);
+const [ra, rb] = await Promise.all([run(A, seed, steps, course, frameMsA), run(B, seed, steps, course, frameMsB)]);
 let diverged = -1;
 for (let i = 0; i < Math.max(ra.snaps.length, rb.snaps.length); i++) {
   if (JSON.stringify(ra.snaps[i]) !== JSON.stringify(rb.snaps[i])) {

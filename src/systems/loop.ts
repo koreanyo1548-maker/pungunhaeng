@@ -246,9 +246,15 @@ export function update(dt) {
     G.hudClock = 0.08;
   }
 }
-export function frame(now) {
-  const dt = Math.min(0.034, (now - G.last) / 1000 || 0.016);
-  G.last = now;
+// Fixed timestep: the simulation always advances in 1/60 s steps, whatever the display refresh rate
+// (60/90/120 Hz) or frame drops, so collisions, timers and balance behave the same on every device and a
+// seeded run is reproducible. Rendering happens once per display frame.
+export const STEP = 1 / 60;
+const MAX_STEPS = 4; // after a long stall, drop the backlog instead of fast-forwarding
+const EPS = 1e-6; // rAF timestamps jitter slightly; treat a frame that is a hair short of a step as a full step
+let acc = 0;
+
+function tick(dt) {
   if (G.mode === 'play') {
     update(dt);
     effects(dt);
@@ -260,6 +266,18 @@ export function frame(now) {
     G.shake = Math.max(0, G.shake - dt * 20);
     G.flash = Math.max(0, G.flash - dt);
   }
+}
+
+export function frame(now) {
+  acc += Math.min(0.25, (now - G.last) / 1000 || STEP);
+  G.last = now;
+  let steps = 0;
+  while (acc >= STEP - EPS && steps < MAX_STEPS) {
+    tick(STEP);
+    acc -= STEP;
+    steps++;
+  }
+  if (steps === MAX_STEPS) acc = 0;
   draw();
   requestAnimationFrame(frame);
 }

@@ -5,14 +5,12 @@ import { BR, COND } from '../data/branches';
 import { NPCS } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
-import { openFinalGate } from './final-gate';
 import { region } from '../systems/flow';
 import { acceptQuest, questTarget } from '../systems/quest';
 import { nextNpcOf, pickNpc } from '../systems/relationship';
 
 export function openCrossroads() {
   const r = region();
-  if (r.final) return openFinalGate();
   const { id, why } = pickNpc(),
     n = NPCS[id],
     met = G.state.met[id] || 0,

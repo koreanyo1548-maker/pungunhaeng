@@ -2,6 +2,8 @@ export const G: any = {
   best: 0,
   mode: 'loading',
   last: 0,
+  /** current scene of the run flow (systems/scene-flow.ts) */
+  scene: 'title',
   time: 0,
   scroll: 0,
   shake: 0,

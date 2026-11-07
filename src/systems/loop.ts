@@ -1,62 +1,21 @@
 import { G } from '../core/context';
 import { tone } from '../core/audio';
 import { H, W } from '../core/dom';
-import { clamp, rnd } from '../core/math';
+import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
-import { bossSpawn, createBoss, updateBoss } from '../entities/boss';
-import { hitEnemy, kill, meteor, nearestEnemy, resolveRow, spawnRow, spear } from '../entities/enemies';
-import { addPickup, collect } from '../entities/pickups';
+import { updateBoss } from '../entities/boss';
+import { hitEnemy, kill, nearestEnemy, resolveRow } from '../entities/enemies';
+import { collect } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { draw } from '../render/renderer';
-import { openDono } from '../scenes/dono';
 import { hasSkill, updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
-import { afterClear, difficulty, region, stageDuration } from './flow';
+import { difficulty } from './flow';
+import { donoBeat, updatePhase } from './stage-phases';
 import { traitOn } from './formation';
 import { syncHUD } from '../ui/hud';
 
-export function updateFlight(dt) {
-  G.state.stageTime += dt;
-  G.state.rowTimer -= dt;
-  G.state.meteorTimer -= dt;
-  G.state.powerTimer -= dt;
-  G.state.hyperCooldown -= dt;
-  if (G.state.rowTimer <= 0) {
-    spawnRow();
-    G.state.rowTimer =
-      Math.max(0.68, 1.27 - difficulty() * 0.08 - G.state.stageTime * 0.005) +
-      (G.state.stage === 1 ? Math.max(0, TUNE.openingGap - G.state.stageTime * 0.02) : 0);
-  }
-  if (G.state.hyper <= 0 && G.state.meteorTimer <= 0) {
-    meteor();
-    G.state.meteorTimer = Math.max(3.7, 6 - difficulty() * 0.28);
-  }
-  const terrain = region().terrain;
-  if ((terrain === 'bamboo' || terrain === 'gate') && G.state.hyper <= 0) {
-    G.state.spearTimer -= dt;
-    if (G.state.spearTimer <= 0) {
-      spear();
-      G.state.spearTimer = terrain === 'gate' ? rnd(1, 1.5) : rnd(0.5, 0.85);
-    }
-  }
-  if (terrain === 'cloud' && G.state.rowTimer > 0.5) G.state.rowTimer -= dt * 0.25;
-  if (G.state.powerTimer <= 0) {
-    if (G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power')) addPickup('power', G.player.x, -20);
-    G.state.powerTimer = 14;
-  }
-  if (
-    G.state.hyperCooldown <= 0 &&
-    G.state.hyper <= 0 &&
-    G.state.stageTime < stageDuration() - 8 &&
-    !G.pickups.some(p => p.kind === 'hyper')
-  ) {
-    addPickup('hyper', clamp(G.player.x + rnd(-100, 100), 45, W - 45), -20);
-    G.state.hyperDrops++;
-    G.state.hyperCooldown = rnd(70, 95);
-  }
-  if (G.state.stageTime >= stageDuration()) bossSpawn();
-}
 export function update(dt) {
   if (G.mode !== 'play') return;
   const realDt = dt;
@@ -64,15 +23,8 @@ export function update(dt) {
     G.hitstop -= dt;
     dt *= 0.12;
   }
-  // 돈오: a short slow-motion beat after the quest is fulfilled, then the choice opens.
-  if (G.state.donoDelay > 0) {
-    G.state.donoDelay -= realDt;
-    dt *= 0.25;
-    if (G.state.donoDelay <= 0) {
-      openDono();
-      return;
-    }
-  }
+  dt = donoBeat(dt, realDt);
+  if (dt === null) return;
   G.time += dt;
   G.state.elapsed += dt;
   G.state.distance += dt * (G.state.hyper > 0 ? 420 : 85 + Math.min(difficulty() * 12, 65));
@@ -105,17 +57,7 @@ export function update(dt) {
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
-  if (G.state.phase === 'flight') updateFlight(dt);
-  else if (G.state.phase === 'warning') {
-    G.state.phaseTimer -= dt;
-    if (G.state.phaseTimer <= 0) createBoss();
-  } else if (G.state.phase === 'clear') {
-    G.state.phaseTimer -= dt;
-    if (G.state.phaseTimer <= 0 && G.state.donoDelay <= 0) {
-      afterClear();
-      return;
-    }
-  }
+  if (!updatePhase(dt)) return;
   updateSkills(dt, old);
   if (G.mode !== 'play') return;
   for (const s of G.shots) {

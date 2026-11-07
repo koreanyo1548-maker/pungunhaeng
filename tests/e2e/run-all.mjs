@@ -3,6 +3,8 @@
 // Scenario A (both courses): 편대 → 인연 따름 → 화두 성취 → 돈오 → 교대 → 보스 → 투학 (엽전/조합) → 객잔 구매
 //   (명상, 수소문, 약주) → 3 gates → 최종 관문 → 결과.
 // Scenario B: 거스름 + 화두 미달 → 관계 그대로, 같은 인연이 다시 나타남 → 거스름 성취 → 관계 −1, 숙적 +1.
+// Scenario C: 사망 → 결과 화면.
+// Every scenario also checks the exact scene sequence (systems/scene-flow.ts).
 import { DEFAULT_BUILD, check, launch, openGame } from '../lib/harness.mjs';
 
 const file = process.argv[2] || DEFAULT_BUILD;
@@ -26,6 +28,7 @@ const S = () => {
 };
 
 async function setup(g, course) {
+  await g.eval(() => window.__g.traceScenes());
   await g.eval(() => document.getElementById('start').click());
   await g.step(2);
   await g.pick(course);
@@ -151,6 +154,24 @@ async function scenarioA(browser, course, seed) {
   const s = await g.state(S);
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
   check(f, s.mode === 'result', `final: result screen reached (mode ${s.mode})`);
+  const gateTrail = ['crossroads', 'stage', 'dono', 'stage', 'tuhak', 'inn'];
+  const want = [
+    'course',
+    'formation',
+    'formation',
+    ...gateTrail,
+    ...gateTrail,
+    ...gateTrail,
+    'finalGate',
+    'stage',
+    'result',
+  ];
+  const got = await g.eval(() => window.__g.sceneLog);
+  check(
+    f,
+    got.join() === want.join(),
+    `scene sequence\n       want ${want.join(' → ')}\n       got  ${got.join(' → ')}`,
+  );
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   log.push(`result "${title}" stage ${s.stage}, path ${s.path.map(p => p.npc + ':' + p.result).join(' → ')}`);
   await g.page.close();
@@ -192,6 +213,14 @@ async function scenarioB(browser, course, seed) {
     Object.entries(s.rel).some(([k, v]) => k !== npc && v === 1),
     `gate 2: the rival gains 관계 +1`,
   );
+  // 미달 skips 돈오; the stage still ends in 투학 and 객잔 (gate 2's 돈오 opens after its slow-motion, not yet here)
+  const want = ['course', 'formation', 'formation', 'crossroads', 'stage', 'tuhak', 'inn', 'crossroads', 'stage'];
+  const got = await g.eval(() => window.__g.sceneLog);
+  check(
+    f,
+    got.join() === want.join(),
+    `scene sequence\n       want ${want.join(' → ')}\n       got  ${got.join(' → ')}`,
+  );
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   await g.page.close();
   return {
@@ -201,10 +230,32 @@ async function scenarioB(browser, course, seed) {
   };
 }
 
+async function scenarioC(browser, course, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed });
+  await setup(g, course);
+  await g.act(0);
+  await g.step(2);
+  // stand still with 1 HP until something hits (capped at 3 minutes of game time)
+  await g.eval(() => {
+    window.__g.player.hp = 1;
+  });
+  for (let i = 0; i < 180 && (await g.mode()) !== 'result'; i++) await g.seconds(1);
+  const title = await g.page.$eval('#resultTitle', e => e.textContent);
+  check(f, (await g.mode()) === 'result', 'death leads to the result screen');
+  check(f, title === '강호행 종료', `defeat title (got ${title})`);
+  const got = await g.eval(() => window.__g.sceneLog);
+  check(f, got.at(-2) === 'stage' && got.at(-1) === 'result', `scene sequence ends stage → result`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return { name: `C course ${course} seed ${seed}`, failures: f, log: [got.join(' → ')] };
+}
+
 const browser = await launch();
 const results = [];
 for (const course of [0, 1]) results.push(await scenarioA(browser, course, 101 + course));
 results.push(await scenarioB(browser, 0, 303));
+results.push(await scenarioC(browser, 1, 404));
 await browser.close();
 
 let failed = 0;

@@ -8,16 +8,14 @@ import { TUNE } from '../data/tune';
 import { label } from '../render/fx';
 import { openChoice } from './choice';
 import { learn } from '../systems/abilities';
-import { nextStage, region } from '../systems/flow';
+import { region } from '../systems/flow';
+import { done } from '../systems/scene-flow';
 
 export function openTuhak() {
   const r = region(),
     art = ARTS[r.type],
     cards = [],
-    finish = () => {
-      G.mode = 'play';
-      nextStage();
-    };
+    finish = () => done('tuhak');
   for (const s of G.state.skills) {
     const d = SKILLS[s.id];
     if (d.trig === 'passive' || s.mod) continue;

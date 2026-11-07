@@ -1,3 +1,4 @@
+import { isFinal } from './run-plan';
 import { random } from '../core/rng';
 import { on } from '../core/events';
 import { G } from '../core/context';
@@ -10,7 +11,6 @@ import { TUNE } from '../data/tune';
 import { hitEnemy, targetable } from '../entities/enemies';
 import { burst, label } from '../render/fx';
 import { D, column } from './combat';
-import { region } from './flow';
 import { syncHUD } from '../ui/hud';
 
 export function hasSkill(id) {
@@ -84,7 +84,7 @@ export function updateSkills(dt, oldX) {
     }
   }
   // 천문: 관계가 +인 인연은 돕고, −인 인연은 막아선다.
-  if (region().final && G.state.phase === 'boss') {
+  if (isFinal() && G.state.phase === 'boss') {
     const allies = Object.keys(G.state.rel).filter(k => G.state.rel[k] > 0),
       foes = Object.keys(G.state.rel).filter(k => G.state.rel[k] < 0),
       boss = G.enemies.find(e => e.boss && !e.dead);

@@ -1,3 +1,4 @@
+import { isFinal } from '../systems/run-plan';
 import { G } from '../core/context';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
 import { $, H, W } from '../core/dom';
@@ -31,9 +32,7 @@ export function syncHUD() {
     ).join('');
     $('hearts').setAttribute('aria-label', `남은 체력 ${G.player.hp}`);
   }
-  $('stage').textContent = region().final
-    ? region().name + ' · 최종 관문'
-    : movementName() + ' · 관문 ' + G.state.stage;
+  $('stage').textContent = isFinal() ? region().name + ' · 최종 관문' : movementName() + ' · 관문 ' + G.state.stage;
   syncQuestHUD();
   $('stageName').textContent = region().name;
   $('stagefill').style.width =
@@ -83,7 +82,7 @@ export function syncQuestHUD() {
   syncSwapHUD();
   const q = G.state.quest,
     el = $('questHud'),
-    show = !!q && q.stage === G.state.stage && !region().final;
+    show = !!q && q.stage === G.state.stage && !isFinal();
   el.classList.toggle('hidden', !show);
   if (!show) return;
   el.style.setProperty('--c', BR[q.br].color);

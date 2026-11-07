@@ -1,9 +1,9 @@
+import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { heroPictures } from '../core/assets';
 import { COURSES } from '../data/courses';
 import { HEROES } from '../data/heroes';
 import { openChoice } from './choice';
-import { openCrossroads } from './crossroads';
 
 export function openCourseSelect() {
   openChoice({
@@ -17,7 +17,7 @@ export function openCourseSelect() {
       desc: c.desc,
       onPick: () => {
         G.state.course = id;
-        openFormation(0);
+        done('course');
       },
     })),
   });
@@ -34,11 +34,8 @@ export function heroCard(id, slot) {
     desc: `<b>특성 「${h.trait}」</b> ${h.traitDesc}<br><b>교대 초식 「${h.tag}」</b> ${h.tagDesc}`,
     onPick: () => {
       G.state.formation[slot] = id;
-      if (slot === 0) openFormation(1);
-      else {
-        G.state.active = 0;
-        openCrossroads();
-      }
+      if (slot === 1) G.state.active = 0;
+      done('formation', slot);
     },
   };
 }

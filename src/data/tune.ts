@@ -1,4 +1,3 @@
-export const FINAL_STAGE = 4;
 export const TUNE = {
   innHeal: 150,
   innQi: 100,

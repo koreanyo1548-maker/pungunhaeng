@@ -19,6 +19,16 @@ if (location.hash.includes('debug'))
     get seed() {
       return runSeed;
     },
+    get scene() {
+      return G.scene;
+    },
+    /** start recording every scene entered (read back with sceneLog) */
+    traceScenes() {
+      G.sceneLog = [];
+    },
+    get sceneLog() {
+      return G.sceneLog;
+    },
     get enemies() {
       return G.enemies;
     },

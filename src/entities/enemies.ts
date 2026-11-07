@@ -1,0 +1,48 @@
+import { G } from '../core/context';
+import { boom, chime, tone } from '../core/audio';
+import { W, reduced } from '../core/dom';
+import { clamp, rnd } from '../core/math';
+import { RANKS } from '../data/enemies';
+import { TUNE } from '../data/tune';
+import { addPickup } from './pickups';
+import { burst, impact, label, paintFX, ring } from '../render/fx';
+import { enemyFrameIndex } from '../render/util';
+import { hasSkill, trig } from '../systems/abilities';
+import { gainCharge } from '../systems/combat';
+import { difficulty, region } from '../systems/flow';
+import { traitOn } from '../systems/formation';
+import { closeQuest, questEvent } from '../systems/quest';
+import { announce } from '../ui/hud';
+
+export function spawnRow(){
+ const id=++G.rowId,weak=Math.floor(rnd(0,5)),maxRank=Math.min(3,G.state.stage);G.rows.set(id,{remaining:5,missed:false});
+ for(let i=0;i<5;i++){
+  const rank=i===weak?0:Math.random()<(G.state.stage===1?TUNE.earlyWeak:G.state.stage===2?TUNE.secondWeak:.25)?0:Math.max(1,maxRank-(Math.random()<.45?1:0)),r=RANKS[rank],hp=r.hp*(1+.28*difficulty()),stagger=G.state.stage%3===0?Math.abs(i-2)*22:G.state.stage%3===2?i*16:0;
+  const terrain=region().terrain,rockChance=terrain==='rock'?(G.state.stage===1?TUNE.earlyRock:TUNE.rockChance):terrain==='gate'?.15:0;
+  if(i!==weak&&Math.random()<rockChance){const rh=(G.state.stage===1?TUNE.earlyRockHp:26)*(1+.28*difficulty());G.enemies.push({x:48+i*96,baseX:48+i*96,y:-70-stagger,hp:rh,maxHp:rh,type:0,rank:2,rock:true,size:74,r:27,color:'#c9b391',phase:rnd(0,6.28),hit:0,row:id,weak:false,dead:false,shape:Array.from({length:9},()=>rnd(.78,1.08))});continue}
+  G.enemies.push({x:48+i*96,baseX:48+i*96,y:-70-stagger,hp,maxHp:hp,type:r.type,rank,size:r.size,r:r.r,color:r.color,phase:rnd(0,6.28),hit:0,row:id,weak:i===weak,dead:false});
+ }
+}
+export function resolveRow(e,missed=false){const row=G.rows.get(e.row);if(!row)return;row.missed||=missed;row.remaining--;if(row.remaining===0){if(!row.missed){G.state.score+=500;label('완전 격파 +500',W/2,270,'#a3ffe0',22);gainCharge(8);ring(240,270,'#a3ffe0',10,160,.42);tone(880,.12,'sine',.12,1320);if(!G.state.blasting){questEvent('rowClear');trig('rowClear')}}G.rows.delete(e.row)}}
+export function kill(e,byHyper=false){
+ if(e.dead)return;e.dead=true;G.state.kills++;G.state.combo++;G.state.comboTimer=2;
+ const dy=G.player.y-e.y,near=e.boss?1:dy<154?3:dy<304?2:1,mult=Math.min(5,1+Math.floor(G.state.combo/10));G.state.score+=(e.boss?5000+G.state.stage*1000:100+e.rank*65)*near*mult;gainCharge(e.boss?20:3);
+ const color=e.boss?region().color:e.color;G.wrecks.push({x:e.x,y:e.y,type:e.type,size:e.size,angle:0,spin:rnd(-2,2),life:e.boss?1.3:.42,total:e.boss?1.3:.42,boss:!!e.boss,pose:enemyFrameIndex(e)});paintFX(1,e.x,e.y,e.boss?190:85+e.rank*12,.38,rnd(-.6,.6));impact(e.x,e.y,color,e.boss?180:45+e.rank*8);burst(e.x,e.y,color,e.boss?65:16+e.rank*3,e.boss?330:200);ring(e.x,e.y,color,8,e.boss?300:65,e.boss?1:.35);G.shake=Math.max(G.shake,e.boss?14:2.4);
+ if(!byHyper){if(G.time-G.lastBoom>.055||e.boss){boom(e.boss);G.lastBoom=G.time}G.hitstop=Math.max(G.hitstop,e.boss?.09:.018)}
+ if(e.boss){G.finisher={x:e.x,y:e.y,life:1.25,total:1.25};for(let i=0;i<5;i++)paintFX(3,e.x+(i?rnd(-70,70):0),e.y+(i?rnd(-65,65):0),i?150:330,.65,i*.7,i*.14);G.flash=reduced?.06:.24;G.state.cleared++;G.state.phase='clear';G.state.phaseTimer=2.4;G.hazards=[];G.pickups=[];G.shots=[];G.state.hyper=0;G.player.inv=4;closeQuest();announce(region().final?region().name+' 돌파':'관문 '+G.state.stage+' 돌파',region().boss+' 격파',region().final?region().winLine:'쓰러진 자의 무공이 눈에 들어온다',region().color,2.6);chime()}
+ else{for(let i=0;i<3;i++)addPickup('coin',e.x+rnd(-15,15),e.y+rnd(-10,10));if(G.state.kills%18===0&&G.player.weapon<3&&!G.pickups.some(p=>p.kind==='power'))addPickup('power',e.x,e.y);if(near>1)label('근접 ×'+near,e.x,e.y,'#ffe0a0',15);resolveRow(e);if(G.state.combo%10===0){label(G.state.combo+' 연속!',240,225,'#fff3b8',28);tone(720,.15,'triangle',.13,1100)}
+  if(!byHyper&&!G.state.blasting){if(G.player.y-e.y<TUNE.nearDy){questEvent('nearKill');trig('nearKill',{e});if(traitOn('pungun'))gainCharge(5)}questEvent('combo');if(G.state.combo%10===0)trig('combo10')}}
+}
+export function hitEnemy(e,damage){
+ if(e.dead||e.boss&&['enter','return'].includes(e.action))return;
+ if(hasSkill('swaegap')&&(e.rank>=2||e.boss||e.rock))damage*=1.4;
+ e.hp-=damage*(e.boss&&e.action==='recover'?1.6:1);e.hit=.055;e.recoil=.12;
+ if(G.time-(e.lastImpact??-1)>.085){e.lastImpact=G.time;paintFX(0,e.x+rnd(-e.r*.4,e.r*.4),e.y+e.r*.3,e.boss?52:36,.16,rnd(-1,1),0,.8)}
+ if(e.boss&&!e.enraged&&e.hp>0&&e.hp<e.maxHp*.45){e.enraged=true;paintFX(3,e.x,e.y,230,.65);ring(e.x,e.y,'#ffa475',20,150,.5);label('기세 폭발',240,190,'#ffc591',24);tone(100,.3,'triangle',.2,50)}
+ if(e.hp<=0)kill(e);
+}
+export function meteor(){const x=clamp(G.player.x+rnd(-28,28),30,W-30);G.hazards.push({kind:'meteor',x,y:-70,warn:1.05,r:23,vy:620});if(G.state.stage>=2){const other=x<W/2?W-65:65;G.hazards.push({kind:'meteor',x:other,y:-100,warn:1.4,r:23,vy:620})}tone(340,.14,'triangle',.14,280)}
+export function targetable(e){return !e.dead&&e.y>-40&&!(e.boss&&['enter','return'].includes(e.action))}
+export function nearestEnemy(x,y){let best=null,bd=1e9;for(const e of G.enemies){if(!targetable(e))continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e}}return best}
+export function strongestEnemy(){let best=null;for(const e of G.enemies){if(!targetable(e))continue;if(!best||e.hp>best.hp)best=e}return best}
+export function spear(){const x=Math.random()<.5?clamp(G.player.x+rnd(-75,75),30,W-30):rnd(30,W-30);G.hazards.push({kind:'spear',skin:region().skin,x,y:-70,warn:.45,r:8,vy:rnd(520,600)})}

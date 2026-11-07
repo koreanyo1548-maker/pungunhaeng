@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071e26">
+  <meta name="description" content="산길을 달리고 대숲을 넘어 검 위로 날아오르는 무협 종스크롤 슈팅. 좌우 보법과 자동 검기로 강호를 돌파하세요.">
+  <title>풍운행 · 한 걸음, 하늘 끝까지</title>
+</head>
+<body>
+ <main class="shell">
+  <aside class="desktop-note"><span class="eyebrow">땅에서 시작해 하늘에 이르다</span><h1>풍운행</h1><p>한 걸음, 하늘 끝까지</p><div class="divider"></div><p class="instructions">마우스 드래그 또는 <kbd>←</kbd> <kbd>→</kbd><br><kbd>SPACE</kbd> 내공 · <kbd>Q</kbd> 교대<br>하늘 길: <kbd>↑</kbd> <kbd>↓</kbd> · <kbd>ESC</kbd> 일시정지</p><span class="edition">무협 종스크롤 · 06 · 편대</span></aside>
+  <section class="game" id="game" aria-label="풍운행 슈팅 게임">
+   <canvas id="canvas" width="480" height="800" aria-label="좌우로 드래그해서 경공으로 적을 돌파하는 게임 화면"></canvas>
+   <div class="hud hidden" id="hud">
+    <div class="hud-top"><div class="score"><span>점수</span><strong id="score">0</strong><small id="best">최고 0</small></div><div class="flight"><span id="distance">0 m</span><div id="hearts" aria-label="남은 체력"></div></div><button class="icon-button" id="pause" aria-label="일시정지">Ⅱ</button></div>
+    <div class="stage-hud" id="stageHud"><div><b id="stage">STAGE 1</b><span id="stageName">풍운객잔 · 산길</span></div><i><b id="stagefill"></b></i></div>
+    <div class="bossbar hidden" id="bossbar"><div><span id="bossname">녹림 채주</span><span id="bosspercent">100%</span></div><i><b id="bossfill"></b></i><small id="bossState">접근 중</small></div>
+    <div class="quest-strip hidden" id="questHud"><img class="quest-img" id="questImg" alt="" draggable="false"><b id="questTitle">따름</b><span id="questText"></span><i><b id="questFill"></b></i><em id="questCount"></em></div>
+    <div class="skills" id="skills"></div>
+    <div class="combo off" id="combo"><b id="comboNum">0</b><span>연속</span><small id="comboMult">점수 ×1</small></div>
+    <div class="actives" id="actives">
+     <button class="active-btn swap" id="swap" aria-label="편대 교대"><img class="swap-hero" id="swapImg" alt="" draggable="false"><em id="swapCd"></em></button><small class="active-label" id="swapName">교대</small>
+     <button class="active-btn ult" id="blast" aria-label="필살기"><span class="blast-icon">✦</span><b id="bombcount">2</b><i class="ult-hint" id="ultHint"></i></button><small class="active-label">필살</small>
+    </div>
+    <div hidden><span id="weapon"></span><b id="chargefill"></b><small id="chargeLabel"></small></div>
+   </div>
+   <div class="overlay title-screen" id="intro">
+    <div class="top-mark"><span class="wing">✧</span> 한 걸음, 하늘 끝까지 <span class="wing">✧</span></div>
+    <h2>풍운<span>행</span></h2><p class="subtitle">질주에서 경공으로, 경공에서 어검으로</p>
+    <div class="hero-art"><div class="halo"></div><img id="heroArt" alt="붉은 수건과 청록 띠를 두른 백의 협객"></div>
+    <div class="launch"><div class="control-hint"><span>←</span><p>좌우로 움직여 길을 뚫으세요<small>검기는 자동 · 보법은 당신의 손끝으로</small></p><span>→</span></div><button class="primary" id="start" disabled>강호를 준비하는 중…</button><div class="start-footer"><span id="introBest">최고 기록 0</span><button class="sound-toggle" id="soundIntro">♪ 소리 켜짐</button></div><p class="load-error hidden" id="loadError">리소스를 불러오지 못했어요. 새로고침해 주세요.</p></div>
+   </div>
+   <div class="overlay modal hidden" id="pausePanel"><div class="panel"><span class="eyebrow">잠시 호흡을 가다듬고</span><h2>운기조식</h2><div class="summary" id="pauseSummary"></div><button class="primary" id="resume">계속 나아가기</button><button class="secondary" id="restartPause">처음부터</button><button class="sound-toggle" id="soundPause">♪ 소리 켜짐</button></div></div>
+   <div class="overlay modal hidden" id="result"><div class="panel"><span class="eyebrow" id="resultEyebrow">다음 여정을 기약하며</span><h2 id="resultTitle">강호행 종료</h2><p class="record hidden" id="newRecord">새로운 최고 기록!</p><strong class="result-score" id="finalScore">0</strong><span class="result-score-label">최종 점수</span><div class="stats"><div><b id="finalDistance">0 m</b><span>이동 거리</span></div><div><b id="finalKills">0</b><span>격파</span></div><div><b id="finalCoins">0</b><span>엽전</span></div></div><div class="summary" id="summary"></div><button class="primary" id="retry">다시 강호로</button><button class="secondary" id="home">처음 화면</button></div></div>
+   <div class="overlay modal hidden" id="choice"><div class="panel choice-panel"><span class="eyebrow" id="choiceEyebrow"></span><h2 id="choiceTitle"></h2><p class="choice-sub" id="choiceSub"></p><div class="cards" id="choiceCards"></div></div></div>
+   <div class="toast" id="toast" role="status"></div>
+  </section>
+  <aside class="right-note"><span class="outline-star">✧</span><p>한 걸음의 보법이<br>천 리의 경공으로.</p><span class="edition">풍운객잔 · 산길</span></aside>
+ </main>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

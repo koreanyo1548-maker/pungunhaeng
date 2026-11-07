@@ -1,7 +1,8 @@
+import { setPhase } from '../systems/stage-phases';
 import { random } from '../core/rng';
 import { emit } from '../core/events';
 import { G } from '../core/context';
-import { boom, chime, tone } from '../core/audio';
+import { boom, tone } from '../core/audio';
 import { W, reduced } from '../core/dom';
 import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
@@ -13,8 +14,6 @@ import { hasSkill } from '../systems/abilities';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
 import { traitOn } from '../systems/formation';
-import { closeQuest } from '../systems/quest';
-import { announce } from '../ui/hud';
 
 export function spawnRow() {
   const id = ++G.rowId,
@@ -145,22 +144,7 @@ export function kill(e, byHyper = false) {
       );
     G.flash = reduced ? 0.06 : 0.24;
     G.state.cleared++;
-    G.state.phase = 'clear';
-    G.state.phaseTimer = 2.4;
-    G.hazards = [];
-    G.pickups = [];
-    G.shots = [];
-    G.state.hyper = 0;
-    G.player.inv = 4;
-    closeQuest();
-    announce(
-      region().final ? region().name + ' 돌파' : '관문 ' + G.state.stage + ' 돌파',
-      region().boss + ' 격파',
-      region().final ? region().winLine : '쓰러진 자의 무공이 눈에 들어온다',
-      region().color,
-      2.6,
-    );
-    chime();
+    setPhase('clear');
   } else {
     for (let i = 0; i < 3; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
     if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))

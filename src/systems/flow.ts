@@ -1,3 +1,4 @@
+import { setPhase } from './stage-phases';
 import { go } from './scene-flow';
 import { seedRun } from '../core/rng';
 import { G } from '../core/context';
@@ -214,7 +215,7 @@ export function nextStage() {
   G.state.previousTier = oldTier;
   G.state.ascend = movementTier() !== oldTier ? 2.6 : 0;
   G.state.stageTime = 0;
-  G.state.phase = 'flight';
+  setPhase('flight');
   G.state.phaseTimer = 0;
   G.state.rowTimer = 1.3;
   G.state.meteorTimer = 6;

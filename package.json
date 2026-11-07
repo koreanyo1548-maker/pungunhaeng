@@ -11,9 +11,12 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:e2e": "node tests/e2e/run-all.mjs",
-    "test:sim": "node tests/sim/balance.mjs"
+    "test:sim": "node tests/sim/balance.mjs",
+    "format": "prettier --write src tests index.html",
+    "format:check": "prettier --check src tests index.html"
   },
   "devDependencies": {
+    "prettier": "3.9.10",
     "typescript": "5.9.3",
     "vite": "8.3.4",
     "vite-plugin-singlefile": "2.3.4"

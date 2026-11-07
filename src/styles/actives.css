@@ -1,0 +1,229 @@
+#blast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 108px;
+  height: 54px;
+  border: 1px solid #bde7ce77;
+  box-shadow: 0 4px 12px #001c30aa;
+  color: #fff0bf;
+  font-size: 12px;
+  font-weight: 700;
+}
+#blast:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.blast-icon {
+  font-size: 32px;
+  line-height: 1;
+  color: #ffdf8b;
+}
+#blast {
+  background: linear-gradient(#66513ae8, #302e26e8);
+  border-color: #dfc48e99;
+  border-radius: 10px;
+}
+.swap {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #03171ed6;
+  color: #f6f0d6;
+  text-align: left;
+}
+.swap:disabled {
+  opacity: 0.62;
+}
+.swap > b {
+  display: block;
+  font-size: 12px;
+  color: var(--c);
+}
+.swap small {
+  display: block;
+  font-size: 10px;
+  color: #c9dacf;
+  margin-top: 1px;
+}
+.swap i {
+  display: block;
+  height: 3px;
+  background: #ffffff22;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.swap i b {
+  display: block;
+  height: 100%;
+  background: var(--c);
+}
+#blast .ability-icon {
+  width: 30px;
+  height: 30px;
+  margin: 0;
+}
+.swap-hero {
+  margin-right: 5px;
+  float: left;
+  width: 36px;
+  height: 38px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 5px;
+}
+.swap {
+  font: inherit;
+  pointer-events: auto;
+  border: 1px solid var(--c, #ffffff55);
+  bottom: 94px;
+  right: 16px;
+  position: absolute;
+  width: 162px;
+  overflow: hidden;
+}
+.swap > b,
+.swap small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.swap .swap-hero {
+  float: left;
+  margin: 0 6px 0 0;
+}
+.swap i {
+  margin-top: 5px;
+  clear: both;
+}
+.actives {
+  position: absolute;
+  right: 10px;
+  top: 49%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: auto;
+}
+.active-btn,
+#blast.active-btn,
+.swap.active-btn {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--c, #ffd77a) calc(var(--p, 100) * 1%), #ffffff2e 0);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  overflow: visible;
+  box-shadow: 0 2px 8px #0008;
+  transition: opacity 0.15s;
+}
+.active-btn::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+}
+.active-btn .swap-hero,
+.active-btn .blast-icon {
+  float: none;
+  margin: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #04161c;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  object-fit: cover;
+  object-position: top;
+}
+.active-btn .blast-icon img,
+.active-btn .blast-icon .ability-icon {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+}
+#blast.active-btn b {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: #ffe39a;
+  color: #2a1d0c;
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+}
+#swap em {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 4px #000;
+}
+.active-label {
+  font-size: 10px;
+  color: #f6f0d6;
+  text-shadow: 0 1px 3px #000;
+  margin-bottom: 9px;
+  white-space: nowrap;
+}
+.active-btn.cool,
+.active-btn:disabled {
+  opacity: 0.5;
+}
+.active-btn.veil {
+  opacity: 0.28;
+}
+.active-btn.burst {
+  animation: actburst 0.45s infinite alternate;
+}
+@keyframes actburst {
+  from {
+    box-shadow: 0 0 0 0 var(--c);
+  }
+  to {
+    box-shadow: 0 0 18px 5px var(--c);
+  }
+}
+.ult-hint {
+  position: absolute;
+  right: 58px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-style: normal;
+  font-size: 11px;
+  white-space: nowrap;
+  color: #fff3cf;
+  background: #04161cd0;
+  border-radius: 8px;
+  padding: 1px 6px;
+  text-shadow: none;
+}
+.ult-hint:empty {
+  display: none;
+}
+.ult-hint.go {
+  color: #2a1d0c;
+  background: #ffe39a;
+  font-weight: 700;
+}
+.active-btn.focus {
+  box-shadow: 0 0 12px 2px var(--c);
+}

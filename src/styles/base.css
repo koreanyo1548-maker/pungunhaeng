@@ -1,0 +1,165 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: #071a20;
+  color: #f6f3dd;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.shell {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(26px, 5vw, 100px);
+}
+.game {
+  width: min(480px, 60dvh);
+  height: min(800px, 100dvh);
+  position: relative;
+  overflow: hidden;
+  background: #145a61;
+  box-shadow:
+    0 30px 100px #0009,
+    0 0 0 1px #9ac8bd26;
+  isolation: isolate;
+  touch-action: none;
+  user-select: none;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.desktop-note {
+  width: 235px;
+}
+.desktop-note h1 {
+  font-size: 38px;
+  letter-spacing: -2px;
+  margin: 12px 0 8px;
+  color: #f4e6b9;
+}
+.desktop-note p {
+  font-size: 15px;
+  color: #9db7b5;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #a6c8bf;
+}
+.divider {
+  width: 32px;
+  height: 1px;
+  background: #bba26a;
+  margin: 30px 0;
+}
+.desktop-note .instructions {
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 2.5;
+  color: #83a0a0;
+}
+kbd {
+  padding: 3px 6px;
+  border: 1px solid #47605e;
+  border-radius: 4px;
+  font-size: 10px;
+}
+.right-note {
+  width: 180px;
+}
+.right-note p {
+  font-size: 23px;
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: -1px;
+}
+.outline-star {
+  font-size: 66px;
+  color: #c9b67c;
+}
+.hidden {
+  display: none !important;
+}
+.wing {
+  font-size: 20px;
+}
+.halo {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  max-width: 75%;
+  max-height: 85%;
+  border-radius: 50%;
+  background: radial-gradient(#5be9d14d, transparent 68%);
+}
+.launch {
+  width: 100%;
+}
+#bombcount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffe4a1;
+  color: #183b41;
+  margin-left: 2px;
+}
+.record {
+  font-size: 12px;
+  color: #8af0d6;
+  margin-top: -15px;
+}
+.load-error {
+  font-size: 12px;
+  color: #ffc4ac;
+  text-align: center;
+}
+@keyframes float {
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+@media (max-width: 1000px) {
+  .right-note {
+    display: none;
+  }
+  .desktop-note {
+    width: 200px;
+  }
+}
+@media (max-width: 760px) {
+  .desktop-note {
+    display: none;
+  }
+  .shell {
+    gap: 0;
+  }
+  .game {
+    width: min(100vw, 60dvh);
+    height: min(100dvh, 166.667vw);
+    box-shadow: none;
+  }
+}
+body {
+  background: radial-gradient(ellipse at 50% 30%, #36413a, #122723 55%, #0b1b1a);
+}
+.desktop-note p {
+  letter-spacing: 2px;
+}
+.right-note {
+  color: #b7c4ae;
+}

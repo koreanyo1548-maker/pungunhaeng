@@ -4,4 +4,38 @@ import { learn } from '../systems/abilities';
 import { swapHero } from '../systems/formation';
 import { questEvent } from '../systems/quest';
 
-if(location.hash.includes('debug'))window.__g={get state(){return G.state},get player(){return G.player},get mode(){return G.mode},get enemies(){return G.enemies},questEvent,learn,skipFlight(){G.state.stageTime=999},killBoss(){const b=G.enemies.find(e=>e.boss&&!e.dead);if(b){b.action='recover';hitEnemy(b,1e7)}},god(){G.player.hp=99;G.player.maxHp=99},swapHero,setSwap(){G.state.swapReady=0}};
+if (location.hash.includes('debug'))
+  window.__g = {
+    get state() {
+      return G.state;
+    },
+    get player() {
+      return G.player;
+    },
+    get mode() {
+      return G.mode;
+    },
+    get enemies() {
+      return G.enemies;
+    },
+    questEvent,
+    learn,
+    skipFlight() {
+      G.state.stageTime = 999;
+    },
+    killBoss() {
+      const b = G.enemies.find(e => e.boss && !e.dead);
+      if (b) {
+        b.action = 'recover';
+        hitEnemy(b, 1e7);
+      }
+    },
+    god() {
+      G.player.hp = 99;
+      G.player.maxHp = 99;
+    },
+    swapHero,
+    setSwap() {
+      G.state.swapReady = 0;
+    },
+  };

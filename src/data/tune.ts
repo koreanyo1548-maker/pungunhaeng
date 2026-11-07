@@ -1,2 +1,30 @@
-export const FINAL_STAGE=4;
-export const TUNE={canvasCombo:false,innHeal:150,innQi:100,innMeditate:180,innScout:120,tuhakCoins:250,earlyWeak:.6,secondWeak:.4,earlyRock:.12,earlyRockHp:14,openingGap:.35,nearDy:90,swapCd:6,traitPower:1.25,traitCharge:1.4,traitGraze:1.4,traitFire:1.2,skyMinY:330,skyMaxY:700,grazeRadius:26,grazeCharge:2,mismatch:.75,sasaRel:2,finalFlight:16,bossHpFinal:1.6,orbDistance:700,cloudCharge:1.3,rockChance:.3};
+export const FINAL_STAGE = 4;
+export const TUNE = {
+  innHeal: 150,
+  innQi: 100,
+  innMeditate: 180,
+  innScout: 120,
+  tuhakCoins: 250,
+  earlyWeak: 0.6,
+  secondWeak: 0.4,
+  earlyRock: 0.12,
+  earlyRockHp: 14,
+  openingGap: 0.35,
+  nearDy: 90,
+  swapCd: 6,
+  traitPower: 1.25,
+  traitCharge: 1.4,
+  traitGraze: 1.4,
+  traitFire: 1.2,
+  skyMinY: 330,
+  skyMaxY: 700,
+  grazeRadius: 26,
+  grazeCharge: 2,
+  mismatch: 0.75,
+  sasaRel: 2,
+  finalFlight: 16,
+  bossHpFinal: 1.6,
+  orbDistance: 700,
+  cloudCharge: 1.3,
+  rockChance: 0.3,
+};

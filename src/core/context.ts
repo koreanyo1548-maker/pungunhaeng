@@ -48,6 +48,8 @@ export const G: any = {
   footprints: [],
   strikes: [],
   skillsKey: '',
-  coinPic: ''
+  coinPic: '',
 };
-try{G.best=Number(localStorage.getItem('wuxia-best'))||0}catch{}
+try {
+  G.best = Number(localStorage.getItem('wuxia-best')) || 0;
+} catch {}

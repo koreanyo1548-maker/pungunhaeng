@@ -1,0 +1,351 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.hud-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px 20px 35px;
+  background: linear-gradient(#03171ecd, transparent);
+}
+.score {
+  flex: 1;
+}
+.score > span {
+  display: block;
+  font-size: 10px;
+  color: #acc5bb;
+  letter-spacing: 2px;
+}
+.score strong {
+  font-size: 30px;
+  font-weight: 800;
+  display: block;
+  line-height: 1.2;
+  text-shadow: 0 2px 6px #0008;
+  font-variant-numeric: tabular-nums;
+}
+.score small {
+  font-size: 10px;
+  color: #b5c6b7;
+}
+.flight {
+  text-align: right;
+  padding-top: 5px;
+}
+.flight > span {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffebbc;
+  font-variant-numeric: tabular-nums;
+}
+#hearts {
+  font-size: 19px;
+  color: #ff8a78;
+  letter-spacing: 3px;
+  margin-top: 5px;
+}
+#hearts .lost {
+  color: #82979655;
+}
+.bossbar > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  text-shadow: 0 2px 3px #000;
+}
+.bossbar i {
+  display: block;
+  background: #160e1e99;
+  height: 8px;
+  margin-top: 6px;
+  border: 1px solid #ff9e7b77;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.bossbar b {
+  display: block;
+  background: linear-gradient(90deg, #ed6659, #ffc073);
+  height: 100%;
+  width: 100%;
+  transition: width 0.08s;
+}
+.toast {
+  position: absolute;
+  transform: translate(-50%, -8px);
+  opacity: 0;
+  color: #fff1bc;
+  text-shadow: 0 2px 10px #00232b;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+@media (max-height: 620px) {
+  .hud-top {
+    padding-top: 12px;
+  }
+}
+
+.stage-hud {
+  position: absolute;
+  color: #c6ddcf;
+}
+.stage-hud > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.stage-hud b {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #ffe6ac;
+}
+.stage-hud span {
+  font-size: 9px;
+}
+.stage-hud i {
+  display: block;
+  height: 2px;
+  background: #c9ffdd33;
+  margin-top: 7px;
+}
+.stage-hud i b {
+  height: 100%;
+  display: block;
+  background: #b5eecf;
+  width: 0;
+}
+.bossbar {
+  position: absolute;
+  text-shadow: 0 2px 4px #000;
+}
+.bossbar small {
+  font-size: 11px;
+  color: #ffe7b7;
+}
+.bossbar.exposed b {
+  background: linear-gradient(90deg, #2ccca7, #c4ffdd);
+}
+.bossbar.exposed small {
+  color: #b0ffe0;
+}
+.toast {
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  white-space: nowrap;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 6;
+  left: 50%;
+  font-size: 20px;
+  top: 27%;
+}
+.stage-hud {
+  text-shadow:
+    0 1px 4px #000,
+    0 1px 8px #000;
+}
+.stage-hud span {
+  color: #f2edcf;
+}
+.bossbar small {
+  margin-top: 6px;
+  text-align: center;
+  display: block;
+  text-shadow: 0 1px 4px #000;
+}
+.chip {
+  font-size: 10px;
+  border-radius: 9px;
+  background: #03171ec4;
+  border: 1px solid var(--c);
+  color: #f6f0d6;
+}
+.ability-icon {
+  width: 23px;
+  height: 23px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: normal;
+  padding: 2px 5px;
+}
+.chip .ability-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.quest-img {
+  width: 40px;
+  height: 46px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 6px;
+  flex: none;
+}
+.skills .chip {
+  padding: 2px;
+  border-radius: 7px;
+  background: #03171ec4;
+  border: 1px solid var(--c);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+.skills .chip .ability-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.skills .chip.mod {
+  border-style: double;
+  border-width: 3px;
+}
+.skills .chip.lit {
+  box-shadow: 0 0 10px var(--c);
+  transform: scale(1.15);
+}
+.stage-hud {
+  left: auto;
+  right: 16px;
+  width: 140px;
+}
+.stage-hud > div {
+  align-items: flex-end;
+}
+.combo {
+  position: absolute;
+  right: 16px;
+  text-shadow: 0 2px 6px #000;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.combo.off {
+  opacity: 0;
+}
+.combo b {
+  font-size: 30px;
+  color: #ffe39a;
+  font-family: 'Noto Serif KR', serif;
+}
+.combo span {
+  font-size: 14px;
+  color: #fff0c4;
+  margin-left: 3px;
+}
+.combo small {
+  display: block;
+  font-size: 11px;
+  color: #bfe9df;
+}
+.quest-strip {
+  position: absolute;
+  top: 92px;
+  left: 0;
+  right: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  background: color-mix(in srgb, var(--c, #ffe6ac) 16%, #04161ce8);
+  border-top: 1px solid color-mix(in srgb, var(--c, #ffe6ac) 40%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--c, #ffe6ac) 40%, transparent);
+  pointer-events: none;
+}
+.quest-strip .quest-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--c);
+  flex: none;
+}
+.quest-strip .quest-img.defy {
+  border-style: dashed;
+}
+.quest-strip > b {
+  font-size: 11px;
+  color: var(--c);
+  flex: none;
+}
+.quest-strip > span {
+  font-size: 13px;
+  color: #fff6dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.quest-strip > i {
+  flex: 1 1 40px;
+  min-width: 28px;
+  height: 4px;
+  background: #ffffff22;
+  border-radius: 2px;
+  overflow: hidden;
+  display: block;
+}
+.quest-strip > i b {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--c);
+}
+.quest-strip > em {
+  font-style: normal;
+  font-size: 12px;
+  color: #fff3cf;
+  flex: none;
+}
+.quest-strip.hot {
+  animation: qhot 0.5s infinite alternate;
+}
+@keyframes qhot {
+  to {
+    background: color-mix(in srgb, var(--c, #ffe6ac) 36%, #04161ce8);
+  }
+}
+.skills {
+  flex-wrap: wrap;
+  position: absolute;
+  top: 130px;
+  left: 12px;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  gap: 4px;
+  max-height: none;
+  overflow: visible;
+  pointer-events: none;
+}
+.stage-hud {
+  text-align: right;
+  top: 128px;
+}
+.bossbar {
+  top: 128px;
+  left: auto;
+  right: 0;
+  width: 190px;
+  margin: 0 14px 0 0;
+}
+.combo {
+  text-align: right;
+  top: 168px;
+}
+.hud.boss .combo {
+  top: 182px;
+}

@@ -15,18 +15,18 @@ import bosses from './images/bosses.png';
 import fx from './images/fx.png';
 
 export const IMG: Record<string, string> = {
-  'portraits': portraits,
-  'props': props,
-  'projectile': projectile,
-  'impact': impact,
-  'utility': utility,
+  portraits: portraits,
+  props: props,
+  projectile: projectile,
+  impact: impact,
+  utility: utility,
   'hero-run': heroRun,
   'hero-fly': heroFly,
   'npc-portraits': npcPortraits,
   'skill-icons': skillIcons,
   'title-art': titleArt,
-  'world': world,
-  'mobs': mobs,
-  'bosses': bosses,
-  'fx': fx,
+  world: world,
+  mobs: mobs,
+  bosses: bosses,
+  fx: fx,
 };

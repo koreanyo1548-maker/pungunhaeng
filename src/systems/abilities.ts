@@ -1,3 +1,4 @@
+import { on } from '../core/events';
 import { G } from '../core/context';
 import { W } from '../core/dom';
 import { rnd } from '../core/math';
@@ -126,4 +127,14 @@ export function learn(id) {
   SKILLS[id].gain?.();
   label('습득 · ' + SKILLS[id].name, 240, 400, BR[SKILLS[id].br].color, 22);
   syncHUD();
+}
+
+// 깨달음 with an action trigger fire from combat events (tick and passive skills are handled in updateSkills).
+export function registerAbilityListeners() {
+  on('blast', d => trig('blast', d));
+  on('graze', d => trig('graze', d));
+  on('step', d => trig('step', d));
+  on('rowClear', () => trig('rowClear'));
+  on('nearKill', d => trig('nearKill', d));
+  on('combo10', () => trig('combo10'));
 }

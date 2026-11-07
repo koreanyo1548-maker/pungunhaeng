@@ -1,3 +1,4 @@
+import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { reduced } from '../core/dom';
@@ -5,11 +6,9 @@ import { rnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
-import { trig } from '../systems/abilities';
 import { clearBullets, shotPower } from '../systems/combat';
 import { end, movementTier } from '../systems/flow';
 import { activeHeroId } from '../systems/formation';
-import { questEvent } from '../systems/quest';
 
 export function damagePlayer() {
   if (G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear') return;
@@ -94,10 +93,10 @@ export function updateMartialMotion(dt, oldX) {
     G.player.stepDir = Math.sign(G.player.x - oldX) || 1;
     G.state.stepTimer = 0.21;
     if (['flight', 'boss'].includes(G.state.phase)) {
-      if (G.player.stepDir !== G.state.lastStepDir && G.time - (G.state.lastStepTime || -9) < 0.5) questEvent('step');
+      if (G.player.stepDir !== G.state.lastStepDir && G.time - (G.state.lastStepTime || -9) < 0.5) emit('zigzag');
       G.state.lastStepDir = G.player.stepDir;
       G.state.lastStepTime = G.time;
-      trig('step', { x: oldX });
+      emit('step', { x: oldX });
     }
     burst(G.player.x, G.player.y + 31, tier === 0 ? '#d7bd8b' : '#adf4e7', tier === 0 ? 6 : 4, 85);
     if (!reduced)

@@ -1,13 +1,13 @@
+import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { BR } from '../data/branches';
 import { TUNE } from '../data/tune';
 import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
-import { hasSkill, trig } from './abilities';
+import { hasSkill } from './abilities';
 import { difficulty, region } from './flow';
 import { traitOn } from './formation';
-import { questEvent } from './quest';
 import { notify, syncHUD } from '../ui/hud';
 
 export function shotPower() {
@@ -22,7 +22,7 @@ export function gainCharge(n) {
     G.state.charge = 100;
     return;
   }
-  questEvent('charge', n);
+  emit('charge', { n });
   G.state.charge += n;
   while (G.state.charge >= 100 && G.state.bombs < G.state.maxBombs) {
     G.state.charge -= 100;
@@ -31,7 +31,7 @@ export function gainCharge(n) {
     chime();
     if (G.state.bombs >= G.state.maxBombs) {
       G.state.charge = 100;
-      questEvent('fullCharge');
+      emit('fullCharge');
     }
   }
 }
@@ -45,10 +45,8 @@ export function blast() {
   for (const e of G.enemies) hitEnemy(e, e.boss ? 170 * (1 + 0.12 * difficulty()) : e.hp + 1);
   G.state.blasting = false;
   const killed = G.state.kills - before;
-  questEvent('blast');
-  if (killed >= 6) questEvent('blastKill');
   if (killed >= 6) label(killed + '명 일소', 240, 300, BR.gi.color, 22);
-  trig('blast', { killed });
+  emit('blast', { killed });
   paintFX(3, G.player.x, G.player.y - 25, 330, 0.65);
   paintFX(3, 240, 330, 380, 0.6, 0, 0.12, 0.45);
   ring(G.player.x, G.player.y, '#abfff0', 20, 950, 0.65);
@@ -130,8 +128,7 @@ export function graze(h) {
     tone(1500, 0.04, 'sine', 0.04, 2100);
     G.state.lastGraze = G.time;
   }
-  questEvent('graze');
-  trig('graze', { h, x: h.x, y: h.y });
+  emit('graze', { h, x: h.x, y: h.y });
 }
 export function grazeEnemy(e) {
   G.state.grazes++;
@@ -141,6 +138,5 @@ export function grazeEnemy(e) {
     tone(1500, 0.04, 'sine', 0.04, 2100);
     G.state.lastGraze = G.time;
   }
-  questEvent('graze');
-  trig('graze', { x: e.x, y: e.y, e });
+  emit('graze', { x: e.x, y: e.y, e });
 }

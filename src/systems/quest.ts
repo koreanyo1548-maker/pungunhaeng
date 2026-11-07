@@ -1,3 +1,4 @@
+import { on } from '../core/events';
 import { G } from '../core/context';
 import { chime } from '../core/audio';
 import { BR, COND } from '../data/branches';
@@ -82,4 +83,19 @@ export function acceptQuest(id, qmode) {
   resumePlay();
   beginStage();
   label((qmode === 'follow' ? '따른다' : '거스른다') + ' · ' + n.name, 240, 430, BR[G.state.quest.br].color, 20);
+}
+
+// 화두 progress is driven by combat events. blastKill is derived from the blast event.
+export function registerQuestListeners() {
+  on('charge', d => questEvent('charge', d.n));
+  on('fullCharge', () => questEvent('fullCharge'));
+  on('blast', d => {
+    questEvent('blast');
+    if (d.killed >= 6) questEvent('blastKill');
+  });
+  on('graze', () => questEvent('graze'));
+  on('zigzag', () => questEvent('step'));
+  on('rowClear', () => questEvent('rowClear'));
+  on('nearKill', () => questEvent('nearKill'));
+  on('kill', () => questEvent('combo'));
 }

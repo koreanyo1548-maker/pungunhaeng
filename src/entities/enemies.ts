@@ -1,3 +1,4 @@
+import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { W, reduced } from '../core/dom';
@@ -7,11 +8,11 @@ import { TUNE } from '../data/tune';
 import { addPickup } from './pickups';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { enemyFrameIndex } from '../render/util';
-import { hasSkill, trig } from '../systems/abilities';
+import { hasSkill } from '../systems/abilities';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
 import { traitOn } from '../systems/formation';
-import { closeQuest, questEvent } from '../systems/quest';
+import { closeQuest } from '../systems/quest';
 import { announce } from '../ui/hud';
 
 export function spawnRow() {
@@ -87,8 +88,7 @@ export function resolveRow(e, missed = false) {
       ring(240, 270, '#a3ffe0', 10, 160, 0.42);
       tone(880, 0.12, 'sine', 0.12, 1320);
       if (!G.state.blasting) {
-        questEvent('rowClear');
-        trig('rowClear');
+        emit('rowClear');
       }
     }
     G.rows.delete(e.row);
@@ -164,12 +164,11 @@ export function kill(e, byHyper = false) {
     }
     if (!byHyper && !G.state.blasting) {
       if (G.player.y - e.y < TUNE.nearDy) {
-        questEvent('nearKill');
-        trig('nearKill', { e });
+        emit('nearKill', { e });
         if (traitOn('pungun')) gainCharge(5);
       }
-      questEvent('combo');
-      if (G.state.combo % 10 === 0) trig('combo10');
+      emit('kill', { e });
+      if (G.state.combo % 10 === 0) emit('combo10');
     }
   }
 }

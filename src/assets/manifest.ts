@@ -1,0 +1,32 @@
+// Original PNG atlases, imported so Vite can hash them (dist/) or inline them (dist-single/).
+import portraits from './images/portraits.png';
+import props from './images/props.png';
+import projectile from './images/projectile.png';
+import impact from './images/impact.png';
+import utility from './images/utility.png';
+import heroRun from './images/hero-run.png';
+import heroFly from './images/hero-fly.png';
+import npcPortraits from './images/npc-portraits.png';
+import skillIcons from './images/skill-icons.png';
+import titleArt from './images/title-art.png';
+import world from './images/world.png';
+import mobs from './images/mobs.png';
+import bosses from './images/bosses.png';
+import fx from './images/fx.png';
+
+export const IMG: Record<string, string> = {
+  'portraits': portraits,
+  'props': props,
+  'projectile': projectile,
+  'impact': impact,
+  'utility': utility,
+  'hero-run': heroRun,
+  'hero-fly': heroFly,
+  'npc-portraits': npcPortraits,
+  'skill-icons': skillIcons,
+  'title-art': titleArt,
+  'world': world,
+  'mobs': mobs,
+  'bosses': bosses,
+  'fx': fx,
+};

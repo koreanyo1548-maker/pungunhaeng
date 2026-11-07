@@ -1,6 +1,6 @@
 import { G } from '../core/context';
 import { H, W, ctx, reduced } from '../core/dom';
-import { clamp, rnd } from '../core/math';
+import { clamp, fxRnd } from '../core/math';
 import { drawEnemy, drawEnemyAura, drawMartialPlayer } from './actors';
 import { drawBanner, drawBossWarnings } from './boss-ui';
 import { drawBossIntro, drawBossTrails, drawExtraFX, drawFinisher, drawPaintedFX, drawSkillFX } from './fx';
@@ -12,7 +12,7 @@ import { background, drawFootprints } from './world';
 export function draw() {
   ctx.save();
   ctx.clearRect(0, 0, W, H);
-  if (G.shake > 0 && !reduced) ctx.translate(rnd(-G.shake, G.shake), rnd(-G.shake, G.shake));
+  if (G.shake > 0 && !reduced) ctx.translate(fxRnd(-G.shake, G.shake), fxRnd(-G.shake, G.shake));
   background();
   if (!G.state || G.mode === 'title' || G.mode === 'loading') {
     ctx.restore();

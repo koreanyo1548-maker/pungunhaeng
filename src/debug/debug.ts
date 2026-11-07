@@ -1,3 +1,4 @@
+import { runSeed } from '../core/rng';
 import { G } from '../core/context';
 import { hitEnemy } from '../entities/enemies';
 import { learn } from '../systems/abilities';
@@ -14,6 +15,9 @@ if (location.hash.includes('debug'))
     },
     get mode() {
       return G.mode;
+    },
+    get seed() {
+      return runSeed;
     },
     get enemies() {
       return G.enemies;

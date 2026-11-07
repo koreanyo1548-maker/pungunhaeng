@@ -1,5 +1,10 @@
-export const clamp = (v, a, b) => Math.max(a, Math.min(b, v)),
-  rnd = (a, b) => a + Math.random() * (b - a);
+import { fxRandom, random } from './rng';
+
+export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/** gameplay random in [a, b) */
+export const rnd = (a, b) => a + random() * (b - a);
+/** cosmetic random in [a, b) — never affects gameplay */
+export const fxRnd = (a, b) => a + fxRandom() * (b - a);
 export const fmt = n => Math.floor(n).toLocaleString('ko-KR');
 export function relText(v) {
   return v > 0 ? '+' + v : v < 0 ? '−' + -v : '0';

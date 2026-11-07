@@ -1,3 +1,4 @@
+import { seedRun } from '../core/rng';
 import { G } from '../core/context';
 import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
@@ -29,6 +30,7 @@ export function stageDuration() {
 }
 export function start() {
   if (!G.loaded) return;
+  seedRun();
   initAudio();
   for (const id of ['intro', 'result', 'pausePanel']) $(id).classList.add('hidden');
   $('hud').classList.remove('hidden');

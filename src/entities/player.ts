@@ -2,7 +2,7 @@ import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { reduced } from '../core/dom';
-import { rnd } from '../core/math';
+import { fxRnd, rnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
@@ -121,9 +121,9 @@ export function updateMartialMotion(dt, oldX) {
       burst(G.player.x, G.player.y + 39, '#d7c89e', 2, 35);
     } else if (tier === 2 || G.state.hyper > 0)
       G.particles.push({
-        x: G.player.x + rnd(-9, 9),
+        x: G.player.x + fxRnd(-9, 9),
         y: G.player.y + 40,
-        vx: rnd(-12, 12),
+        vx: fxRnd(-12, 12),
         vy: G.state.hyper > 0 ? 260 : 95,
         life: 0.35,
         max: 0.35,

@@ -1,3 +1,4 @@
+import { random } from '../core/rng';
 import { on } from '../core/events';
 import { G } from '../core/context';
 import { W } from '../core/dom';
@@ -101,7 +102,7 @@ export function updateSkills(dt, oldX) {
       if (G.state.foeTimer <= 0) {
         G.state.foeTimer = 5.5;
         const n = NPCS[foes[Math.floor(rnd(0, foes.length))]],
-          side = Math.random() < 0.5 ? 30 : W - 30,
+          side = random() < 0.5 ? 30 : W - 30,
           a0 = Math.atan2(G.player.y - 120, G.player.x - side);
         for (let i = 0; i < 5; i++) {
           const a = a0 + (i - 2) * 0.16;

@@ -1,3 +1,4 @@
+import { fxRandom } from './rng';
 import { G } from './context';
 import { $ } from './dom';
 
@@ -32,7 +33,7 @@ export function boom(big = false) {
   const len = big ? 0.42 : 0.16,
     buffer = G.audio.createBuffer(1, G.audio.sampleRate * len, G.audio.sampleRate),
     data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 2;
+  for (let i = 0; i < data.length; i++) data[i] = (fxRandom() * 2 - 1) * (1 - i / data.length) ** 2;
   const source = G.audio.createBufferSource(),
     filter = G.audio.createBiquadFilter(),
     g = G.audio.createGain();

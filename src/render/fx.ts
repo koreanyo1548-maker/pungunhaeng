@@ -1,7 +1,8 @@
 import { G } from '../core/context';
 import { projectileArt } from '../core/assets';
 import { $, H, W, ctx, reduced } from '../core/dom';
-import { clamp, rnd } from '../core/math';
+import { clamp, fxRnd } from '../core/math';
+import { fxRandom } from '../core/rng';
 import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
 import { hasSkill } from '../systems/abilities';
@@ -9,16 +10,16 @@ import { region } from '../systems/flow';
 
 export function burst(x, y, color, n = 12, force = 150) {
   for (let i = 0; i < n; i++) {
-    const a = rnd(0, Math.PI * 2),
-      s = rnd(force * 0.2, force);
+    const a = fxRnd(0, Math.PI * 2),
+      s = fxRnd(force * 0.2, force);
     G.particles.push({
       x,
       y,
       vx: Math.cos(a) * s,
       vy: Math.sin(a) * s,
-      life: rnd(0.2, 0.55),
+      life: fxRnd(0.2, 0.55),
       max: 0.55,
-      r: rnd(1.5, 4),
+      r: fxRnd(1.5, 4),
       color,
     });
   }
@@ -45,9 +46,9 @@ export function effects(dt) {
     w.life -= dt;
     w.y += dt * 90;
     w.angle += dt * w.spin;
-    if (w.boss && Math.random() < dt * 16) {
-      impact(w.x + rnd(-70, 70), w.y + rnd(-70, 70), region().color, 70);
-      burst(w.x + rnd(-55, 55), w.y + rnd(-55, 55), region().color, 9, 180);
+    if (w.boss && fxRandom() < dt * 16) {
+      impact(w.x + fxRnd(-70, 70), w.y + fxRnd(-70, 70), region().color, 70);
+      burst(w.x + fxRnd(-55, 55), w.y + fxRnd(-55, 55), region().color, 9, 180);
     }
   }
   G.wrecks = G.wrecks.filter(w => w.life > 0);

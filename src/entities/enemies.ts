@@ -1,8 +1,9 @@
+import { random } from '../core/rng';
 import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { W, reduced } from '../core/dom';
-import { clamp, rnd } from '../core/math';
+import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
 import { addPickup } from './pickups';
@@ -24,16 +25,16 @@ export function spawnRow() {
     const rank =
         i === weak
           ? 0
-          : Math.random() < (G.state.stage === 1 ? TUNE.earlyWeak : G.state.stage === 2 ? TUNE.secondWeak : 0.25)
+          : random() < (G.state.stage === 1 ? TUNE.earlyWeak : G.state.stage === 2 ? TUNE.secondWeak : 0.25)
             ? 0
-            : Math.max(1, maxRank - (Math.random() < 0.45 ? 1 : 0)),
+            : Math.max(1, maxRank - (random() < 0.45 ? 1 : 0)),
       r = RANKS[rank],
       hp = r.hp * (1 + 0.28 * difficulty()),
       stagger = G.state.stage % 3 === 0 ? Math.abs(i - 2) * 22 : G.state.stage % 3 === 2 ? i * 16 : 0;
     const terrain = region().terrain,
       rockChance =
         terrain === 'rock' ? (G.state.stage === 1 ? TUNE.earlyRock : TUNE.rockChance) : terrain === 'gate' ? 0.15 : 0;
-    if (i !== weak && Math.random() < rockChance) {
+    if (i !== weak && random() < rockChance) {
       const rh = (G.state.stage === 1 ? TUNE.earlyRockHp : 26) * (1 + 0.28 * difficulty());
       G.enemies.push({
         x: 48 + i * 96,
@@ -52,7 +53,7 @@ export function spawnRow() {
         row: id,
         weak: false,
         dead: false,
-        shape: Array.from({ length: 9 }, () => rnd(0.78, 1.08)),
+        shape: Array.from({ length: 9 }, () => fxRnd(0.78, 1.08)),
       });
       continue;
     }
@@ -112,13 +113,13 @@ export function kill(e, byHyper = false) {
     type: e.type,
     size: e.size,
     angle: 0,
-    spin: rnd(-2, 2),
+    spin: fxRnd(-2, 2),
     life: e.boss ? 1.3 : 0.42,
     total: e.boss ? 1.3 : 0.42,
     boss: !!e.boss,
     pose: enemyFrameIndex(e),
   });
-  paintFX(1, e.x, e.y, e.boss ? 190 : 85 + e.rank * 12, 0.38, rnd(-0.6, 0.6));
+  paintFX(1, e.x, e.y, e.boss ? 190 : 85 + e.rank * 12, 0.38, fxRnd(-0.6, 0.6));
   impact(e.x, e.y, color, e.boss ? 180 : 45 + e.rank * 8);
   burst(e.x, e.y, color, e.boss ? 65 : 16 + e.rank * 3, e.boss ? 330 : 200);
   ring(e.x, e.y, color, 8, e.boss ? 300 : 65, e.boss ? 1 : 0.35);
@@ -133,7 +134,15 @@ export function kill(e, byHyper = false) {
   if (e.boss) {
     G.finisher = { x: e.x, y: e.y, life: 1.25, total: 1.25 };
     for (let i = 0; i < 5; i++)
-      paintFX(3, e.x + (i ? rnd(-70, 70) : 0), e.y + (i ? rnd(-65, 65) : 0), i ? 150 : 330, 0.65, i * 0.7, i * 0.14);
+      paintFX(
+        3,
+        e.x + (i ? fxRnd(-70, 70) : 0),
+        e.y + (i ? fxRnd(-65, 65) : 0),
+        i ? 150 : 330,
+        0.65,
+        i * 0.7,
+        i * 0.14,
+      );
     G.flash = reduced ? 0.06 : 0.24;
     G.state.cleared++;
     G.state.phase = 'clear';
@@ -180,7 +189,7 @@ export function hitEnemy(e, damage) {
   e.recoil = 0.12;
   if (G.time - (e.lastImpact ?? -1) > 0.085) {
     e.lastImpact = G.time;
-    paintFX(0, e.x + rnd(-e.r * 0.4, e.r * 0.4), e.y + e.r * 0.3, e.boss ? 52 : 36, 0.16, rnd(-1, 1), 0, 0.8);
+    paintFX(0, e.x + fxRnd(-e.r * 0.4, e.r * 0.4), e.y + e.r * 0.3, e.boss ? 52 : 36, 0.16, fxRnd(-1, 1), 0, 0.8);
   }
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * 0.45) {
     e.enraged = true;
@@ -225,6 +234,6 @@ export function strongestEnemy() {
   return best;
 }
 export function spear() {
-  const x = Math.random() < 0.5 ? clamp(G.player.x + rnd(-75, 75), 30, W - 30) : rnd(30, W - 30);
+  const x = random() < 0.5 ? clamp(G.player.x + rnd(-75, 75), 30, W - 30) : rnd(30, W - 30);
   G.hazards.push({ kind: 'spear', skin: region().skin, x, y: -70, warn: 0.45, r: 8, vy: rnd(520, 600) });
 }

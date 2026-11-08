@@ -1,3 +1,4 @@
+import combatProjectiles from './images/combat-projectiles.png';
 import simma from './images/simma.png';
 import pungunAttack from './images/pungun-attack.png';
 import skyMotion from './images/sky-enemies-motion.png';
@@ -36,5 +37,6 @@ export const IMG: Record<string, string> = {
   mobs: mobs,
   bosses: bosses,
   simma: simma,
+  'combat-projectiles': combatProjectiles,
   fx: fx,
 };

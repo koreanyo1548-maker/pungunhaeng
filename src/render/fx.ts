@@ -1,6 +1,6 @@
 import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
-import { projectileArt } from '../core/assets';
+import { projectileArt, combatProjectileArt } from '../core/assets';
 import { $, H, W, ctx, reduced } from '../core/dom';
 import { clamp, fxRnd } from '../core/math';
 import { fxRandom } from '../core/rng';
@@ -277,9 +277,19 @@ export function drawSkillFX() {
     ctx.lineTo(s.x, H);
     ctx.stroke();
     ctx.restore();
-    for (let i = 0; i < 4; i++) {
-      const y = ((1 - t) * H * 1.6 + i * 205) % H;
-      drawVfxSprite(projectileArt[1], s.x, y, 64, 110, Math.PI, t);
+    if (s.art !== 'cheonma') {
+      for (let i = 0; i < 4; i++) {
+        const y = ((1 - t) * H * 1.6 + i * 205) % H;
+        drawVfxSprite(s.art === 'rain' ? combatProjectileArt[6] : projectileArt[1], s.x, y, 48, 110, Math.PI, t);
+      }
+    } else {
+      // The damage is instantaneous along this entire column: show its reach immediately.
+      ctx.save();
+      ctx.globalAlpha = t * 0.5;
+      ctx.fillStyle = '#fff1bd';
+      ctx.fillRect(s.x - 3, 0, 6, H);
+      ctx.restore();
+      drawVfxSprite(combatProjectileArt[7], s.x, H * 0.36, s.w * 3.2, 300, Math.PI, t);
     }
   }
   if (hasSkill('hoeseon'))

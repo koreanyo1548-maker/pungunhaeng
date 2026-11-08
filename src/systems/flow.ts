@@ -55,6 +55,7 @@ export function start() {
   G.wrecks = [];
   G.impacts = [];
   G.contactFX = [];
+  G.mancheonCue = null;
   G.paintedFX = [];
   G.bossTrails = [];
   G.bossIntro = null;

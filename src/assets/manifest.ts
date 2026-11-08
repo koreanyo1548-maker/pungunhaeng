@@ -1,3 +1,4 @@
+import simma from './images/simma.png';
 import pungunAttack from './images/pungun-attack.png';
 import skyMotion from './images/sky-enemies-motion.png';
 import skyEnemies from './images/sky-enemies.png';
@@ -34,5 +35,6 @@ export const IMG: Record<string, string> = {
   world: world,
   mobs: mobs,
   bosses: bosses,
+  simma: simma,
   fx: fx,
 };

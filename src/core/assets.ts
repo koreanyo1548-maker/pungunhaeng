@@ -26,16 +26,6 @@ export function makeWhite(im) {
   cc.fillRect(0, 0, 256, 256);
   return c;
 }
-export function shadowHero(im) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const cc = c.getContext('2d');
-  cc.drawImage(im, 0, 0);
-  cc.globalCompositeOperation = 'source-atop';
-  cc.fillStyle = 'rgba(46,16,76,.64)';
-  cc.fillRect(0, 0, 256, 256);
-  return c;
-}
 export function coinImage() {
   return (G.coinPic ||= propArt[3]?.toDataURL() || '');
 }
@@ -171,7 +161,7 @@ export async function loadNewArt() {
 }
 export async function load() {
   try {
-    const [art, world, mobs, bosses, fx, skyEnemies, attack, skyMotion] = await Promise.all([
+    const [art, world, mobs, bosses, fx, skyEnemies, attack, skyMotion, simma] = await Promise.all([
       loadImage(IMG['title-art']),
       loadImage(IMG['world']),
       loadImage(IMG['mobs']),
@@ -180,6 +170,7 @@ export async function load() {
       loadImage(IMG['sky-enemies']),
       loadImage(IMG['pungun-attack']),
       loadImage(IMG['sky-enemies-motion']),
+      loadImage(IMG['simma']),
     ]);
     G.skyEnemies = [0, 1, 2].map(i => cropArt(skyEnemies, 3, 1, i, 0));
     G.skyEnemyFrames = [0, 1, 2].map(row => [0, 1, 2, 3].map(col => atlasCell(skyMotion, 4, 3, col, row)));
@@ -220,7 +211,8 @@ export async function load() {
       G.enemyFrames[type] = [atlasCell(mobs, 4, 2, rank, 0), atlasCell(mobs, 4, 2, rank, 1)];
     }
     for (let i = 0; i < 3; i++) G.enemyFrames[[3, 6, 7][i]] = [0, 1, 2].map(pose => atlasCell(bosses, 3, 3, pose, i));
-    G.enemyFrames[8] = [0, 2, 3].map(i => shadowHero(G.heroFrames[i]));
+    // Dedicated Simma poses: ready, telegraph, attack. Shared by intro, trails and defeat art.
+    G.enemyFrames[8] = [0, 1, 2].map(pose => atlasCell(simma, 3, 1, pose, 0));
     G.sprite = G.enemyFrames.map(frames => frames?.[0]);
     G.enemyWhites = G.enemyFrames.map(frames => frames.map(makeWhite));
     G.fxFrames = [0, 1].map(row => [0, 1, 2, 3].map(col => atlasCell(fx, 4, 2, col, row)));

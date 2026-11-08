@@ -60,7 +60,9 @@ export async function openGame(file = DEFAULT_BUILD, { seed = 1, frameMs = 1000 
         const c = [...document.querySelectorAll('#choice button.card')];
         const el = c.at(i);
         if (!el) throw new Error('no card ' + i + ' of ' + c.length);
+        const confirm = document.getElementById('formationConfirm');
         el.click();
+        confirm?.click();
       }, i),
     /** click the enabled card with this title; returns false if it is missing or disabled */
     pickTitled: title =>
@@ -77,7 +79,9 @@ export async function openGame(file = DEFAULT_BUILD, { seed = 1, frameMs = 1000 
       page.evaluate(i => {
         const el = document.querySelectorAll('#choice .act')[i];
         if (!el) throw new Error('no act ' + i);
+        const confirm = document.getElementById('formationConfirm');
         el.click();
+        confirm?.click();
       }, i),
     key: k => page.keyboard.press(k),
   };

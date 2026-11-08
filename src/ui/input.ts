@@ -7,14 +7,29 @@ import { blast } from '../systems/combat';
 import { home, pause, resume, start } from '../systems/flow';
 import { swapHero } from '../systems/formation';
 
-$('swap').addEventListener('click', swapHero);
+// Touch actions respond on contact, independently of the browser's synthesized click.
+// Ignore that later touch click so one tap cannot spend two charges.
+function bindAction(id: string, action: () => void) {
+  const button = $(id) as HTMLButtonElement;
+  button.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' || button.disabled) return;
+    e.preventDefault();
+    action();
+  });
+  button.addEventListener('click', e => {
+    if (['touch', 'pen'].includes((e as PointerEvent).pointerType)) return;
+    action();
+  });
+}
+bindAction('swap', swapHero);
+bindAction('blast', blast);
 $('start').addEventListener('click', start);
 $('retry').onclick = start;
 $('restartPause').onclick = start;
 $('home').onclick = home;
 $('pause').onclick = pause;
 $('resume').onclick = resume;
-$('blast').onclick = blast;
+
 $('soundIntro').onclick = soundToggle;
 $('soundPause').onclick = soundToggle;
 canvas.addEventListener('pointerdown', e => {

@@ -45,14 +45,17 @@ export function blast() {
   for (const e of G.enemies) hitEnemy(e, e.boss ? 170 * (1 + 0.12 * difficulty()) : e.hp + 1);
   G.state.blasting = false;
   const killed = G.state.kills - before;
-  if (killed >= 6) label(killed + '명 일소', 240, 300, BR.gi.color, 22);
+  if (killed > 0) {
+    label(killed + '명 격파 · ' + G.state.combo + '연속', 240, 280, BR.gi.color, 20);
+    G.labels[G.labels.length - 1].delay = 0.75;
+  }
   emit('blast', { killed });
-  paintFX(3, G.player.x, G.player.y - 25, 330, 0.65);
-  paintFX(3, 240, 330, 380, 0.6, 0, 0.12, 0.45);
+  paintFX(3, G.player.x, G.player.y - 25, 270, 0.45);
+  paintFX(3, 240, 330, 300, 0.4, 0, 0.12, 0.25);
   ring(G.player.x, G.player.y, '#abfff0', 20, 950, 0.65);
   ring(G.player.x, G.player.y, '#fff5c4', 10, 750, 0.5);
   impact(G.player.x, G.player.y, '#d5ffed', 130);
-  burst(G.player.x, G.player.y, '#beffeb', 40, 420);
+  burst(G.player.x, G.player.y, '#beffeb', 18, 320);
   G.player.inv = Math.max(G.player.inv, 1.5);
   G.shake = 10;
   G.flash = 0.2;

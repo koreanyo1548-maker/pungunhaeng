@@ -129,3 +129,59 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+.title-screen {
+  isolation: isolate;
+  background:
+    linear-gradient(#061b22b8, #061b2230 45%, #061b22ed 90%),
+    url('../assets/images/title-journey.png') center / cover;
+}
+.title-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 30% 55%, #d5fff126, transparent 45%),
+    radial-gradient(ellipse at 80% 70%, #d5fff11c, transparent 35%);
+  animation: journey-mist 12s ease-in-out infinite alternate;
+}
+.hero-art::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 80px;
+  left: 18%;
+  top: 20%;
+  background: linear-gradient(transparent, #cbfff2, transparent);
+  transform: rotate(20deg);
+  box-shadow: 80px 60px 12px #c6fff533;
+  animation: journey-blade 5s ease-in infinite;
+}
+@keyframes journey-mist {
+  to {
+    transform: translateY(-30px);
+    opacity: 0.45;
+  }
+}
+@keyframes journey-blade {
+  0%,
+  60% {
+    opacity: 0;
+    translate: 0 80px;
+  }
+  70% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    translate: 30px -180px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-screen::before,
+  .hero-art::after {
+    animation: none;
+  }
+}

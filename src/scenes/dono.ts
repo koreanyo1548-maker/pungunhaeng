@@ -27,6 +27,7 @@ export function openDono() {
   openChoice({
     eyebrow: '頓悟 · ' + BR[q.br].name + '(' + BR[q.br].hanja + ')의 깨달음',
     title: '돈오',
+    reward: true,
     sub: sasa
       ? n.name + '이(가) 그대를 제자로 받아들였다. <b>사사(師事)의 절기</b>가 열렸다.'
       : '화두를 이룬 순간, 두 갈래의 깨달음이 스친다. 하나만 붙잡을 수 있다.',
@@ -41,6 +42,7 @@ export function openDono() {
           : BR[d.br].name + '(' + BR[d.br].hanja + ') · ' + TRIG_NAME[d.trig],
         title: d.name,
         desc: d.desc,
+        footer: d.npc ? '사사 · 인연의 고유 절기' : '새 깨달음 · ' + TRIG_NAME[d.trig],
         onPick: () => {
           learn(id);
           done('dono');

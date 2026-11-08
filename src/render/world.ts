@@ -11,6 +11,7 @@ export function drawWorld(tier, alpha = 1) {
     y = offset % h;
   ctx.save();
   ctx.globalAlpha = alpha;
+  ctx.filter = 'saturate(0.55) contrast(0.75) brightness(0.72)';
   // Alternating mirrored tiles meet at the same edge, avoiding a hard scrolling seam.
   for (let i = -1; i <= 1; i++) {
     ctx.save();

@@ -25,7 +25,8 @@ export function openTuhak() {
       color: BR[d.br].color,
       tag: '조합 · 지닌 깨달음에 섞는다',
       title: d.name + ' + ' + art.name,
-      desc: d.desc + '.<br><b>더해짐:</b> ' + art.combo,
+      desc: art.combo,
+      footer: '지닌 무공 「' + d.name + '」에 조합',
       onPick: () => {
         s.mod = r.type;
         label('조합 · ' + d.name + ' + ' + art.name, 240, 400, BR.art.color, 20);
@@ -63,6 +64,7 @@ export function openTuhak() {
   openChoice({
     eyebrow: '偸學 · ' + art.from + '의 무공',
     title: '투학',
+    reward: true,
     sub:
       josa(art.from, '을', '를') +
       ' 쓰러뜨리며 그 무공 「' +

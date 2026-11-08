@@ -171,13 +171,15 @@ export async function loadNewArt() {
 }
 export async function load() {
   try {
-    const [art, world, mobs, bosses, fx] = await Promise.all([
+    const [art, world, mobs, bosses, fx, skyEnemies] = await Promise.all([
       loadImage(IMG['title-art']),
       loadImage(IMG['world']),
       loadImage(IMG['mobs']),
       loadImage(IMG['bosses']),
       loadImage(IMG['fx']),
+      loadImage(IMG['sky-enemies']),
     ]);
+    G.skyEnemies = [0, 1, 2].map(i => cropArt(skyEnemies, 3, 1, i, 0));
     const boxes = [
       [0, 105, 313, 460],
       [315, 105, 310, 460],

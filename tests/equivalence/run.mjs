@@ -39,7 +39,11 @@ async function run(file, seed, steps, course, frameMs) {
       if (el) el.click();
     });
   for (const i of [course, 0, 0])
-    await page.evaluate(i => document.querySelectorAll('#choice button.card')[i].click(), i);
+    await page.evaluate(i => {
+      const confirm = document.getElementById('formationConfirm');
+      document.querySelectorAll('#choice button.card')[i].click();
+      confirm?.click();
+    }, i);
   await pick();
   await page.evaluate(() => window.__g.god());
   const snaps = [];

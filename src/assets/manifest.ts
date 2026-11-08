@@ -1,3 +1,4 @@
+import skyEnemies from './images/sky-enemies.png';
 // Original PNG atlases, imported so Vite can hash them (dist/) or inline them (dist-single/).
 import portraits from './images/portraits.png';
 import props from './images/props.png';
@@ -15,6 +16,7 @@ import bosses from './images/bosses.png';
 import fx from './images/fx.png';
 
 export const IMG: Record<string, string> = {
+  'sky-enemies': skyEnemies,
   portraits: portraits,
   props: props,
   projectile: projectile,

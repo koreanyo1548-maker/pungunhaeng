@@ -96,6 +96,7 @@ export function draw() {
   ctx.globalAlpha = 1;
   for (const h of G.hazards) if (h.warn <= 0) drawMartialHazard(h);
   for (const l of G.labels) {
+    if (l.delay > 0) continue;
     ctx.globalAlpha = Math.min(1, l.life * 3);
     ctx.fillStyle = l.color;
     ctx.textAlign = 'center';

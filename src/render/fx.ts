@@ -1,3 +1,4 @@
+import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
 import { projectileArt } from '../core/assets';
 import { $, H, W, ctx, reduced } from '../core/dom';
@@ -35,6 +36,7 @@ export function impact(x, y, color, size = 40) {
 }
 export function effects(dt) {
   updatePaintedFX(dt);
+  updateContactFX(dt);
   for (const a of G.afterimages) a.life -= dt;
   G.afterimages = G.afterimages.filter(a => a.life > 0);
   for (const f of G.footprints) {
@@ -88,9 +90,13 @@ export function drawExtraFX() {
     const t = w.life / w.total;
     ctx.save();
     ctx.globalAlpha = t * 0.65;
-    drawActor(w.type, w.x, w.y, w.size * (0.65 + t * 0.35), w.pose || 0, w.angle, 0);
+    if (w.image) {
+      const scale = 0.92 + t * 0.08;
+      drawVfxSprite(w.image, w.x, w.y, w.artSize * scale, w.artSize * scale, w.angle);
+    } else drawActor(w.type, w.x, w.y, w.size * (0.65 + t * 0.35), w.pose || 0, w.angle, 0);
     ctx.restore();
   }
+  drawContactFX();
   for (const f of G.impacts) {
     const p = 1 - f.life / f.total,
       r = f.size * (0.3 + p * 0.9);

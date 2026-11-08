@@ -54,6 +54,7 @@ export function start() {
   G.rings = [];
   G.wrecks = [];
   G.impacts = [];
+  G.contactFX = [];
   G.paintedFX = [];
   G.bossTrails = [];
   G.bossIntro = null;

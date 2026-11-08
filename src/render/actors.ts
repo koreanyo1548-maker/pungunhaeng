@@ -1,6 +1,7 @@
+import { enemyArt } from './enemy-art';
 import { G } from '../core/context';
 import { projectileArt, propArt, rockHitArt } from '../core/assets';
-import { ctx } from '../core/dom';
+import { ctx, reduced } from '../core/dom';
 import { borrowedSword, heroPose } from '../entities/player';
 import { drawBossSeal } from './fx';
 import { blade, drawVfxSprite } from './projectiles';
@@ -54,7 +55,7 @@ export function drawEnemy(e) {
   if (flying) {
     ctx.save();
     ctx.strokeStyle = '#a9d5eb';
-    ctx.globalAlpha = 0.55;
+    ctx.globalAlpha = 0.3;
     ctx.lineWidth = 2;
     for (const side of [-1, 1]) {
       ctx.beginPath();
@@ -63,12 +64,18 @@ export function drawEnemy(e) {
       ctx.stroke();
     }
     ctx.restore();
-    const im = G.skyEnemies?.[Math.min(2, e.rank)];
+    const art = enemyArt(e),
+      im = art.image;
     if (im) {
       ctx.save();
-      ctx.shadowColor = e.hit > 0 ? '#ffffff' : '#091c29';
-      ctx.shadowBlur = e.hit > 0 ? 8 : 3;
-      drawVfxSprite(im, e.x, e.y + Math.sin(G.time * 3 + e.phase) * 3, e.size, e.size);
+      ctx.translate(e.x, e.y + (reduced ? 0 : Math.sin(G.time * 3 + e.phase) * 2) - recoil * 4);
+      ctx.rotate(reduced ? 0 : Math.sin(G.time * 2 + e.phase) * 0.018);
+      ctx.scale(sx, sy);
+      ctx.shadowColor = '#091c29';
+      ctx.shadowBlur = 3;
+      drawVfxSprite(im, 0, 0, e.size, e.size);
+      if (e.hit > 0 && art.white)
+        drawVfxSprite(art.white, 0, 0, e.size, e.size, 0, Math.min(0.6, (e.hit / 0.055) * 0.6));
       ctx.restore();
       return;
     }
@@ -180,11 +187,11 @@ export function drawMartialPlayer() {
     ctx.restore();
   }
   drawHeroSprite(heroPose(), G.player.x, G.player.y + bob - hop, G.player.tilt * (tier === 2 ? 0.65 : 1.5));
-  if (G.player.swing > 0) {
+  if (G.player.swing > 0 && (activeHeroId() !== 'pungun' || G.player.swing > 0.42)) {
     const t = 1 - G.player.swing;
     ctx.save();
     ctx.translate(G.player.x, G.player.y - hop - 20);
-    ctx.rotate(-0.5 + t * 0.9);
+    ctx.rotate(activeHeroId() === 'pungun' ? -0.8 + t * 2.4 : -0.5 + t * 0.9);
     ctx.globalAlpha *= G.player.swing * 0.8;
     ctx.strokeStyle = '#f8ffe2';
     ctx.shadowColor = '#7cebd1';

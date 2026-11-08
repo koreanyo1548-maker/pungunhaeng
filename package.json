@@ -14,7 +14,8 @@
     "test:e2e": "node tests/e2e/run-all.mjs",
     "test:sim": "node tests/sim/balance.mjs",
     "format": "prettier --write src tests index.html",
-    "format:check": "prettier --check src tests index.html"
+    "format:check": "prettier --check src tests index.html",
+    "test:ui": "node tests/e2e/mobile-ui.mjs"
   },
   "devDependencies": {
     "playwright": "1.63.0",

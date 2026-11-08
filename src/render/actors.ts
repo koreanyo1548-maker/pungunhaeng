@@ -15,6 +15,8 @@ export function drawActor(type, x, y, size, pose = 0, angle = 0, hit = 0, sx = 1
   ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.scale(sx, sy);
+  ctx.shadowColor = '#081c27';
+  ctx.shadowBlur = 3;
   ctx.drawImage(im, -size / 2, -size / 2, size, size);
   if (hit > 0) {
     ctx.globalAlpha *= Math.min(0.65, (hit / 0.055) ** 2 * 0.65);
@@ -27,7 +29,8 @@ export function drawEnemy(e) {
     drawRock(e);
     return;
   }
-  const pose = enemyFrameIndex(e),
+  const flying = G.state?.course === 'sky' && !e.boss;
+  const pose = flying ? 0 : enemyFrameIndex(e),
     recoil = (e.recoil || 0) / 0.12,
     pulse = Math.sin(G.time * 4 + (e.phase || 0)),
     cast = (e.cast || 0) / 0.32;
@@ -48,6 +51,28 @@ export function drawEnemy(e) {
     sx *= 1 + cast * 0.035;
     sy *= 1 - cast * 0.025;
   }
+  if (flying) {
+    ctx.save();
+    ctx.strokeStyle = '#a9d5eb';
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 2;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(e.x + side * 18, e.y + 18);
+      ctx.quadraticCurveTo(e.x + side * 33, e.y - 5, e.x + side * 22, e.y - 55);
+      ctx.stroke();
+    }
+    ctx.restore();
+    const im = G.skyEnemies?.[Math.min(2, e.rank)];
+    if (im) {
+      ctx.save();
+      ctx.shadowColor = e.hit > 0 ? '#ffffff' : '#091c29';
+      ctx.shadowBlur = e.hit > 0 ? 8 : 3;
+      drawVfxSprite(im, e.x, e.y + Math.sin(G.time * 3 + e.phase) * 3, e.size, e.size);
+      ctx.restore();
+      return;
+    }
+  }
   drawActor(e.type, e.x, e.y + bob - recoil * 5, e.size, pose, angle, e.hit, sx, sy);
 }
 export function drawHeroSprite(pose, x, y, angle = 0, alpha = 1, ghost = false) {
@@ -60,6 +85,10 @@ export function drawHeroSprite(pose, x, y, angle = 0, alpha = 1, ghost = false) 
   if (ghost) {
     ctx.globalCompositeOperation = 'screen';
     ctx.filter = 'sepia(1) hue-rotate(100deg)';
+  }
+  if (!ghost) {
+    ctx.shadowColor = '#c6fff4';
+    ctx.shadowBlur = 3;
   }
   // Fixed atlas cells keep feet and body scale stable; cloth motion is painted into each frame.
   ctx.drawImage(im, -57, -57, 114, 114);

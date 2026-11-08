@@ -70,6 +70,10 @@ export function effects(dt) {
   for (const r of G.rings) r.life -= dt;
   G.rings = G.rings.filter(r => r.life > 0);
   for (const l of G.labels) {
+    if (l.delay > 0) {
+      l.delay -= dt;
+      continue;
+    }
     l.life -= dt;
     l.y -= dt * 32;
   }

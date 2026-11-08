@@ -83,7 +83,7 @@ export function resolveRow(e, missed = false) {
   if (row.remaining === 0) {
     if (!row.missed) {
       G.state.score += 500;
-      label('완전 격파 +500', W / 2, 270, '#a3ffe0', 22);
+      if (!G.state.blasting) label('완전 격파 +500', W / 2, 270, '#a3ffe0', 18);
       gainCharge(8);
       ring(240, 270, '#a3ffe0', 10, 160, 0.42);
       tone(880, 0.12, 'sine', 0.12, 1320);
@@ -149,10 +149,10 @@ export function kill(e, byHyper = false) {
     for (let i = 0; i < 3; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
     if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))
       addPickup('power', e.x, e.y);
-    if (near > 1) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
+    if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);
     if (G.state.combo % 10 === 0) {
-      label(G.state.combo + ' 연속!', 240, 225, '#fff3b8', 28);
+      if (!G.state.blasting) label(G.state.combo + ' 연속!', 240, 205, '#fff3b8', 22);
       tone(720, 0.15, 'triangle', 0.13, 1100);
     }
     if (!byHyper && !G.state.blasting) {

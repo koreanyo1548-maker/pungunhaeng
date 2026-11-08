@@ -1,0 +1,260 @@
+/* The modal is a book of martial arts, with a shared visual grammar. */
+#choice {
+  padding: 20px;
+  background: #061c26d4;
+}
+#choice .panel {
+  border: 1px solid #caa56880;
+  border-radius: 5px;
+  background: radial-gradient(ellipse at top, #24494a, #102e30 70%);
+  box-shadow:
+    inset 0 0 0 4px #071c2655,
+    0 20px 60px #0008;
+  padding: 20px 14px;
+}
+#choice .eyebrow {
+  color: #d4ba87;
+  letter-spacing: 3px;
+}
+#choice h2 {
+  font-family: 'Noto Serif KR', 'Batang', serif;
+  font-size: 30px;
+  margin: 6px 0 8px;
+  color: #f5e6bc;
+}
+.choice-sub {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #bdd0c6;
+}
+#choice .card {
+  border-radius: 4px;
+}
+/* Compact roster and a single shared detail area: tapping previews, CTA commits. */
+.formation-screen .hero-grid {
+  gap: 7px;
+}
+.formation-screen .hero-grid .card {
+  padding: 4px 3px 7px;
+  position: relative;
+  border: 1px solid #71908770;
+  background: #071d24;
+}
+.formation-screen .hero-grid .card[aria-pressed='true'] {
+  border: 2px solid #f1d18b;
+  background: linear-gradient(#3e5a4c, #142f31);
+  box-shadow: 0 0 12px #f1d18b22;
+}
+.formation-screen .hero-grid .card[aria-pressed='true']::after {
+  content: '選';
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  background: #9a4539;
+  color: #fff1d1;
+  font: 12px serif;
+  padding: 2px 3px;
+}
+.formation-screen .hero-grid .hero-choice-art {
+  width: 100%;
+  height: 74px;
+  margin: 0;
+  object-fit: contain;
+}
+.formation-screen .hero-grid .card .tag {
+  display: none;
+}
+.formation-screen .hero-grid .card h3 {
+  font-size: 13px;
+  margin: 3px 0 0;
+}
+.formation-preview {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  text-align: left;
+  min-height: 165px;
+  align-items: center;
+  position: relative;
+  margin: 12px 0;
+  border-top: 1px solid #caa56855;
+  border-bottom: 1px solid #caa56855;
+  background: radial-gradient(ellipse at 20% 65%, #71908744, transparent 60%);
+}
+.formation-body {
+  width: 100%;
+  height: 165px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 5px #0005);
+}
+.formation-preview h3 {
+  margin: 4px 0 8px;
+  font:
+    bold 23px 'Batang',
+    serif;
+  color: #f5e6bc;
+}
+.preview-caption {
+  font-size: 10px;
+  color: #c8ae79;
+}
+.formation-preview p {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+  padding-right: 5px;
+  color: #c5d7cd;
+}
+.formation-preview b {
+  color: #f5e6bc;
+}
+#formationConfirm {
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+/* Reward cards keep art, name, effect and synergy in the same positions. */
+.reward-screen .cards {
+  gap: 9px;
+}
+.reward-screen .card {
+  background: linear-gradient(140deg, #f1e6c9, #d9c79e);
+  border: 2px solid #ac8b53;
+  box-shadow:
+    inset 0 0 0 3px #f7efd344,
+    0 5px 0 #061b20;
+  position: relative;
+  min-height: 240px !important;
+  padding: 12px 9px !important;
+}
+.reward-screen .card::before {
+  content: '武';
+  position: absolute;
+  right: 6px;
+  top: 7px;
+  background: #984537;
+  color: #f3dfb4;
+  font: 12px serif;
+  padding: 2px;
+  opacity: 0.85;
+}
+.reward-screen .card .skill-choice-art {
+  width: 88px;
+  height: 88px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 2px #6b472a44);
+  order: 1;
+  margin: 12px auto 8px;
+}
+.reward-screen .card h3 {
+  order: 2;
+  color: #273b36;
+  font:
+    bold 17px 'Batang',
+    serif;
+  margin: 5px 0 8px;
+}
+.reward-screen .card .tag {
+  order: 0;
+  color: #705a35;
+  font-size: 10px;
+  align-self: stretch;
+  padding-right: 12px;
+  min-height: 26px;
+}
+.reward-screen .card p {
+  order: 3;
+  color: #354840;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.card-footer {
+  order: 4;
+  margin-top: auto;
+  padding-top: 13px;
+  font-size: 10px;
+  border-top: 1px solid #92704444;
+  color: #765638;
+  width: 100%;
+}
+.reward-screen .card:hover {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+}
+@media (max-height: 680px) {
+  #choice {
+    padding: 12px;
+  }
+  #choice .panel {
+    padding: 12px;
+  }
+  .formation-screen .choice-sub {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+  .formation-screen .hero-grid .hero-choice-art {
+    height: 54px;
+  }
+  .formation-preview {
+    min-height: 140px;
+    margin: 8px 0;
+  }
+  .formation-body {
+    height: 140px;
+  }
+  .formation-preview p {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    font-size: 11px;
+  }
+  .reward-screen .card {
+    min-height: 210px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .active-btn.burst,
+  .quest-strip.hot {
+    animation: none;
+  }
+}
+
+/* Fit the game panel itself, including letterboxed phones, rather than the window height. */
+.game {
+  container-type: size;
+}
+#formationConfirm {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.game:has(#choice:not(.hidden)) .toast {
+  display: none;
+}
+@container (max-height: 700px) {
+  #choice {
+    padding: 12px;
+  }
+  #choice .panel {
+    padding: 12px;
+  }
+  .formation-screen .choice-sub {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+  .formation-screen .hero-grid .hero-choice-art {
+    height: 54px;
+  }
+  .formation-preview {
+    min-height: 132px;
+    margin: 8px 0;
+  }
+  .formation-body {
+    height: 132px;
+  }
+  .formation-preview p {
+    font-size: 11px;
+  }
+}

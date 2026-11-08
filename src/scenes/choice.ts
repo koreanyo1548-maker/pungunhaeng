@@ -5,6 +5,8 @@ import { syncHUD } from '../ui/hud';
 
 export function openChoice(o) {
   G.mode = 'choice';
+  G.toastTimer = 0;
+  $('toast').classList.remove('show');
   G.keys.clear();
   G.pointer = null;
   $('choiceEyebrow').textContent = o.eyebrow;
@@ -12,6 +14,31 @@ export function openChoice(o) {
   $('choiceSub').innerHTML = o.sub || '';
   const box = $('choiceCards');
   box.innerHTML = '';
+  $('choice').querySelector('.formation-preview')?.remove();
+  $('choice').querySelector('#formationConfirm')?.remove();
+  $('choice').classList.toggle('formation-screen', !!o.confirm);
+  $('choice').classList.toggle('reward-screen', !!o.reward);
+  box.classList.toggle('hero-grid', !!o.confirm);
+  let selected = o.cards[0];
+  const preview = document.createElement('div');
+  preview.className = 'formation-preview';
+  preview.setAttribute('aria-live', 'polite');
+  const confirm = document.createElement('button');
+  confirm.id = 'formationConfirm';
+  confirm.className = 'primary';
+  confirm.textContent = o.confirm || '';
+  function select(c, el) {
+    selected = c;
+    for (const button of box.querySelectorAll('button')) {
+      button.setAttribute('aria-pressed', String(button === el));
+    }
+    preview.innerHTML = `${artImage(c.fullArt, 'formation-body')}<div><span class="preview-caption">${c.tag}</span><h3>${c.title}</h3><p>${c.detail}</p></div>`;
+  }
+  confirm.onclick = () => {
+    if (G.mode !== 'choice') return;
+    $('choice').classList.add('hidden');
+    selected.onPick();
+  };
   const n = o.cards.length,
     cols = o.cols || (n === 4 ? 2 : Math.min(n, 3));
   box.style.setProperty('--cols', cols);
@@ -20,7 +47,7 @@ export function openChoice(o) {
     const el = document.createElement(c.acts ? 'div' : 'button');
     el.className = 'card';
     el.style.setProperty('--c', c.color);
-    el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc ? `<p>${c.desc}</p>` : ''}`;
+    el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc && !o.confirm ? `<p>${c.desc}</p>` : ''}${c.footer ? `<span class="card-footer">${c.footer}</span>` : ''}`;
     if (c.acts) {
       const row = document.createElement('div');
       row.className = 'acts';
@@ -40,6 +67,10 @@ export function openChoice(o) {
     } else
       el.onclick = () => {
         if (G.mode !== 'choice') return;
+        if (o.confirm) {
+          select(c, el);
+          return;
+        }
         $('choice').classList.add('hidden');
         c.onPick();
       };
@@ -48,6 +79,11 @@ export function openChoice(o) {
       el.classList.add('off');
     }
     box.appendChild(el);
+    if (o.confirm && c === selected) select(c, el);
+  }
+  if (o.confirm) {
+    box.after(preview);
+    preview.after(confirm);
   }
   $('choice').classList.remove('hidden');
   $('choice').querySelector('.panel').scrollTop = 0;

@@ -4,6 +4,7 @@ import './styles/hud.css';
 import './styles/actives.css';
 import './styles/panels.css';
 import './styles/choice.css';
+import './styles/mobile-game.css';
 import './ui/input';
 import './debug/debug';
 import { load } from './core/assets';

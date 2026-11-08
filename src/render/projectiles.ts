@@ -57,113 +57,50 @@ export function drawMartialShots() {
 }
 export function drawMartialHazard(h) {
   if (h.dead) return;
-  if (h.kind === 'bullet' || h.kind === 'meteor' || (h.kind === 'spear' && h.skin === 'wind')) {
-    const idx = h.kind === 'meteor' ? 6 : h.skin === 'wind' ? 7 : h.foe ? 6 : 5;
-    const size = h.kind === 'meteor' ? 65 : h.kind === 'spear' ? 55 : h.r * 3.8;
-    drawVfxSprite(projectileArt[idx], h.x, h.y, size, size, Math.atan2(h.vy || 1, h.vx || 0) + Math.PI / 2);
-    return;
-  }
-
-  if (h.kind === 'spear' && h.skin === 'wind') {
-    blade(h.x, h.y, Math.PI, 52, '#e2f6ff');
-    if (h.grazed) {
-      ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = BR.yu.color;
-      ctx.beginPath();
-      ctx.arc(h.x, h.y, 16, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-    return;
-  }
-  if (h.kind === 'spear' && h.skin !== 'wind') {
-    drawVfxSprite(propArt[2], h.x, h.y - 19, 27, 86);
-    if (h.grazed) {
-      ctx.save();
-      ctx.strokeStyle = BR.yu.color;
-      ctx.globalAlpha = 0.6;
-      ctx.beginPath();
-      ctx.arc(h.x, h.y, 16, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-    return;
-  }
-  if (h.kind === 'spear') {
-    ctx.save();
-    ctx.translate(h.x, h.y);
-    ctx.strokeStyle = '#7fb46a';
-    ctx.lineWidth = 7;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(0, -62);
-    ctx.lineTo(0, 10);
-    ctx.stroke();
-    ctx.strokeStyle = '#cfe9a8';
-    ctx.lineWidth = 2;
-    for (const y of [-45, -22]) (ctx.beginPath(), ctx.moveTo(-4, y), ctx.lineTo(4, y), ctx.stroke());
-    ctx.fillStyle = '#e9f5cf';
-    ctx.beginPath();
-    ctx.moveTo(-4, 8);
-    ctx.lineTo(0, 24);
-    ctx.lineTo(4, 8);
-    ctx.fill();
-    if (h.grazed) {
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = BR.yu.color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, 16, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-    return;
-  }
-  if (h.color && h.kind === 'bullet' && h.foe) {
-    ctx.save();
-    ctx.fillStyle = h.color;
-    ctx.shadowColor = h.color;
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    return;
-  }
-  if (h.kind === 'meteor') {
-    ctx.save();
-    ctx.strokeStyle = '#ffd69a88';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(h.x, h.y - 85);
-    ctx.lineTo(h.x, h.y - 20);
-    ctx.stroke();
-    blade(h.x, h.y, Math.PI, 65, '#e29570');
-    ctx.restore();
+  ctx.save();
+  ctx.translate(h.x, h.y);
+  ctx.rotate(Math.atan2(h.vy || 1, h.vx || 0) - Math.PI / 2);
+  const r = Math.max(5, h.r);
+  ctx.strokeStyle = '#39151f';
+  ctx.fillStyle = '#ff684e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  if (h.kind === 'spear' || h.kind === 'meteor') {
+    ctx.moveTo(0, r + 5);
+    ctx.lineTo(-r * 0.7, -r);
+    ctx.lineTo(0, -r * 2.8);
+    ctx.lineTo(r * 0.7, -r);
   } else {
-    ctx.save();
-    ctx.translate(h.x, h.y);
-    ctx.rotate(Math.atan2(h.vy, h.vx || 0) - Math.PI / 2);
-    ctx.shadowColor = '#d26745';
-    ctx.shadowBlur = 6;
-    ctx.fillStyle = '#e8b67b';
-    ctx.strokeStyle = '#6d342c';
-    ctx.lineWidth = 1.5;
-    ctx.fillRect(-6, -12, 12, 24);
-    ctx.strokeRect(-6, -12, 12, 24);
-    ctx.beginPath();
-    ctx.moveTo(-3, -7);
-    ctx.lineTo(3, -3);
-    ctx.lineTo(-3, 1);
-    ctx.lineTo(3, 6);
-    ctx.stroke();
-    ctx.restore();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
   }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#fff0c9';
+  ctx.beginPath();
+  ctx.arc(0, 0, Math.max(2, r * 0.35), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
+
 export function drawPickup(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
+  const coin = p.kind === 'coin';
+  ctx.strokeStyle = coin ? '#ffdf80' : '#c9c0ff';
+  ctx.fillStyle = coin ? '#37280be0' : '#201e48dc';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(0, 0, coin ? 10 : 25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  if (!coin) {
+    const light = ctx.createLinearGradient(0, -75, 0, 0);
+    light.addColorStop(0, '#b3a1ff00');
+    light.addColorStop(1, '#b3a1ff55');
+    ctx.fillStyle = light;
+    ctx.fillRect(-12, -75, 24, 65);
+  }
   if (p.kind === 'coin') {
     ctx.scale(Math.max(0.22, Math.abs(Math.cos(G.time * 6 + p.phase))), 1);
     drawVfxSprite(propArt[3], 0, 0, 18, 18);

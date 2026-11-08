@@ -68,7 +68,9 @@ async function run(viewport) {
   await step(2);
   await snap('formation');
   await click('#choice button.card');
+  await click('#formationConfirm');
   await click('#choice button.card');
+  await click('#formationConfirm');
   await step(2);
   await snap('crossroads');
   await click('#choice .act');

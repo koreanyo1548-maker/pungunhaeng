@@ -66,6 +66,7 @@ export function blast() {
 export const D = () => shotPower() * 1.8;
 export interface ShotOptions {
   kind?: string;
+  art?: string;
   color?: string;
   pierce?: boolean;
   w?: number;
@@ -80,6 +81,7 @@ export function fireShot(x, y, vx, dmg, o: ShotOptions = {}) {
     vx,
     damage: dmg,
     r: 5,
+    art: o.art,
     kind: o.kind || 'knife',
     phase: G.time,
     color: o.color,
@@ -89,10 +91,10 @@ export function fireShot(x, y, vx, dmg, o: ShotOptions = {}) {
     homing: o.homing,
   });
 }
-export function fan(n, spread, dmg, color, kind = 'knife') {
+export function fan(n, spread, dmg, color, kind = 'knife', art?: string) {
   for (let i = 0; i < n; i++) {
     const a = (i - (n - 1) / 2) * spread;
-    fireShot(G.player.x, G.player.y - 30, Math.sin(a) * 820, dmg, { kind, color, vy: Math.cos(a) * 820 });
+    fireShot(G.player.x, G.player.y - 30, Math.sin(a) * 820, dmg, { kind, art, color, vy: Math.cos(a) * 820 });
   }
 }
 export function aoe(x, y, r, dmg, color) {
@@ -103,12 +105,12 @@ export function aoe(x, y, r, dmg, color) {
   paintFX(color === BR.yu.color ? 4 : 2, x, y, r * 2, 0.38, 0, 0, 0.72);
   ring(x, y, color, 10, r, 0.35);
 }
-export function column(x, dmg, color, w = 36) {
+export function column(x, dmg, color, w = 36, art = 'generic') {
   for (const e of [...G.enemies]) {
     if (e.dead) continue;
     if (Math.abs(e.x - x) < w + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg);
   }
-  G.strikes.push({ x, w, color, life: 0.32, total: 0.32 });
+  G.strikes.push({ x, w, color, art, life: 0.32, total: 0.32 });
   tone(180, 0.18, 'sawtooth', 0.05, 90);
 }
 export function clearBullets(x, y, r) {

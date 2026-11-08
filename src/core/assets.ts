@@ -77,8 +77,12 @@ export async function loadPortraitProps() {
 }
 export const COMBAT_ART = { projectile: IMG['projectile'], impact: IMG['impact'], utility: IMG['utility'] };
 export const projectileArt = [];
+export const combatProjectileArt = [];
 export async function loadCombatArt() {
-  const [bolts, hits, utility] = await Promise.all(Object.values(COMBAT_ART).map(loadImage));
+  const [bolts, hits, utility, dedicated] = await Promise.all(
+    [...Object.values(COMBAT_ART), IMG['combat-projectiles']].map(loadImage),
+  );
+  for (let i = 0; i < 8; i++) combatProjectileArt.push(atlasCell(dedicated, 4, 2, i % 4, Math.floor(i / 4)));
   for (let i = 0; i < 8; i++) projectileArt.push(cropArt(bolts, 4, 2, i % 4, Math.floor(i / 4)));
   G.fxFrames = [0, 1, 2, 3].map(row => [0, 1, 2, 3].map(col => cropArt(hits, 4, 4, col, row)));
   for (let i = 0; i < 8; i++) {

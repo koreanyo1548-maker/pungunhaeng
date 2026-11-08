@@ -10,6 +10,8 @@ import path from 'path';
 
 const [, , A, B, seedArg = '12345', stepsArg = '2400', courseArg = '0'] = process.argv;
 
+// Optional equipped skills exercise cosmetic changes under identical combat conditions.
+const equippedSkills = (process.env.EQUIP_SKILLS || '').split(',').filter(Boolean);
 const frameMsA = Number(process.env.FRAME_MS || 1000 / 60);
 const frameMsB = Number(process.env.FRAME_MS_B || frameMsA);
 
@@ -29,7 +31,7 @@ async function run(file, seed, steps, course, frameMs) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(init(seed, frameMs));
-  await page.goto('file://' + path.resolve(file) + '#debug');
+  await page.goto('file://' + path.resolve(file) + '#debug', { timeout: 120000 });
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
   await page.evaluate(() => document.getElementById('start').click());
   const pick = () =>
@@ -45,7 +47,10 @@ async function run(file, seed, steps, course, frameMs) {
       confirm?.click();
     }, i);
   await pick();
-  await page.evaluate(() => window.__g.god());
+  await page.evaluate(ids => {
+    window.__g.god();
+    for (const id of ids) window.__g.learn(id);
+  }, equippedSkills);
   const snaps = [];
   let held = null;
   for (let k = 0; k < steps; k++) {
@@ -118,6 +123,7 @@ console.log(
     errors: [ra.errors, rb.errors],
   }),
 );
+if (ra.errors.length || rb.errors.length) process.exit(1);
 if (diverged >= 0) {
   console.log(
     'DIVERGED at snapshot',

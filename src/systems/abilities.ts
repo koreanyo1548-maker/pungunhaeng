@@ -80,7 +80,7 @@ export function updateSkills(dt, oldX) {
       G.state.rainTimer = 0.16;
       const list = G.enemies.filter(targetable);
       const t = list.length ? list[Math.floor(rnd(0, list.length))] : null;
-      column(t ? t.x : rnd(40, W - 40), D() * 4, BR.gi.color, 26);
+      column(t ? t.x : rnd(40, W - 40), D() * 4, BR.gi.color, 26, 'rain');
     }
   }
   // 천문: 관계가 +인 인연은 돕고, −인 인연은 막아선다.

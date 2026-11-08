@@ -1,33 +1,26 @@
 import { G } from '../core/context';
-import { projectileArt, propArt } from '../core/assets';
+import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
-import { BR } from '../data/branches';
+import { region } from '../systems/flow';
 
 export function blade(x, y, angle, length, color) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(0, -length * 0.65);
-  ctx.lineTo(5, -length * 0.28);
-  ctx.lineTo(3, length * 0.35);
-  ctx.lineTo(-3, length * 0.35);
-  ctx.lineTo(-5, -length * 0.28);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = '#f7ffe5';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, -length * 0.56);
-  ctx.lineTo(0, length * 0.2);
-  ctx.stroke();
-  ctx.fillStyle = '#d1a45c';
-  ctx.fillRect(-7, length * 0.25, 14, 3);
-  ctx.fillRect(-2, length * 0.28, 4, 7);
-  ctx.restore();
+  drawVfxSprite(projectileArt[6], x, y, length, length, angle);
 }
 export function drawMartialShots() {
+  const cue = G.mancheonCue;
+  if (cue && G.time - cue.time < 0.18) {
+    const t = (G.time - cue.time) / 0.18;
+    for (const a of [-0.48, 0, 0.48])
+      drawVfxSprite(
+        combatProjectileArt[5],
+        cue.x + Math.sin(a) * 26,
+        cue.y - 16,
+        38,
+        48,
+        a,
+        (1 - t) * (reduced ? 0.45 : 0.8),
+      );
+  }
   for (const s of G.shots) {
     // Positive vx rotates upward-facing art clockwise.
     const rot = Math.atan2(s.vx, s.vy ?? 900),
@@ -42,6 +35,10 @@ export function drawMartialShots() {
             : s.kind === 'orb'
               ? 32
               : 36;
+    const im =
+      s.art === 'mancheon' ? combatProjectileArt[5] : s.art === 'dobeop' ? projectileArt[3] : projectileArt[idx];
+    if (s.art === 'mancheon' && !reduced)
+      drawVfxSprite(im, s.x - s.vx * 0.024, s.y + (s.vy ?? 900) * 0.024, 28, 42, rot, 0.25);
     if (s.kind === 'orb' && !reduced)
       drawVfxSprite(
         projectileArt[idx],
@@ -52,34 +49,27 @@ export function drawMartialShots() {
         rot,
         0.22,
       );
-    drawVfxSprite(projectileArt[idx], s.x, s.y, size, size, rot);
+    drawVfxSprite(im, s.x, s.y, s.art === 'mancheon' ? 36 : size, s.art === 'mancheon' ? 48 : size, rot);
   }
 }
 export function drawMartialHazard(h) {
   if (h.dead) return;
-  ctx.save();
-  ctx.translate(h.x, h.y);
-  ctx.rotate(Math.atan2(h.vy || 1, h.vx || 0) - Math.PI / 2);
   const r = Math.max(5, h.r);
-  ctx.strokeStyle = '#39151f';
-  ctx.fillStyle = '#ff684e';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  if (h.kind === 'spear' || h.kind === 'meteor') {
-    ctx.moveTo(0, r + 5);
-    ctx.lineTo(-r * 0.7, -r);
-    ctx.lineTo(0, -r * 2.8);
-    ctx.lineTo(r * 0.7, -r);
+  const angle = Math.atan2(h.vy || 1, h.vx || 0) - Math.PI / 2;
+  // Art follows velocity; collision remains centered at h.x/h.y with the original h.r.
+  ctx.save();
+  ctx.shadowColor = '#ff503b';
+  ctx.shadowBlur = 3;
+  if (h.kind === 'spear') {
+    if (h.skin === 'wind') drawVfxSprite(projectileArt[7], h.x, h.y, r * 3.5, r * 5, angle + Math.PI);
+    else drawVfxSprite(propArt[2], h.x, h.y, r * 2.2, r * 6, angle);
+  } else if (h.kind === 'meteor') {
+    drawVfxSprite(combatProjectileArt[4], h.x, h.y, r * 2.7, r * 2.7, angle);
   } else {
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    const index = h.foe ? 5 : ({ 3: 0, 6: 1, 7: 2, 8: 3 }[region().type] ?? 2);
+    const im = h.foe ? projectileArt[index] : combatProjectileArt[index];
+    drawVfxSprite(im, h.x, h.y, r * 2.8, r * 2.8, angle + Math.PI);
   }
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#fff0c9';
-  ctx.beginPath();
-  ctx.arc(0, 0, Math.max(2, r * 0.35), 0, Math.PI * 2);
-  ctx.fill();
   ctx.restore();
 }
 

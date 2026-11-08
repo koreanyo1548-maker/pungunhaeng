@@ -180,7 +180,10 @@ export const SKILLS = {
     desc: '보법을 밟을 때마다 비도 3자루를 부채꼴로 던진다',
     trig: 'step',
     cd: 0.26,
-    fx: () => fan(3, 0.32, D() * 1.6, '#bdf7ea'),
+    fx: () => {
+      G.mancheonCue = { x: G.player.x, y: G.player.y - 30, time: G.time };
+      fan(3, 0.32, D() * 1.6, '#bdf7ea', 'knife', 'mancheon');
+    },
   },
   hoechun: {
     br: 'gi',
@@ -211,7 +214,7 @@ export const SKILLS = {
     desc: '1.4초마다 7방향 도기를 뿌린다',
     trig: 'tick',
     cd: 1.4,
-    fx: () => fan(7, 0.2, D() * 1.6, '#ffc179'),
+    fx: () => fan(7, 0.2, D() * 1.6, '#ffc179', 'knife', 'dobeop'),
   },
   art_cheolgap: {
     br: 'art',
@@ -234,7 +237,7 @@ export const SKILLS = {
     cd: 3,
     fx: () => {
       const e = strongestEnemy();
-      if (e) column(e.x, D() * 9, '#f6bc83');
+      if (e) column(e.x, D() * 9, '#f6bc83', 36, 'cheonma');
     },
   },
 };
@@ -244,7 +247,7 @@ export const ARTS = {
     from: '녹림 채주',
     solo: 'art_dobeop',
     combo: '발동할 때마다 5방향 도기를 함께 뿌린다',
-    fx: () => fan(5, 0.24, D() * 1.3, '#ffc179'),
+    fx: () => fan(5, 0.24, D() * 1.3, '#ffc179', 'knife', 'dobeop'),
   },
   6: {
     name: '철갑공',
@@ -264,7 +267,7 @@ export const ARTS = {
     combo: '발동할 때마다 가까운 적에게 천마 검강이 떨어진다',
     fx: () => {
       const e = nearestEnemy(G.player.x, G.player.y);
-      if (e) column(e.x, D() * 6, '#f6bc83', 30);
+      if (e) column(e.x, D() * 6, '#f6bc83', 30, 'cheonma');
     },
   },
 };

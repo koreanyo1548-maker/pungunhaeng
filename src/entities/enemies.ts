@@ -1,3 +1,5 @@
+import { enemyArt } from '../render/enemy-art';
+import { contactFX } from '../render/contact-fx';
 import { setPhase } from '../systems/stage-phases';
 import { random } from '../core/rng';
 import { emit } from '../core/events';
@@ -106,7 +108,10 @@ export function kill(e, byHyper = false) {
   G.state.score += (e.boss ? 5000 + G.state.stage * 1000 : 100 + e.rank * 65) * near * mult;
   gainCharge(e.boss ? 20 : 3);
   const color = e.boss ? region().color : e.color;
+  const art = enemyArt(e);
   G.wrecks.push({
+    image: art.image,
+    artSize: art.size,
     x: e.x,
     y: e.y,
     type: e.type,
@@ -118,10 +123,15 @@ export function kill(e, byHyper = false) {
     boss: !!e.boss,
     pose: enemyFrameIndex(e),
   });
-  paintFX(1, e.x, e.y, e.boss ? 190 : 85 + e.rank * 12, 0.38, fxRnd(-0.6, 0.6));
-  impact(e.x, e.y, color, e.boss ? 180 : 45 + e.rank * 8);
-  burst(e.x, e.y, color, e.boss ? 65 : 16 + e.rank * 3, e.boss ? 330 : 200);
-  ring(e.x, e.y, color, 8, e.boss ? 300 : 65, e.boss ? 1 : 0.35);
+  if (e.boss) {
+    paintFX(1, e.x, e.y, 190, 0.38, fxRnd(-0.6, 0.6));
+    impact(e.x, e.y, color, 180);
+    burst(e.x, e.y, color, 65, 330);
+    ring(e.x, e.y, color, 8, 300, 1);
+  } else {
+    contactFX(e, true);
+    burst(e.x, e.y, e.rock ? '#b4a489' : color, e.rock ? 5 : 3, 110);
+  }
   G.shake = Math.max(G.shake, e.boss ? 14 : 2.4);
   if (!byHyper) {
     if (G.time - G.lastBoom > 0.055 || e.boss) {
@@ -173,7 +183,7 @@ export function hitEnemy(e, damage) {
   e.recoil = 0.12;
   if (G.time - (e.lastImpact ?? -1) > 0.085) {
     e.lastImpact = G.time;
-    paintFX(0, e.x + fxRnd(-e.r * 0.4, e.r * 0.4), e.y + e.r * 0.3, e.boss ? 52 : 36, 0.16, fxRnd(-1, 1), 0, 0.8);
+    if (e.hp > 0) contactFX(e);
   }
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * 0.45) {
     e.enraged = true;

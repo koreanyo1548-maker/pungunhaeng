@@ -1,3 +1,6 @@
+import simma from './images/simma.png';
+import pungunAttack from './images/pungun-attack.png';
+import skyMotion from './images/sky-enemies-motion.png';
 import skyEnemies from './images/sky-enemies.png';
 // Original PNG atlases, imported so Vite can hash them (dist/) or inline them (dist-single/).
 import portraits from './images/portraits.png';
@@ -17,6 +20,8 @@ import fx from './images/fx.png';
 
 export const IMG: Record<string, string> = {
   'sky-enemies': skyEnemies,
+  'pungun-attack': pungunAttack,
+  'sky-enemies-motion': skyMotion,
   portraits: portraits,
   props: props,
   projectile: projectile,
@@ -30,5 +35,6 @@ export const IMG: Record<string, string> = {
   world: world,
   mobs: mobs,
   bosses: bosses,
+  simma: simma,
   fx: fx,
 };

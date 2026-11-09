@@ -8,6 +8,7 @@ import { hitEnemy, kill, nearestEnemy, resolveRow } from '../entities/enemies';
 import { collect } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
+import { pfx } from '../render/pfx';
 import { draw } from '../render/renderer';
 import { hasSkill, updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
@@ -157,8 +158,10 @@ export function update(dt) {
       damagePlayer();
       if (G.mode !== 'play') return;
       h.dead = true;
-      impact(h.x, h.y, '#ffbc7a', 40);
-      burst(h.x, h.y, '#ffbc7a', 15, 180);
+      if (!pfx('hurt', h.x, h.y)) {
+        impact(h.x, h.y, '#ffbc7a', 40);
+        burst(h.x, h.y, '#ffbc7a', 15, 180);
+      }
     }
   }
   for (const p of G.pickups) {

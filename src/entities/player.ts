@@ -6,6 +6,7 @@ import { fxRnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
+import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier } from '../systems/flow';
 import { go } from '../systems/scene-flow';
@@ -17,8 +18,10 @@ export function damagePlayer() {
     G.player.shield = 0;
     paintFX(6, G.player.x, G.player.y, 112, 0.32);
     G.player.inv = 1;
-    ring(G.player.x, G.player.y, BR.art.color, 10, 110, 0.45);
-    burst(G.player.x, G.player.y, BR.art.color, 18, 200);
+    if (!pfx('block', G.player.x, G.player.y)) {
+      ring(G.player.x, G.player.y, BR.art.color, 10, 110, 0.45);
+      burst(G.player.x, G.player.y, BR.art.color, 18, 200);
+    }
     label('철갑공', G.player.x, G.player.y - 55, BR.art.color, 20);
     tone(300, 0.18, 'square', 0.12, 120);
     clearBullets(G.player.x, G.player.y, 120);
@@ -29,7 +32,7 @@ export function damagePlayer() {
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
     G.player.inv = 1.3;
     G.state.bombs = Math.min(G.state.maxBombs, G.state.bombs + 1);
-    ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
+    if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
     label('회춘단', G.player.x, G.player.y - 55, BR.gi.color, 20);
     chime();
     return;
@@ -42,9 +45,11 @@ export function damagePlayer() {
   G.state.comboTimer = 0;
   G.shake = 11;
   G.flash = 0.2;
-  impact(G.player.x, G.player.y, '#c3ffff', 85);
-  burst(G.player.x, G.player.y, '#b4ffff', 25, 220);
-  ring(G.player.x, G.player.y, '#b4ffff', 10, 100, 0.4);
+  if (!pfx('hurt', G.player.x, G.player.y)) {
+    impact(G.player.x, G.player.y, '#c3ffff', 85);
+    burst(G.player.x, G.player.y, '#b4ffff', 25, 220);
+    ring(G.player.x, G.player.y, '#b4ffff', 10, 100, 0.4);
+  }
   boom(true);
   if (navigator.vibrate) navigator.vibrate(40);
   if (G.player.hp <= 0) go('result', false);

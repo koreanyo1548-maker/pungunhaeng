@@ -4,6 +4,7 @@ import { chime, tone } from '../core/audio';
 import { HEROES } from '../data/heroes';
 import { TUNE } from '../data/tune';
 import { burst, label, paintFX, ring } from '../render/fx';
+import { pfx, ramp } from '../render/pfx';
 import { syncHUD } from '../ui/hud';
 
 export const heroTintCache = {};
@@ -27,8 +28,10 @@ export function swapHero() {
   G.state.swapReady = G.time + TUNE.swapCd;
   const h = HEROES[G.state.formation[G.state.active]];
   G.player.inv = Math.max(G.player.inv, 0.5);
-  ring(G.player.x, G.player.y, h.color, 10, m > 1 ? 190 : 110, 0.45);
-  burst(G.player.x, G.player.y, h.color, m > 1 ? 30 : 16, 220);
+  if (!pfx('collect', G.player.x, G.player.y + 40, { palette: ramp(h.color) })) {
+    ring(G.player.x, G.player.y, h.color, 10, m > 1 ? 190 : 110, 0.45);
+    burst(G.player.x, G.player.y, h.color, m > 1 ? 30 : 16, 220);
+  }
   h.fx(m);
   const swapArt = { pungun: 10, cheolhyeol: 2, mukyoung: 8, bicheon: 1, unhak: 9, hongryeon: 11 };
   paintFX(swapArt[activeHeroId()], G.player.x, G.player.y - 25, m > 1 ? 170 : 120, m > 1 ? 0.5 : 0.35, 0, 0, 0.8);

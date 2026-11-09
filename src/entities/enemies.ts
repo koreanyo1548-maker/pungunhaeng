@@ -11,12 +11,14 @@ import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
 import { addPickup } from './pickups';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
+import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/abilities';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
 import { traitOn } from '../systems/formation';
 
+const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
   const id = ++G.rowId,
     weak = Math.floor(rnd(0, 5)),
@@ -125,12 +127,15 @@ export function kill(e, byHyper = false) {
   });
   if (e.boss) {
     paintFX(1, e.x, e.y, 190, 0.38, fxRnd(-0.6, 0.6));
-    impact(e.x, e.y, color, 180);
-    burst(e.x, e.y, color, 65, 330);
-    ring(e.x, e.y, color, 8, 300, 1);
+    const shade = ramp(color);
+    if (!pfx('plasma', e.x, e.y, { palette: shade, accent: shade.slice(1, 6) })) {
+      impact(e.x, e.y, color, 180);
+      burst(e.x, e.y, color, 65, 330);
+      ring(e.x, e.y, color, 8, 300, 1);
+    }
   } else {
     contactFX(e, true);
-    burst(e.x, e.y, e.rock ? '#b4a489' : color, e.rock ? 5 : 3, 110);
+    if (e.rock || !pfxOn()) burst(e.x, e.y, e.rock ? '#b4a489' : color, e.rock ? 5 : 3, 110);
   }
   G.shake = Math.max(G.shake, e.boss ? 14 : 2.4);
   if (!byHyper) {
@@ -188,7 +193,7 @@ export function hitEnemy(e, damage) {
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * 0.45) {
     e.enraged = true;
     paintFX(3, e.x, e.y, 230, 0.65);
-    ring(e.x, e.y, '#ffa475', 20, 150, 0.5);
+    if (!pfx('mana', e.x, e.y + 60, { palette: ENRAGE })) ring(e.x, e.y, '#ffa475', 20, 150, 0.5);
     label('기세 폭발', 240, 190, '#ffc591', 24);
     tone(100, 0.3, 'triangle', 0.2, 50);
   }

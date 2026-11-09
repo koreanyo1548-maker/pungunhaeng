@@ -1,9 +1,10 @@
+import { withSkill, skillCue, skillAura, startSwapPose } from '../render/skill-animation';
 import { G } from '../core/context';
 import { heroAnimations } from '../core/assets';
 import { chime, tone } from '../core/audio';
 import { HEROES } from '../data/heroes';
 import { TUNE } from '../data/tune';
-import { burst, label, paintFX, ring } from '../render/fx';
+import { burst, label, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { syncHUD } from '../ui/hud';
 
@@ -32,9 +33,11 @@ export function swapHero() {
     ring(G.player.x, G.player.y, h.color, 10, m > 1 ? 190 : 110, 0.45);
     burst(G.player.x, G.player.y, h.color, m > 1 ? 30 : 16, 220);
   }
-  h.fx(m);
-  const swapArt = { pungun: 10, cheolhyeol: 2, mukyoung: 8, bicheon: 1, unhak: 9, hongryeon: 11 };
-  paintFX(swapArt[activeHeroId()], G.player.x, G.player.y - 25, m > 1 ? 170 : 120, m > 1 ? 0.5 : 0.35, 0, 0, 0.8);
+  startSwapPose(activeHeroId());
+  withSkill(activeHeroId(), () => h.fx(m));
+  skillCue(activeHeroId(), G.player.x, G.player.y - 30, m > 1 ? 170 : 125);
+  if (activeHeroId() === 'mukyoung') skillAura('mukyoung', 0.6 * m + 0.2);
+
   label(
     (m > 1 ? (rescue ? '위기 교체 ×2 · ' : '제때 교체 ×2 · ') : '교체 · ') + h.name + ' 「' + h.tag + '」',
     240,

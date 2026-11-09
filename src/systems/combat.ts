@@ -1,3 +1,4 @@
+import { visualSkill, skillCue } from '../render/skill-animation';
 import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
@@ -27,6 +28,7 @@ export function gainCharge(n) {
     return;
   }
   emit('charge', { n });
+  if (n > 0 && hasSkill('chukgi')) skillCue('chukgi', G.player.x, G.player.y, 80, false, true);
   G.state.charge += n;
   while (G.state.charge >= 100 && G.state.bombs < G.state.maxBombs) {
     G.state.charge -= 100;
@@ -54,6 +56,7 @@ export function blast() {
     G.labels[G.labels.length - 1].delay = 0.75;
   }
   emit('blast', { killed });
+  skillCue('blast', G.player.x, G.player.y, 240, true);
   paintFX(3, G.player.x, G.player.y - 25, 270, 0.45);
   paintFX(3, 240, 330, 300, 0.4, 0, 0.12, 0.25);
   ring(G.player.x, G.player.y, '#abfff0', 20, 950, 0.65);
@@ -88,6 +91,7 @@ export function fireShot(x, y, vx, dmg, o: ShotOptions = {}) {
     damage: dmg,
     r: 5,
     art: o.art,
+    skill: visualSkill,
     kind: o.kind || 'knife',
     phase: G.time,
     color: o.color,
@@ -106,17 +110,21 @@ export function fan(n, spread, dmg, color, kind = 'knife', art?: string) {
 export function aoe(x, y, r, dmg, color) {
   for (const e of [...G.enemies]) {
     if (e.dead) continue;
-    if (Math.hypot(e.x - x, e.y - y) < r + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg);
+    if (Math.hypot(e.x - x, e.y - y) < r + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg, visualSkill);
   }
-  paintFX(color === BR.yu.color ? 4 : 2, x, y, r * 2, 0.38, 0, 0, 0.72);
-  ring(x, y, color, 10, r, 0.35);
+  if (!visualSkill || !skillCue(visualSkill, x, y, r * 2, true)) {
+    paintFX(color === BR.yu.color ? 4 : 2, x, y, r * 2, 0.38, 0, 0, 0.72);
+    ring(x, y, color, 10, r, 0.35);
+  }
 }
 export function column(x, dmg, color, w = 36, art = 'generic') {
   for (const e of [...G.enemies]) {
     if (e.dead) continue;
-    if (Math.abs(e.x - x) < w + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg);
+    if (Math.abs(e.x - x) < w + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg, visualSkill);
   }
-  G.strikes.push({ x, w, color, art, life: 0.32, total: 0.32 });
+  const skill = visualSkill || (art === 'rain' ? 'geomu' : art === 'cheonma' ? 'art_cheonma' : undefined);
+  const target = G.enemies.find(e => Math.abs(e.x - x) < w + e.r && e.y > 0);
+  G.strikes.push({ x, y: target?.y ?? 280, skill, w, color, art, life: 0.32, total: 0.32 });
   tone(180, 0.18, 'sawtooth', 0.05, 90);
 }
 export function clearBullets(x, y, r) {
@@ -134,6 +142,7 @@ export function graze(h) {
     gy = (h.y + G.player.y) / 2;
   if (!pfx('hit', gx, gy, { palette: GRAZE })) burst(gx, gy, BR.yu.color, 5, 120);
   if (hasSkill('biyeon')) {
+    skillCue('biyeon', h.x, h.y, 65);
     h.vx = (h.vx || 0) * 0.5;
     h.vy *= 0.5;
   }
@@ -144,6 +153,7 @@ export function graze(h) {
   emit('graze', { h, x: h.x, y: h.y });
 }
 export function grazeEnemy(e) {
+  if (hasSkill('biyeon')) skillCue('biyeon', G.player.x, G.player.y, 80);
   G.state.grazes++;
   gainCharge(TUNE.grazeCharge);
   const gx = (e.x + G.player.x) / 2;

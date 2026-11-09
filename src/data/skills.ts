@@ -181,7 +181,6 @@ export const SKILLS = {
     trig: 'step',
     cd: 0.26,
     fx: () => {
-      G.mancheonCue = { x: G.player.x, y: G.player.y - 30, time: G.time };
       fan(3, 0.32, D() * 1.6, '#bdf7ea', 'knife', 'mancheon');
     },
   },

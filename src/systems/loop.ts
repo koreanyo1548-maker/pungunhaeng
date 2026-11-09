@@ -73,7 +73,7 @@ export function update(dt) {
       if (e.dead || (e.boss && ['enter', 'return'].includes(e.action)) || s.hits?.has(e)) continue;
       const r = (e.boss ? 58 : e.r) + (s.w || 0);
       if (Math.abs(s.x - e.x) < r && s.prevY >= e.y - r && s.y <= e.y + r) {
-        hitEnemy(e, s.damage);
+        hitEnemy(e, s.damage, s.skill);
         if (s.pierce) {
           (s.hits ??= new Set()).add(e);
           continue;

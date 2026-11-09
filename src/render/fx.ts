@@ -1,3 +1,4 @@
+import { updateSkillAnimations, drawSkillFrame } from '../render/skill-animation';
 import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
 import { projectileArt, combatProjectileArt } from '../core/assets';
@@ -36,6 +37,7 @@ export function impact(x, y, color, size = 40) {
   G.impacts.push({ x, y, color, size, life: 0.28, total: 0.28 });
 }
 export function effects(dt) {
+  updateSkillAnimations(dt);
   updatePaintedFX(dt);
   updateContactFX(dt);
   updatePfx(dt);
@@ -283,6 +285,18 @@ export function drawSkillFX() {
     ctx.lineTo(s.x, H);
     ctx.stroke();
     ctx.restore();
+    if (
+      s.skill &&
+      drawSkillFrame(
+        s.skill,
+        reduced ? 3 : Math.min(5, 3 + Math.floor((1 - t) * 3)),
+        s.x,
+        s.y ?? H * 0.36,
+        s.skill === 'geomu' ? 150 : 220,
+        t,
+      )
+    )
+      continue;
     if (s.art !== 'cheonma') {
       for (let i = 0; i < 4; i++) {
         const y = ((1 - t) * H * 1.6 + i * 205) % H;
@@ -301,16 +315,14 @@ export function drawSkillFX() {
   if (hasSkill('hoeseon'))
     for (let i = 0; i < G.state.orbs; i++) {
       const a = G.state.orbAngle + (i * Math.PI * 2) / G.state.orbs;
-      drawVfxSprite(
-        projectileArt[1],
+      drawSkillFrame(
+        'hoeseon',
+        reduced ? 2 : [1, 2, 3, 2][Math.floor(G.time * 8) % 4],
         G.player.x + Math.cos(a) * 58,
         G.player.y - 10 + Math.sin(a) * 58,
-        40,
-        40,
+        48,
+        0.9,
         a + Math.PI,
       );
     }
-  if (G.player.shield > 0)
-    drawVfxSprite(G.fxFrames[5]?.[0], G.player.x, G.player.y, 104, 104, 0, 0.6 + Math.sin(G.time * 6) * 0.1);
-  if (G.state.negate) drawVfxSprite(G.fxFrames[7]?.[0], G.player.x, G.player.y + 32, 40, 40, 0, 0.65);
 }

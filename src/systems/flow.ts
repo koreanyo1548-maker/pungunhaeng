@@ -1,3 +1,4 @@
+import { clearSkillAnimations } from '../render/skill-animation';
 import { currentGate, isFinal } from './run-plan';
 import { setPhase } from './stage-phases';
 import { go } from './scene-flow';
@@ -57,7 +58,7 @@ export function start() {
   G.impacts = [];
   G.contactFX = [];
   clearPfx();
-  G.mancheonCue = null;
+  clearSkillAnimations();
   G.paintedFX = [];
   G.bossTrails = [];
   G.bossIntro = null;

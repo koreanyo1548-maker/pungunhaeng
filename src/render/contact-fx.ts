@@ -1,10 +1,12 @@
 import { G } from '../core/context';
 import { ctx, reduced } from '../core/dom';
 import { fxRnd } from '../core/math';
+import { pfx } from './pfx';
 
 /** Cosmetic-only contact marks. These never change hitboxes, timers or gameplay RNG. */
 export function contactFX(e, finishing = false) {
   const kind = e.rock ? 'stone' : e.rank >= 2 || e.boss ? 'armor' : 'slash';
+  if (kind !== 'stone' && pfx(finishing ? 'kill' : kind === 'armor' ? 'armor' : 'hit', e.x, e.y + e.r * 0.15)) return;
   const list = (G.contactFX ??= []);
   if (list.length >= 64) list.shift();
   list.push({

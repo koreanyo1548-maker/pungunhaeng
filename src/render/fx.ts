@@ -8,6 +8,7 @@ import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
 import { hasSkill } from '../systems/abilities';
 import { region } from '../systems/flow';
+import { drawPfx, pfx, ramp, updatePfx } from './pfx';
 
 export function burst(x, y, color, n = 12, force = 150) {
   for (let i = 0; i < n; i++) {
@@ -37,6 +38,7 @@ export function impact(x, y, color, size = 40) {
 export function effects(dt) {
   updatePaintedFX(dt);
   updateContactFX(dt);
+  updatePfx(dt);
   for (const a of G.afterimages) a.life -= dt;
   G.afterimages = G.afterimages.filter(a => a.life > 0);
   for (const f of G.footprints) {
@@ -49,8 +51,11 @@ export function effects(dt) {
     w.y += dt * 90;
     w.angle += dt * w.spin;
     if (w.boss && fxRandom() < dt * 16) {
-      impact(w.x + fxRnd(-70, 70), w.y + fxRnd(-70, 70), region().color, 70);
-      burst(w.x + fxRnd(-55, 55), w.y + fxRnd(-55, 55), region().color, 9, 180);
+      const c = region().color;
+      if (!pfx('hit', w.x + fxRnd(-70, 70), w.y + fxRnd(-70, 70), { palette: ramp(c) })) {
+        impact(w.x + fxRnd(-70, 70), w.y + fxRnd(-70, 70), c, 70);
+        burst(w.x + fxRnd(-55, 55), w.y + fxRnd(-55, 55), c, 9, 180);
+      }
     }
   }
   G.wrecks = G.wrecks.filter(w => w.life > 0);
@@ -97,6 +102,7 @@ export function drawExtraFX() {
     ctx.restore();
   }
   drawContactFX();
+  drawPfx();
   for (const f of G.impacts) {
     const p = 1 - f.life / f.total,
       r = f.size * (0.3 + p * 0.9);

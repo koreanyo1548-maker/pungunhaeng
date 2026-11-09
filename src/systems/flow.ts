@@ -12,6 +12,7 @@ import { dominantTitle, runSummary } from '../scenes/result';
 import { hasSkill } from './abilities';
 import { closeQuest } from './quest';
 import { announce, showBest, syncHUD } from '../ui/hud';
+import { clearPfx } from '../render/pfx';
 
 export function movementTier() {
   return G.state && G.mode !== 'title' ? region().world : 0;
@@ -55,6 +56,7 @@ export function start() {
   G.wrecks = [];
   G.impacts = [];
   G.contactFX = [];
+  clearPfx();
   G.mancheonCue = null;
   G.paintedFX = [];
   G.bossTrails = [];

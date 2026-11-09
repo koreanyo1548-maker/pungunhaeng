@@ -5,10 +5,14 @@ import { BR } from '../data/branches';
 import { TUNE } from '../data/tune';
 import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
+import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './abilities';
 import { difficulty, region } from './flow';
 import { traitOn } from './formation';
 import { notify, syncHUD } from '../ui/hud';
+
+const BLAST = ramp('#7fe6cf'),
+  GRAZE = ramp(BR.yu.color);
 
 export function shotPower() {
   return 1.3 * (1 + 0.12 * difficulty()) * (traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower : 1);
@@ -54,8 +58,10 @@ export function blast() {
   paintFX(3, 240, 330, 300, 0.4, 0, 0.12, 0.25);
   ring(G.player.x, G.player.y, '#abfff0', 20, 950, 0.65);
   ring(G.player.x, G.player.y, '#fff5c4', 10, 750, 0.5);
-  impact(G.player.x, G.player.y, '#d5ffed', 130);
-  burst(G.player.x, G.player.y, '#beffeb', 18, 320);
+  if (!pfx('mana', G.player.x, G.player.y + 30, { palette: BLAST })) {
+    impact(G.player.x, G.player.y, '#d5ffed', 130);
+    burst(G.player.x, G.player.y, '#beffeb', 18, 320);
+  }
   G.player.inv = Math.max(G.player.inv, 1.5);
   G.shake = 10;
   G.flash = 0.2;
@@ -124,7 +130,9 @@ export function graze(h) {
   h.grazed = true;
   G.state.grazes++;
   gainCharge(TUNE.grazeCharge);
-  burst((h.x + G.player.x) / 2, (h.y + G.player.y) / 2, BR.yu.color, 5, 120);
+  const gx = (h.x + G.player.x) / 2,
+    gy = (h.y + G.player.y) / 2;
+  if (!pfx('hit', gx, gy, { palette: GRAZE })) burst(gx, gy, BR.yu.color, 5, 120);
   if (hasSkill('biyeon')) {
     h.vx = (h.vx || 0) * 0.5;
     h.vy *= 0.5;
@@ -138,7 +146,8 @@ export function graze(h) {
 export function grazeEnemy(e) {
   G.state.grazes++;
   gainCharge(TUNE.grazeCharge);
-  burst((e.x + G.player.x) / 2, G.player.y, BR.yu.color, 5, 120);
+  const gx = (e.x + G.player.x) / 2;
+  if (!pfx('hit', gx, G.player.y, { palette: GRAZE })) burst(gx, G.player.y, BR.yu.color, 5, 120);
   if (G.time - (G.state.lastGraze || -1) > 0.06) {
     tone(1500, 0.04, 'sine', 0.04, 2100);
     G.state.lastGraze = G.time;

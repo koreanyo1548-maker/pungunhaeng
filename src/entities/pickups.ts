@@ -2,6 +2,10 @@ import { G } from '../core/context';
 import { chime, tone } from '../core/audio';
 import { rnd } from '../core/math';
 import { burst, impact, label, ring } from '../render/fx';
+import { pfx, ramp } from '../render/pfx';
+
+const COIN = ramp('#ffdf87'),
+  POWER = ramp('#a7ffff');
 import { announce } from '../ui/hud';
 
 export function addPickup(kind, x, y) {
@@ -13,12 +17,14 @@ export function collect(p) {
     G.state.coins++;
     G.state.score += 10;
     if (G.state.coins % 3 === 0) tone(1400 + (G.state.coins % 5) * 100, 0.045, 'sine', 0.045, 1800);
-    burst(p.x, p.y, '#ffdf87', 3, 60);
+    if (!pfx('collect', p.x, p.y + 40, { palette: COIN })) burst(p.x, p.y, '#ffdf87', 3, 60);
   } else if (p.kind === 'power') {
     G.player.weapon = Math.min(3, G.player.weapon + 1);
     G.state.score += 150;
-    ring(G.player.x, G.player.y, '#a7ffff', 5, 100, 0.5);
-    impact(G.player.x, G.player.y, '#cafff3', 70);
+    if (!pfx('collect', G.player.x, G.player.y + 40, { palette: POWER })) {
+      ring(G.player.x, G.player.y, '#a7ffff', 5, 100, 0.5);
+      impact(G.player.x, G.player.y, '#cafff3', 70);
+    }
     label('무공 강화', G.player.x, G.player.y - 65, '#affff2', 22);
     chime();
   } else {

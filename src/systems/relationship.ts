@@ -18,7 +18,7 @@ export function pickNpc() {
     return { id, why: josa(NPCS[id].name, '이', '가') + ' 길목에서 기다리고 있다.' };
   }
   const prev = NPCS[last.npc].name;
-  if (last.result === '미달') return { id: last.npc, why: josa(prev, '이', '가') + ' 다시 화두를 묻는다.' };
+  if (last.result === '미달') return { id: last.npc, why: josa(prev, '이', '가') + ' 다시 의뢰를 청한다.' };
   const id = nextNpcOf(last.npc, last.mode),
     n = NPCS[id].name;
   return {

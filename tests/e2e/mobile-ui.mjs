@@ -38,7 +38,7 @@ try {
     await shot('formation');
     await g.page.locator('#formationConfirm').tap();
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '후위');
+    assert.equal(await g.choiceTitle(), '대기');
     assert.equal(await roster.count(), 5, 'front hero excluded from rear roster');
     await g.pick(0);
     await g.step(2);
@@ -80,7 +80,7 @@ try {
       window.__g.questEvent(q.t, 999);
     });
     await g.seconds(2);
-    assert.equal(await g.choiceTitle(), '돈오');
+    assert.equal(await g.choiceTitle(), '기술 선택');
     assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover reward title');
     assert.ok(await g.page.locator('#choice.reward-screen').count());
     await shot('dono');

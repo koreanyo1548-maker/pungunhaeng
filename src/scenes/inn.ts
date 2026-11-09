@@ -31,8 +31,8 @@ export function openInn() {
       },
     },
     {
-      title: '내공 단약',
-      desc: '내공 +1',
+      title: '필살 단약',
+      desc: '필살기 +1회',
       image: skillPictures[8],
       cost: TUNE.innQi,
       ok: G.state.bombs < G.state.maxBombs,
@@ -43,7 +43,7 @@ export function openInn() {
     },
     {
       title: '명상',
-      desc: '다음 돈오에서 깨달음 3개 중 하나를 고른다',
+      desc: '다음 기술 선택지가 3개로 늘어난다',
       image: skillPictures[15],
       cost: TUNE.innMeditate,
       done: G.state.meditate,

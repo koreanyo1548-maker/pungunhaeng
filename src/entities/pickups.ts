@@ -25,7 +25,7 @@ export function collect(p) {
       ring(G.player.x, G.player.y, '#a7ffff', 5, 100, 0.5);
       impact(G.player.x, G.player.y, '#cafff3', 70);
     }
-    label('무공 강화', G.player.x, G.player.y - 65, '#affff2', 22);
+    label('공격력 강화', G.player.x, G.player.y - 65, '#affff2', 22);
     chime();
   } else {
     G.state.hyper = 4.2;
@@ -33,7 +33,7 @@ export function collect(p) {
     G.hazards = [];
     G.flash = 0.22;
     ring(G.player.x, G.player.y, '#c5f9ff', 10, 200, 0.45);
-    announce('無我之境', '무아지경', '내공이 한계를 넘어 흐릅니다', '#c5ffff', 1.5);
+    announce('無我之境', '무아지경', '잠시 무적 · 공격이 거세진다', '#c5ffff', 1.5);
     tone(160, 0.65, 'sawtooth', 0.14, 700);
   }
 }

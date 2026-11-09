@@ -34,7 +34,7 @@ export const COURSES = {
         branch: 'gi',
         terrain: 'cloud',
         world: 0,
-        hint: '향로의 기운이 짙다 · 내공이 빠르게 찬다',
+        hint: '향로의 기운이 짙다 · 필살기 충전이 빠르다',
         patterns: ['dive', 'lanes', 'fan'],
       },
       {
@@ -91,7 +91,7 @@ export const COURSES = {
         branch: 'gi',
         terrain: 'cloud',
         world: 2,
-        hint: '기류가 거세다 · 내공이 빠르게 찬다',
+        hint: '기류가 거세다 · 필살기 충전이 빠르다',
         patterns: ['dive', 'lanes', 'fan'],
       },
       {

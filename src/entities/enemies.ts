@@ -87,7 +87,7 @@ export function resolveRow(e, missed = false) {
   if (row.remaining === 0) {
     if (!row.missed) {
       G.state.score += 500;
-      if (!G.state.blasting) label('완전 격파 +500', W / 2, 270, '#a3ffe0', 18);
+      if (!G.state.blasting) label('한 줄 전멸 +500', W / 2, 270, '#a3ffe0', 18);
       gainCharge(8);
       ring(240, 270, '#a3ffe0', 10, 160, 0.42);
       tone(880, 0.12, 'sine', 0.12, 1320);

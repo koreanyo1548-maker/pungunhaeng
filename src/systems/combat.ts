@@ -31,7 +31,7 @@ export function gainCharge(n) {
   while (G.state.charge >= 100 && G.state.bombs < G.state.maxBombs) {
     G.state.charge -= 100;
     G.state.bombs++;
-    notify('내공 충전!', 1);
+    notify('필살기 +1', 1);
     chime();
     if (G.state.bombs >= G.state.maxBombs) {
       G.state.charge = 100;
@@ -50,7 +50,7 @@ export function blast() {
   G.state.blasting = false;
   const killed = G.state.kills - before;
   if (killed > 0) {
-    label(killed + '명 격파 · ' + G.state.combo + '연속', 240, 280, BR.gi.color, 20);
+    label(killed + '명 처치 · ' + G.state.combo + '연속', 240, 280, BR.gi.color, 20);
     G.labels[G.labels.length - 1].delay = 0.75;
   }
   emit('blast', { killed });
@@ -66,7 +66,7 @@ export function blast() {
   G.shake = 10;
   G.flash = 0.2;
   boom(true);
-  notify('내공 해방', 0.8);
+  notify('필살기', 0.8);
   syncHUD();
 }
 export const D = () => shotPower() * 1.8;

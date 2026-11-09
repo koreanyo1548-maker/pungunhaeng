@@ -10,7 +10,7 @@ export const HEROES = {
     tint: null,
     color: '#ff8f6e',
     trait: '질풍',
-    traitDesc: '근접 격파 시 내공 +5',
+    traitDesc: '근접 처치 시 필살기 충전 +5',
     tag: '풍운검',
     tagDesc: '전방으로 관통 검강 3줄기',
     fx: m => {
@@ -72,9 +72,9 @@ export const HEROES = {
     tint: 'rgba(245,238,214,.5)',
     color: '#ffd77a',
     trait: '운학',
-    traitDesc: '내공 충전 +40%',
+    traitDesc: '필살기 충전 +40%',
     tag: '학익진',
-    tagDesc: '내공을 즉시 채운다',
+    tagDesc: '필살기 충전을 크게 채운다',
     fx: m => {
       gainCharge(45 * m);
       ring(G.player.x, G.player.y, '#ffd77a', 10, 120, 0.4);

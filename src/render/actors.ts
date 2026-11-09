@@ -1,3 +1,4 @@
+import { drawSwapPose } from './skill-animation';
 import { enemyArt } from './enemy-art';
 import { G } from '../core/context';
 import { projectileArt, propArt, rockHitArt } from '../core/assets';
@@ -83,6 +84,7 @@ export function drawEnemy(e) {
   drawActor(e.type, e.x, e.y + bob - recoil * 5, e.size, pose, angle, e.hit, sx, sy);
 }
 export function drawHeroSprite(pose, x, y, angle = 0, alpha = 1, ghost = false) {
+  if (!ghost && drawSwapPose(activeHeroId(), x, y, angle, alpha)) return;
   const im = activeFrames()[pose];
   if (!im) return;
   ctx.save();

@@ -1,3 +1,4 @@
+import { drawSkillShot } from '../render/skill-animation';
 import { G } from '../core/context';
 import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
@@ -7,21 +8,8 @@ export function blade(x, y, angle, length, color) {
   drawVfxSprite(projectileArt[6], x, y, length, length, angle);
 }
 export function drawMartialShots() {
-  const cue = G.mancheonCue;
-  if (cue && G.time - cue.time < 0.18) {
-    const t = (G.time - cue.time) / 0.18;
-    for (const a of [-0.48, 0, 0.48])
-      drawVfxSprite(
-        combatProjectileArt[5],
-        cue.x + Math.sin(a) * 26,
-        cue.y - 16,
-        38,
-        48,
-        a,
-        (1 - t) * (reduced ? 0.45 : 0.8),
-      );
-  }
   for (const s of G.shots) {
+    if (drawSkillShot(s)) continue;
     // Positive vx rotates upward-facing art clockwise.
     const rot = Math.atan2(s.vx, s.vy ?? 900),
       idx = { qi: 0, sword: 1, knife: 2, gang: 3, orb: 4 }[s.kind] ?? 1;

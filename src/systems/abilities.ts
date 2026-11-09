@@ -1,3 +1,4 @@
+import { withSkill, skillCue, skillAura, queueSkillLearn } from '../render/skill-animation';
 import { isFinal } from './run-plan';
 import { random } from '../core/rng';
 import { on } from '../core/events';
@@ -23,10 +24,14 @@ export function trig(type, data = {}) {
     if (d.trig !== type || G.time < (s.ready || 0)) continue;
     s.ready = G.time + (d.cd || 0);
     s.flash = G.time;
-    d.fx?.(data, s);
+    performSkill(s.id, () => d.fx?.(data, s));
     if (s.mod && G.time >= (s.modReady || 0)) {
       s.modReady = G.time + 0.5;
-      ARTS[s.mod].fx();
+      withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
+      if (+s.mod === 6) {
+        skillCue('art_cheolgap', G.player.x, G.player.y, 190, true);
+        skillAura('art_cheolgap', 0.5);
+      }
     }
   }
 }
@@ -40,10 +45,14 @@ export function updateSkills(dt, oldX) {
     if (d.when && !d.when()) continue;
     s.ready = G.time + d.cd;
     s.flash = G.time;
-    d.fx(null, s);
+    performSkill(s.id, () => d.fx(null, s));
     if (s.mod && G.time >= (s.modReady || 0)) {
       s.modReady = G.time + 0.5;
-      ARTS[s.mod].fx();
+      withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
+      if (+s.mod === 6) {
+        skillCue('art_cheolgap', G.player.x, G.player.y, 190, true);
+        skillAura('art_cheolgap', 0.5);
+      }
     }
   }
   if (hasSkill('hoeseon')) {
@@ -51,6 +60,7 @@ export function updateSkills(dt, oldX) {
     if (G.state.orbs < 3 && G.state.moveAcc >= TUNE.orbDistance) {
       G.state.moveAcc = 0;
       G.state.orbs++;
+      skillCue('hoeseon', G.player.x, G.player.y, 100);
       label('비검 +1', G.player.x, G.player.y - 60, BR.yu.color, 16);
     }
     G.state.orbAngle += dt * 4.2;
@@ -62,12 +72,13 @@ export function updateSkills(dt, oldX) {
         if (e.dead || (e.orbHit || 0) > G.time) continue;
         if (Math.hypot(e.x - ox, e.y - oy) < (e.boss ? 60 : e.r) + 10) {
           e.orbHit = G.time + 0.22;
-          hitEnemy(e, D() * 1.4);
+          hitEnemy(e, D() * 1.4, 'hoeseon');
         }
       }
       for (const h of G.hazards) {
         if (!h.warn && !h.dead && Math.hypot(h.x - ox, h.y - oy) < h.r + 10) {
           h.dead = true;
+          skillCue('hoeseon', ox, oy, 50, true);
           burst(h.x, h.y, BR.yu.color, 5, 90);
         }
       }
@@ -126,6 +137,7 @@ export function updateSkills(dt, oldX) {
 export function learn(id) {
   G.state.skills.push({ id });
   SKILLS[id].gain?.();
+  queueSkillLearn(id);
   label('새 기술 · ' + SKILLS[id].name, 240, 400, BR[SKILLS[id].br].color, 22);
   syncHUD();
 }
@@ -138,4 +150,19 @@ export function registerAbilityListeners() {
   on('rowClear', () => trig('rowClear'));
   on('nearKill', d => trig('nearKill', d));
   on('combo10', () => trig('combo10'));
+}
+
+/** Visuals are emitted only for actual effects; the gameplay callback still always runs. */
+function performSkill(id, fn) {
+  const hp = G.player.hp;
+  const hasTarget = G.enemies.some(targetable);
+  withSkill(id, fn);
+  if (id === 'hoegi' && G.player.hp === hp) return;
+  if (id === 'art_cheolgap') return; // State transitions draw creation and consumption.
+  if (id === 'art_cheonma' && !hasTarget) return;
+  if (!['yusu', 'bungsan', 'art_cheonma'].includes(id))
+    skillCue(id, G.player.x, G.player.y - 45, id === 'hyeolma' ? 165 : 115);
+  if (id === 'muyoung') skillAura(id, 0.3);
+  if (id === 'geumgang') skillAura(id, 0.45);
+  if (id === 'hyeolma') skillAura(id, G.state.hyper, 160);
 }

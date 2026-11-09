@@ -1,3 +1,4 @@
+import { drawSkillAnimations } from '../render/skill-animation';
 import { G } from '../core/context';
 import { H, W, ctx, reduced } from '../core/dom';
 import { clamp, fxRnd } from '../core/math';
@@ -75,6 +76,7 @@ export function draw() {
   drawBossWarnings();
   drawQuestCue();
   drawMartialPlayer();
+  drawSkillAnimations();
   for (const p of G.particles) {
     ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
     ctx.fillStyle = p.color;

@@ -1,3 +1,4 @@
+import { loadSkillArt } from '../render/skill-animation';
 import { IMG } from '../assets/manifest';
 import { G } from './context';
 import { $ } from './dom';
@@ -257,6 +258,7 @@ export async function load() {
     );
     await loadCombatArt();
     await loadPortraitProps();
+    await loadSkillArt();
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

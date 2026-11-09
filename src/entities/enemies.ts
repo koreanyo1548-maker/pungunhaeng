@@ -1,3 +1,4 @@
+import { skillCue } from '../render/skill-animation';
 import { enemyArt } from '../render/enemy-art';
 import { contactFX } from '../render/contact-fx';
 import { setPhase } from '../systems/stage-phases';
@@ -180,15 +181,19 @@ export function kill(e, byHyper = false) {
     }
   }
 }
-export function hitEnemy(e, damage) {
+export function hitEnemy(e, damage, skill?: string) {
   if (e.dead || (e.boss && ['enter', 'return'].includes(e.action))) return;
-  if (hasSkill('swaegap') && (e.rank >= 2 || e.boss || e.rock)) damage *= 1.4;
+  if (hasSkill('swaegap') && (e.rank >= 2 || e.boss || e.rock)) {
+    damage *= 1.4;
+    skillCue('swaegap', e.x, e.y, 65, true);
+  }
   e.hp -= damage * (e.boss && e.action === 'recover' ? 1.6 : 1);
   e.hit = 0.055;
   e.recoil = 0.12;
   if (G.time - (e.lastImpact ?? -1) > 0.085) {
     e.lastImpact = G.time;
-    if (e.hp > 0) contactFX(e);
+    if (skill) skillCue(skill, e.x, e.y, e.boss ? 95 : 62, true);
+    else if (e.hp > 0) contactFX(e);
   }
   if (e.boss && !e.enraged && e.hp > 0 && e.hp < e.maxHp * 0.45) {
     e.enraged = true;

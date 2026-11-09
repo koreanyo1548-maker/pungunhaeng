@@ -3,6 +3,7 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { npcPictures, skillPictures } from '../core/assets';
 import { chime } from '../core/audio';
+import { josaRo } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
@@ -54,7 +55,7 @@ export function openInn() {
     },
     alt && {
       title: '수소문',
-      desc: '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + NPCS[alt.alt].name + '(으)로 바꾼다',
+      desc: '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + josaRo(NPCS[alt.alt].name) + ' 바꾼다',
       image: npcPictures[alt.alt],
       cost: TUNE.innScout,
       done: G.state.forceNpc === alt.alt,

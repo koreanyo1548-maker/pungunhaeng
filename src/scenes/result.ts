@@ -15,7 +15,7 @@ export function runSummary() {
     G.state.path
       .map(
         p =>
-          `관문 ${p.stage} · ${NPCS[p.npc].name} — ${p.mode === 'follow' ? '따름' : '거스름'} (${COND[p.t].label}) · <b>${RESULT_TEXT[p.result] ?? p.result}</b>`,
+          `관문 ${p.stage} · ${NPCS[p.npc].name} — ${p.mode === 'follow' ? '따름' : '거스름'} (${COND[p.t].label.replace(/ \(.*\)$/, '')}) · <b>${RESULT_TEXT[p.result] ?? p.result}</b>`,
       )
       .join('<br>') || '아직 없음';
   const sk =

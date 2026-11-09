@@ -1,7 +1,7 @@
 import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { skillImage } from '../core/assets';
-import { rnd } from '../core/math';
+import { josa, rnd } from '../core/math';
 import { BR, TRIG_NAME } from '../data/branches';
 import { NPCS } from '../data/npcs';
 import { SKILLS } from '../data/skills';
@@ -29,7 +29,7 @@ export function openDono() {
     title: '기술 선택',
     reward: true,
     sub: sasa
-      ? n.name + '이(가) 그대를 제자로 받아들였다. <b>인연의 고유 기술</b>을 전수받을 수 있다.'
+      ? josa(n.name, '이', '가') + ' 그대를 제자로 받아들였다. <b>인연의 고유 기술</b>을 전수받을 수 있다.'
       : '의뢰를 이뤘다. 기술 하나를 골라 배운다.',
     cards: opts.map(id => {
       const d = SKILLS[id];

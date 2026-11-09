@@ -95,7 +95,7 @@ export function syncQuestHUD() {
     $('questImg').src = qp;
   }
   $('questText').textContent = q.done
-    ? '의뢰 성공 · ' + BR[q.br].name + ' 계열 기술 획득'
+    ? '의뢰 성공 · ' + BR[q.br].name + ' 기술 획득'
     : q.failed
       ? '의뢰 실패'
       : COND[q.t].label;

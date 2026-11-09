@@ -95,9 +95,9 @@ export function syncQuestHUD() {
     $('questImg').src = qp;
   }
   $('questText').textContent = q.done
-    ? BR[q.br].name + '(' + BR[q.br].hanja + ')의 깨달음을 얻었다'
+    ? '의뢰 성공 · ' + BR[q.br].name + ' 기술 획득'
     : q.failed
-      ? '화두를 이루지 못했다'
+      ? '의뢰 실패'
       : COND[q.t].label;
   $('questCount').textContent = Math.floor(q.prog) + ' / ' + q.target;
   $('questFill').style.width = Math.min(100, (q.prog / q.target) * 100) + '%';
@@ -116,7 +116,7 @@ export function syncSwapHUD() {
     $('swapImg').src = pic;
   }
   $('swapCd').textContent = cd > 0 ? String(Math.ceil(cd)) : '';
-  $('swapName').textContent = '교대 · ' + nxt.name;
+  $('swapName').textContent = '교체 · ' + nxt.name;
   const boss = G.enemies.find(e => e.boss && !e.dead),
     win = cd <= 0 && G.mode === 'play' && (G.time - G.state.lastHurt < 1.5 || (!!boss && boss.action === 'recover'));
   sw.classList.toggle('cool', cd > 0);
@@ -135,7 +135,7 @@ export function syncSwapHUD() {
       ht = '화면 적 ' + n;
       go = n >= 6 && G.state.bombs > 0;
     } else if (qt === 'blast') {
-      ht = G.state.bombs > 0 ? '해방하라' : '충전 중';
+      ht = G.state.bombs > 0 ? '필살기!' : '충전 중';
       go = G.state.bombs > 0;
     }
     hint.textContent = ht;

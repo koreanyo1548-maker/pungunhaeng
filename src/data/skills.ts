@@ -9,7 +9,7 @@ export const SKILLS = {
   janyoung: {
     br: 'yu',
     name: '잔영검',
-    desc: '보법을 밟을 때마다 잔상이 검기 2발을 쏜다',
+    desc: '좌우 전환할 때마다 잔상이 기본 공격 2발을 쏜다',
     trig: 'step',
     cd: 0.22,
     fx: d => {
@@ -28,7 +28,7 @@ export const SKILLS = {
   muyoung: {
     br: 'yu',
     name: '무영신법',
-    desc: '보법을 밟는 순간 0.3초간 몸이 사라진다',
+    desc: '좌우 전환하는 순간 0.3초간 몸이 사라진다',
     trig: 'step',
     cd: 1.1,
     fx: () => {
@@ -45,7 +45,7 @@ export const SKILLS = {
   bungsan: {
     br: 'gang',
     name: '붕산권',
-    desc: '근접 격파한 자리에서 충격파가 터진다',
+    desc: '근접 처치한 자리에서 충격파가 터진다',
     trig: 'nearKill',
     cd: 0.1,
     fx: d => aoe(d.e.x, d.e.y, 95, D() * 5, BR.gang.color),
@@ -53,7 +53,7 @@ export const SKILLS = {
   pajin: {
     br: 'gang',
     name: '파진검강',
-    desc: '한 줄을 완전 격파하면 관통 검강을 내지른다',
+    desc: '한 줄을 전멸시키면 관통 검강을 내지른다',
     trig: 'rowClear',
     cd: 0.2,
     fx: () =>
@@ -76,7 +76,7 @@ export const SKILLS = {
   yeonhwan: {
     br: 'gang',
     name: '연환격',
-    desc: '연속 10회마다 관통 대검기 3줄기를 날린다',
+    desc: '연속 10회 처치마다 관통 대검기 3줄기를 날린다',
     trig: 'combo10',
     cd: 0.2,
     fx: () => {
@@ -85,11 +85,11 @@ export const SKILLS = {
     },
   },
   swaegap: { br: 'gang', name: '쇄갑', desc: '바위·장갑 적·보스에게 주는 피해 +40%', trig: 'passive' },
-  chukgi: { br: 'gi', name: '축기', desc: '내공 충전량 +50%', trig: 'passive' },
+  chukgi: { br: 'gi', name: '축기', desc: '필살기 충전량 +50%', trig: 'passive' },
   geomu: {
     br: 'gi',
     name: '검우',
-    desc: '내공 해방 뒤 1.5초간 검의 비가 쏟아진다',
+    desc: '필살기 사용 뒤 1.5초간 검의 비가 쏟아진다',
     trig: 'blast',
     fx: () => {
       G.state.rain = 1.5;
@@ -99,7 +99,7 @@ export const SKILLS = {
   manryu: {
     br: 'gi',
     name: '만류귀종',
-    desc: '내공 최대 보유 +1, 즉시 1 충전',
+    desc: '필살기 최대 횟수 +1, 즉시 1회 충전',
     trig: 'passive',
     gain: () => {
       G.state.maxBombs++;
@@ -113,7 +113,7 @@ export const SKILLS = {
   gitan: {
     br: 'gi',
     name: '기탄',
-    desc: '내공을 2 이상 품고 있으면 추적 기탄을 자동으로 쏜다',
+    desc: '필살기를 2회 이상 모아 두면 추적 기탄을 자동으로 쏜다',
     trig: 'tick',
     cd: 0.85,
     when: () => G.state.bombs >= 2,
@@ -128,7 +128,7 @@ export const SKILLS = {
   hoegi: {
     br: 'gi',
     name: '회기',
-    desc: '내공 해방 시 체력 1 회복 (관문당 1회)',
+    desc: '필살기 사용 시 체력 1 회복 (관문당 1회)',
     trig: 'blast',
     fx: (d, s) => {
       if (s.used || G.player.hp >= G.player.maxHp) return;
@@ -154,7 +154,7 @@ export const SKILLS = {
     br: 'gi',
     npc: 'milsa',
     name: '혈마해방',
-    desc: '내공 해방 뒤 2초간 무아지경에 든다',
+    desc: '필살기 사용 뒤 2초간 무아지경에 든다',
     trig: 'blast',
     fx: () => {
       G.state.hyper = Math.max(G.state.hyper, 2);
@@ -165,7 +165,7 @@ export const SKILLS = {
     br: 'gang',
     npc: 'monk',
     name: '금강부동',
-    desc: '근접 격파 시 짧은 무적과 큰 충격파',
+    desc: '근접 처치 시 짧은 무적과 큰 충격파',
     trig: 'nearKill',
     cd: 0.35,
     fx: d => {
@@ -177,7 +177,7 @@ export const SKILLS = {
     br: 'yu',
     npc: 'yeonhyeop',
     name: '만천화우',
-    desc: '보법을 밟을 때마다 비도 3자루를 부채꼴로 던진다',
+    desc: '좌우 전환할 때마다 비도 3자루를 부채꼴로 던진다',
     trig: 'step',
     cd: 0.26,
     fx: () => {
@@ -189,7 +189,7 @@ export const SKILLS = {
     br: 'gi',
     npc: 'yakseon',
     name: '회춘단',
-    desc: '관문마다 첫 피격을 무효로 하고 내공 1을 얻는다',
+    desc: '관문마다 첫 피격을 무효로 하고 필살기 1회를 얻는다',
     trig: 'passive',
     gain: () => {
       G.state.negate = true;
@@ -199,7 +199,7 @@ export const SKILLS = {
     br: 'gang',
     npc: 'uijeok',
     name: '의협난도',
-    desc: '한 줄을 완전 격파하면 5방향 관통 도기를 날린다',
+    desc: '한 줄을 전멸시키면 5방향 관통 도기를 날린다',
     trig: 'rowClear',
     cd: 0.2,
     fx: () => {

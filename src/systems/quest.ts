@@ -41,8 +41,8 @@ export function completeQuest() {
   }
   if (G.state.questPath) G.state.questPath.result = '성취';
   announce(
-    '頓悟',
-    BR[q.br].name + '(' + BR[q.br].hanja + ')의 깨달음',
+    '의뢰 성공',
+    BR[q.br].name + ' 계열 기술',
     q.mode === 'follow' ? n.name + '의 뜻을 이루었다' : n.name + '의 뜻을 거슬러 제 길을 증명했다',
     BR[q.br].color,
     1.4,
@@ -58,7 +58,7 @@ export function closeQuest() {
   if (q && !q.done && !q.failed) {
     q.failed = true;
     if (G.state.questPath) G.state.questPath.result = '미달';
-    if (G.mode === 'play') label('화두를 이루지 못했다', 240, 330, '#d6cdbd', 18);
+    if (G.mode === 'play') label('의뢰 실패', 240, 330, '#d6cdbd', 18);
   }
 }
 export function acceptQuest(id, qmode) {

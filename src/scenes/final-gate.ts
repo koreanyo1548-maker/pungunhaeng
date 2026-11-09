@@ -21,9 +21,9 @@ export function openFinalGate() {
     cards: [
       {
         color: '#c9a6ff',
-        tag: '인연의 결산',
+        tag: '지난 인연',
         title: region().enter,
-        desc: '<b>조력:</b> ' + list(pick(1)) + '<br><b>방해:</b> ' + list(pick(-1)),
+        desc: '<b>도와주는 인연:</b> ' + list(pick(1)) + '<br><b>방해하는 인연:</b> ' + list(pick(-1)),
         onPick: () => done('finalGate'),
       },
     ],

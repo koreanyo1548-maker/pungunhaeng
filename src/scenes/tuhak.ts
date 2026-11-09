@@ -23,13 +23,13 @@ export function openTuhak() {
       image: skillImage(s.id),
       artClass: 'skill-choice-art',
       color: BR[d.br].color,
-      tag: '조합 · 지닌 깨달음에 섞는다',
+      tag: '강화 · 지닌 기술에 효과를 더한다',
       title: d.name + ' + ' + art.name,
       desc: art.combo,
-      footer: '지닌 무공 「' + d.name + '」에 조합',
+      footer: '지닌 기술 「' + d.name + '」 강화',
       onPick: () => {
         s.mod = r.type;
-        label('조합 · ' + d.name + ' + ' + art.name, 240, 400, BR.art.color, 20);
+        label('강화 · ' + d.name + ' + ' + art.name, 240, 400, BR.art.color, 20);
         finish();
       },
     });
@@ -39,7 +39,7 @@ export function openTuhak() {
       image: skillImage(art.solo),
       artClass: 'skill-choice-art',
       color: BR.art.color,
-      tag: '습득 · 지닌 깨달음이 없어 그대로 익힌다',
+      tag: '새로 배우기 · 강화할 기술이 없어 그대로 배운다',
       title: art.name,
       desc: SKILLS[art.solo].desc,
       onPick: () => {
@@ -51,7 +51,7 @@ export function openTuhak() {
     image: coinImage(),
     artClass: 'skill-choice-art',
     color: '#ffd77a',
-    tag: '재화 · 무공 대신 노자를 챙긴다',
+    tag: '엽전 · 기술 대신 노자를 챙긴다',
     title: '엽전 ' + TUNE.tuhakCoins + '냥',
     desc: art.from + '의 전대를 털어 엽전을 얻는다. 다음 객잔에서 쓴다.<br><b>지닌 엽전:</b> ' + G.state.coins + '냥',
     onPick: () => {
@@ -62,14 +62,14 @@ export function openTuhak() {
     },
   });
   openChoice({
-    eyebrow: '偸學 · ' + art.from + '의 무공',
-    title: '투학',
+    eyebrow: '보스 기술 · ' + art.from,
+    title: '보스 기술',
     reward: true,
     sub:
       josa(art.from, '을', '를') +
-      ' 쓰러뜨리며 그 무공 「' +
+      ' 쓰러뜨리며 그 기술 「' +
       art.name +
-      '」을 엿보았다. 지닌 깨달음에 섞거나, 무공 대신 엽전을 챙긴다.',
+      '」을 엿보았다. 새로 배우거나 지닌 기술을 강화한다. 기술 대신 엽전을 챙길 수도 있다.',
     cards,
   });
 }

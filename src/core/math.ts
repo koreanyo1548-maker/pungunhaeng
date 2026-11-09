@@ -13,3 +13,9 @@ export function josa(word, a, b) {
   const c = word.charCodeAt(word.length - 1) - 0xac00;
   return word + (c >= 0 && c < 11172 && c % 28 ? a : b);
 }
+/** word + 으로/로: 로 after a vowel or ㄹ, 으로 after any other final consonant. */
+export function josaRo(word) {
+  const c = word.charCodeAt(word.length - 1) - 0xac00,
+    fin = c >= 0 && c < 11172 ? c % 28 : 0;
+  return word + (fin && fin !== 8 ? '으로' : '로');
+}

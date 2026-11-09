@@ -111,7 +111,7 @@ async function scenarioA(browser, course, seed) {
     // 보스 → 투학
     const phase = await clearBoss(g);
     check(f, phase === 'boss', `${at}: boss appears after the flight (phase ${phase})`);
-    check(f, (await g.choiceTitle()) === '투학', `${at}: 투학 opens after the boss`);
+    check(f, (await g.choiceTitle()) === '보스 기술', `${at}: 보스 기술 (투학) opens after the boss`);
     const tuhak = await g.cards();
     check(f, /냥$/.test(tuhak.at(-1).title), `${at}: 투학 offers 엽전 as the last card`);
     // top up so every 객잔 item is affordable, and lose HP so 약주 is useful

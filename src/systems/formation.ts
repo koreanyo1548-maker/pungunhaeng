@@ -36,7 +36,7 @@ export function swapHero() {
   const swapArt = { pungun: 10, cheolhyeol: 2, mukyoung: 8, bicheon: 1, unhak: 9, hongryeon: 11 };
   paintFX(swapArt[activeHeroId()], G.player.x, G.player.y - 25, m > 1 ? 170 : 120, m > 1 ? 0.5 : 0.35, 0, 0, 0.8);
   label(
-    (m > 1 ? (rescue ? '구원 교대 · ' : '합격 교대 · ') : '교대 · ') + h.name + ' 「' + h.tag + '」',
+    (m > 1 ? (rescue ? '위기 교체 ×2 · ' : '제때 교체 ×2 · ') : '교체 · ') + h.name + ' 「' + h.tag + '」',
     240,
     470,
     h.color,

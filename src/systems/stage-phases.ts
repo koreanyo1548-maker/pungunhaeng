@@ -135,8 +135,8 @@ function enterClear() {
   closeQuest();
   announce(
     isFinal() ? region().name + ' 돌파' : '관문 ' + G.state.stage + ' 돌파',
-    region().boss + ' 격파',
-    isFinal() ? region().winLine : '쓰러진 자의 무공이 눈에 들어온다',
+    region().boss + ' 처치',
+    isFinal() ? region().winLine : '쓰러진 자의 기술이 눈에 들어온다',
     region().color,
     2.6,
   );

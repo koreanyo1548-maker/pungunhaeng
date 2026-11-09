@@ -3,6 +3,7 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { npcPictures, skillPictures } from '../core/assets';
 import { chime } from '../core/audio';
+import { josaRo } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
@@ -31,8 +32,8 @@ export function openInn() {
       },
     },
     {
-      title: '내공 단약',
-      desc: '내공 +1',
+      title: '필살 단약',
+      desc: '필살기 +1회',
       image: skillPictures[8],
       cost: TUNE.innQi,
       ok: G.state.bombs < G.state.maxBombs,
@@ -43,7 +44,7 @@ export function openInn() {
     },
     {
       title: '명상',
-      desc: '다음 돈오에서 깨달음 3개 중 하나를 고른다',
+      desc: '다음 기술 선택지가 3개로 늘어난다',
       image: skillPictures[15],
       cost: TUNE.innMeditate,
       done: G.state.meditate,
@@ -54,7 +55,7 @@ export function openInn() {
     },
     alt && {
       title: '수소문',
-      desc: '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + NPCS[alt.alt].name + '(으)로 바꾼다',
+      desc: '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + josaRo(NPCS[alt.alt].name) + ' 바꾼다',
       image: npcPictures[alt.alt],
       cost: TUNE.innScout,
       done: G.state.forceNpc === alt.alt,

@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#071e26" />
     <meta
       name="description"
-      content="산길을 달리고 대숲을 넘어 검 위로 날아오르는 무협 종스크롤 슈팅. 좌우 보법과 자동 검기로 강호를 돌파하세요."
+      content="산길을 달리고 대숲을 넘어 검 위로 날아오르는 무협 종스크롤 슈팅. 좌우 이동과 자동 공격으로 강호를 돌파하세요."
     />
     <title>풍운행 · 한 걸음, 하늘 끝까지</title>
   </head>
@@ -18,7 +18,7 @@
         <p>한 걸음, 하늘 끝까지</p>
         <div class="divider"></div>
         <p class="instructions">
-          마우스 드래그 또는 <kbd>←</kbd> <kbd>→</kbd><br /><kbd>SPACE</kbd> 내공 · <kbd>Q</kbd> 교대<br />하늘 길:
+          마우스 드래그 또는 <kbd>←</kbd> <kbd>→</kbd><br /><kbd>SPACE</kbd> 필살기 · <kbd>Q</kbd> 교체<br />하늘 길:
           <kbd>↑</kbd> <kbd>↓</kbd> · <kbd>ESC</kbd> 일시정지
         </p>
         <span class="edition">무협 종스크롤 · 06 · 편대</span>
@@ -56,12 +56,12 @@
             <b id="comboNum">0</b><span>연속</span><small id="comboMult">점수 ×1</small>
           </div>
           <div class="actives" id="actives">
-            <button class="active-btn swap" id="swap" aria-label="편대 교대">
+            <button class="active-btn swap" id="swap" aria-label="편대 교체">
               <img class="swap-hero" id="swapImg" alt="" draggable="false" /><em id="swapCd"></em></button
-            ><small class="active-label" id="swapName">교대</small>
+            ><small class="active-label" id="swapName">교체</small>
             <button class="active-btn ult" id="blast" aria-label="필살기">
               <span class="blast-icon">✦</span><b id="bombcount">2</b><i class="ult-hint" id="ultHint"></i></button
-            ><small class="active-label">필살</small>
+            ><small class="active-label">필살기</small>
           </div>
         </div>
         <div class="overlay title-screen" id="intro">
@@ -75,7 +75,7 @@
           <div class="launch">
             <div class="control-hint">
               <span>←</span>
-              <p>좌우로 움직여 길을 뚫으세요<small>검기는 자동 · 보법은 당신의 손끝으로</small></p>
+              <p>좌우로 움직여 길을 뚫으세요<small>공격은 자동 · 이동은 당신의 손끝으로</small></p>
               <span>→</span>
             </div>
             <button class="primary" id="start" disabled>강호를 준비하는 중…</button>
@@ -88,10 +88,10 @@
         <div class="overlay modal hidden" id="pausePanel">
           <div class="panel">
             <span class="eyebrow">잠시 호흡을 가다듬고</span>
-            <h2>운기조식</h2>
+            <h2>일시정지</h2>
             <div class="summary" id="pauseSummary"></div>
             <button class="primary" id="resume">계속 나아가기</button
-            ><button class="secondary" id="restartPause">처음부터</button
+            ><button class="secondary" id="restartPause">처음부터 다시</button
             ><button class="sound-toggle" id="soundPause">♪ 소리 켜짐</button>
           </div>
         </div>
@@ -103,7 +103,7 @@
             <strong class="result-score" id="finalScore">0</strong><span class="result-score-label">최종 점수</span>
             <div class="stats">
               <div><b id="finalDistance">0 m</b><span>이동 거리</span></div>
-              <div><b id="finalKills">0</b><span>격파</span></div>
+              <div><b id="finalKills">0</b><span>처치</span></div>
               <div><b id="finalCoins">0</b><span>엽전</span></div>
             </div>
             <div class="summary" id="summary"></div>

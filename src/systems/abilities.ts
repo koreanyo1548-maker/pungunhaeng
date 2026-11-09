@@ -93,7 +93,7 @@ export function updateSkills(dt, oldX) {
       if (G.state.allyTimer <= 0) {
         G.state.allyTimer = 4.5;
         const n = NPCS[allies[Math.floor(rnd(0, allies.length))]];
-        label(n.name + ' 조력', boss.x, boss.y + 120, BR[n.br].color, 18);
+        label(n.name + '의 도움', boss.x, boss.y + 120, BR[n.br].color, 18);
         column(boss.x, D() * 10, BR[n.br].color, 44);
       }
     }
@@ -126,7 +126,7 @@ export function updateSkills(dt, oldX) {
 export function learn(id) {
   G.state.skills.push({ id });
   SKILLS[id].gain?.();
-  label('습득 · ' + SKILLS[id].name, 240, 400, BR[SKILLS[id].br].color, 22);
+  label('새 기술 · ' + SKILLS[id].name, 240, 400, BR[SKILLS[id].br].color, 22);
   syncHUD();
 }
 

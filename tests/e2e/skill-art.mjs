@@ -170,6 +170,21 @@ try {
     assert.ok(!lifecycle.after.cues.some(c => c.id === 'art_cheolgap' && !c.impact));
     assert.equal(lifecycle.pill.negate, false);
     assert.equal(lifecycle.reset.cues.length, 0);
+    // An area blast keeps its area visual even when the per-target cues fill the per-skill limit
+    // or sit right on its centre.
+    const area = await page.evaluate(() => {
+      resetArtCase();
+      const { G } = M;
+      G.enemies = Array.from({ length: 6 }, (_, i) => ({
+        ...G.enemies[0],
+        x: 140 + i * 40,
+        baseX: 140 + i * 40,
+        y: 300 + (i % 2) * 40,
+      }));
+      M.withSkill('yusu', () => M.aoe(240, 310, 150, 1, '#7fe6cf'));
+      return M.skillAnimationSnapshot().cues.map(c => c.size);
+    });
+    assert.ok(area.includes(300), 'area cue missing after a blast that hit six targets');
     for (const mod of [3, 6, 7]) {
       const state = await page.evaluate(mod => {
         resetArtCase();

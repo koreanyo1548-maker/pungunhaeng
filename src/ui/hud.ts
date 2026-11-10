@@ -5,7 +5,7 @@ import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { HEROES } from '../data/heroes';
-import { ARTS, SKILLS } from '../data/skills';
+import { ARTS, SKILLS, skillStars } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
 
@@ -65,7 +65,7 @@ export function syncQuestHUD() {
     $('skills').innerHTML = G.state.skills
       .map(s => {
         const d = SKILLS[s.id];
-        return `<span class="chip${s.mod ? ' mod' : ''}" data-id="${s.id}" title="${d.name}${s.mod ? ' + ' + ARTS[s.mod].name : ''}" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}</span>`;
+        return `<span class="chip${s.mod ? ' mod' : ''}" data-id="${s.id}" title="${d.name} ${skillStars(s.mod)}${s.mod ? ' (' + ARTS[s.mod].name + ')' : ''}" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}<i class="stars">${skillStars(s.mod)}</i></span>`;
       })
       .join('');
   }

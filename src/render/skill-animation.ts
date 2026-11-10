@@ -262,19 +262,23 @@ export function drawSkillAnimations() {
   if (negate) drawSkillFrame('hoechun', f, G.player.x, G.player.y + 32, 48, 0.55);
   for (const [id, a] of auras) drawSkillFrame(id, f, G.player.x, G.player.y, a.size, 0.38);
 }
+/**
+ * A skill's projectile is drawn larger than a basic shot (36 to 48 px) and leaves two fading copies of itself
+ * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.
+ */
 export function drawSkillShot(s: any) {
   if (flightRows[s.skill] === undefined) return false;
-  const size = s.kind === 'gang' ? Math.max(48, (s.w || 8) * 4) : s.kind === 'orb' ? 44 : 44;
-  return drawSkillFrame(
-    s.skill,
-    reduced ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
-    s.x,
-    s.y,
-    size,
-    1,
-    Math.atan2(s.vx, s.vy ?? 900),
-    true,
-  );
+  const size = s.kind === 'gang' ? Math.max(66, (s.w || 8) * 5) : s.kind === 'orb' ? 54 : 58,
+    frame = reduced ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
+    vy = s.vy ?? 900,
+    angle = Math.atan2(s.vx, vy);
+  if (!reduced)
+    for (const [back, alpha] of [
+      [0.05, 0.22],
+      [0.025, 0.42],
+    ])
+      drawSkillFrame(s.skill, frame, s.x - s.vx * back, s.y + vy * back, size * 0.92, alpha, angle, true);
+  return drawSkillFrame(s.skill, frame, s.x, s.y, size, 1, angle, true);
 }
 /** Runtime inspection for the visual regression harness, never used to drive gameplay. */
 export function skillAnimationSnapshot() {

@@ -5,30 +5,32 @@ import { nearestEnemy, strongestEnemy } from '../entities/enemies';
 import { label, paintFX, ring } from '../render/fx';
 import { D, aoe, clearBullets, column, fan, fireShot } from '../systems/combat';
 
+// D() is the damage of one basic shot. A skill's projectile is a reward for meeting its condition, so each one
+// hits at least twice as hard as a basic shot (see docs/terms.md).
 export const SKILLS = {
   janyoung: {
     br: 'yu',
     name: '잔영검',
-    desc: '좌우 전환할 때마다 잔상이 기본 공격 2발을 쏜다',
+    effect: '잔상이 검기 2발 발사',
     trig: 'step',
     cd: 0.22,
     fx: d => {
-      for (const o of [-9, 9]) fireShot(d.x + o, G.player.y - 25, 0, D() * 1.1, { kind: 'qi', color: BR.yu.color });
+      for (const o of [-9, 9]) fireShot(d.x + o, G.player.y - 25, 0, D() * 2.2, { kind: 'qi', color: BR.yu.color });
     },
   },
   yusu: {
     br: 'yu',
     name: '유수파',
-    desc: '적이나 적 탄을 스치면 그 자리에 청기 파동이 퍼진다',
+    effect: '그 자리에 청기 파동',
     trig: 'graze',
     cd: 0.12,
     fx: d => aoe(d.x, d.y - 20, 80, D() * 3.5, BR.yu.color),
   },
-  biyeon: { br: 'yu', name: '비연보', desc: '스침 판정이 넓어지고, 스친 탄은 절반 속도로 느려진다', trig: 'passive' },
+  biyeon: { br: 'yu', name: '비연보', effect: '스침 판정이 넓어지고, 스친 탄이 절반 속도로 느려짐', trig: 'passive' },
   muyoung: {
     br: 'yu',
     name: '무영신법',
-    desc: '좌우 전환하는 순간 0.3초간 몸이 사라진다',
+    effect: '0.3초간 몸이 사라져 무적',
     trig: 'step',
     cd: 1.1,
     fx: () => {
@@ -39,13 +41,14 @@ export const SKILLS = {
   hoeseon: {
     br: 'yu',
     name: '회선비검',
-    desc: '움직인 거리만큼 몸 주위를 도는 비검이 생긴다 (최대 3자루, 탄을 막는다)',
+    effect: '몸 주위를 도는 비검 생성 (최대 3자루, 탄을 막음)',
+    cond: '움직이는 동안',
     trig: 'passive',
   },
   bungsan: {
     br: 'gang',
     name: '붕산권',
-    desc: '근접 처치한 자리에서 충격파가 터진다',
+    effect: '그 자리에 충격파',
     trig: 'nearKill',
     cd: 0.1,
     fx: d => aoe(d.e.x, d.e.y, 95, D() * 5, BR.gang.color),
@@ -53,7 +56,7 @@ export const SKILLS = {
   pajin: {
     br: 'gang',
     name: '파진검강',
-    desc: '한 줄을 전멸시키면 관통 검강을 내지른다',
+    effect: '관통 검강 발사',
     trig: 'rowClear',
     cd: 0.2,
     fx: () =>
@@ -62,7 +65,7 @@ export const SKILLS = {
   cheolgol: {
     br: 'gang',
     name: '철골',
-    desc: '최대 체력 +1, 즉시 1 회복',
+    effect: '최대 체력 +1, 즉시 1 회복',
     trig: 'passive',
     gain: () => {
       G.player.maxHp++;
@@ -76,7 +79,7 @@ export const SKILLS = {
   yeonhwan: {
     br: 'gang',
     name: '연환격',
-    desc: '연속 10회 처치마다 관통 대검기 3줄기를 날린다',
+    effect: '관통 대검기 3줄기 발사',
     trig: 'combo10',
     cd: 0.2,
     fx: () => {
@@ -84,12 +87,12 @@ export const SKILLS = {
         fireShot(G.player.x, G.player.y - 40, vx, D() * 4, { kind: 'gang', pierce: true, w: 9, color: BR.gang.color });
     },
   },
-  swaegap: { br: 'gang', name: '쇄갑', desc: '바위·장갑 적·보스에게 주는 피해 +40%', trig: 'passive' },
-  chukgi: { br: 'gi', name: '축기', desc: '필살기 충전량 +50%', trig: 'passive' },
+  swaegap: { br: 'gang', name: '쇄갑', effect: '바위·장갑 적·보스에게 주는 피해 +40%', trig: 'passive' },
+  chukgi: { br: 'gi', name: '축기', effect: '필살기 충전량 +50%', trig: 'passive' },
   geomu: {
     br: 'gi',
     name: '검우',
-    desc: '필살기 사용 뒤 1.5초간 검의 비가 쏟아진다',
+    effect: '1.5초간 검의 비',
     trig: 'blast',
     fx: () => {
       G.state.rain = 1.5;
@@ -99,7 +102,7 @@ export const SKILLS = {
   manryu: {
     br: 'gi',
     name: '만류귀종',
-    desc: '필살기 최대 횟수 +1, 즉시 1회 충전',
+    effect: '필살기 최대 횟수 +1, 즉시 1회 충전',
     trig: 'passive',
     gain: () => {
       G.state.maxBombs++;
@@ -113,7 +116,8 @@ export const SKILLS = {
   gitan: {
     br: 'gi',
     name: '기탄',
-    desc: '필살기를 2회 이상 모아 두면 추적 기탄을 자동으로 쏜다',
+    effect: '추적 기탄 발사',
+    cond: '필살기를 2회 이상 모았을 때 0.85초마다',
     trig: 'tick',
     cd: 0.85,
     when: () => G.state.bombs >= 2,
@@ -128,7 +132,7 @@ export const SKILLS = {
   hoegi: {
     br: 'gi',
     name: '회기',
-    desc: '필살기 사용 시 체력 1 회복 (관문당 1회)',
+    effect: '체력 1 회복 (관문당 1회)',
     trig: 'blast',
     fx: (d, s) => {
       if (s.used || G.player.hp >= G.player.maxHp) return;
@@ -143,7 +147,7 @@ export const SKILLS = {
     br: 'yu',
     npc: 'dosa',
     name: '태극운검',
-    desc: '스친 탄과 기세를 되돌려 적에게 날려 보낸다',
+    effect: '스친 탄을 추적탄으로 되돌려 보냄',
     trig: 'graze',
     fx: d => {
       if (d.h) d.h.dead = true;
@@ -154,7 +158,7 @@ export const SKILLS = {
     br: 'gi',
     npc: 'milsa',
     name: '혈마해방',
-    desc: '필살기 사용 뒤 2초간 무아지경에 든다',
+    effect: '2초간 무아지경',
     trig: 'blast',
     fx: () => {
       G.state.hyper = Math.max(G.state.hyper, 2);
@@ -165,7 +169,7 @@ export const SKILLS = {
     br: 'gang',
     npc: 'monk',
     name: '금강부동',
-    desc: '근접 처치 시 짧은 무적과 큰 충격파',
+    effect: '짧은 무적과 큰 충격파',
     trig: 'nearKill',
     cd: 0.35,
     fx: d => {
@@ -177,18 +181,18 @@ export const SKILLS = {
     br: 'yu',
     npc: 'yeonhyeop',
     name: '만천화우',
-    desc: '좌우 전환할 때마다 비도 3자루를 부채꼴로 던진다',
+    effect: '비도 3자루를 부채꼴로 투척',
     trig: 'step',
     cd: 0.26,
     fx: () => {
-      fan(3, 0.32, D() * 1.6, '#bdf7ea', 'knife', 'mancheon');
+      fan(3, 0.32, D() * 3, '#bdf7ea', 'knife', 'mancheon');
     },
   },
   hoechun: {
     br: 'gi',
     npc: 'yakseon',
     name: '회춘단',
-    desc: '관문마다 첫 피격을 무효로 하고 필살기 1회를 얻는다',
+    effect: '관문마다 첫 피격 무효, 필살기 +1회',
     trig: 'passive',
     gain: () => {
       G.state.negate = true;
@@ -198,7 +202,7 @@ export const SKILLS = {
     br: 'gang',
     npc: 'uijeok',
     name: '의협난도',
-    desc: '한 줄을 전멸시키면 5방향 관통 도기를 날린다',
+    effect: '5방향 관통 도기 발사',
     trig: 'rowClear',
     cd: 0.2,
     fx: () => {
@@ -210,15 +214,15 @@ export const SKILLS = {
   art_dobeop: {
     br: 'art',
     name: '녹림도법',
-    desc: '1.4초마다 7방향 도기를 뿌린다',
+    effect: '7방향 도기 발사',
     trig: 'tick',
     cd: 1.4,
-    fx: () => fan(7, 0.2, D() * 1.6, '#ffc179', 'knife', 'dobeop'),
+    fx: () => fan(7, 0.2, D() * 2.5, '#ffc179', 'knife', 'dobeop'),
   },
   art_cheolgap: {
     br: 'art',
     name: '철갑공',
-    desc: '피격 1회를 막는 보호막, 10초마다 재생',
+    effect: '피격 1회를 막는 보호막 생성',
     trig: 'tick',
     cd: 10,
     fx: () => {
@@ -231,7 +235,7 @@ export const SKILLS = {
   art_cheonma: {
     br: 'art',
     name: '천마군림',
-    desc: '3초마다 가장 강한 적에게 천마 검강을 내리꽂는다',
+    effect: '가장 강한 적에게 천마 검강',
     trig: 'tick',
     cd: 3,
     fx: () => {
@@ -245,14 +249,14 @@ export const ARTS = {
     name: '녹림도법',
     from: '녹림 채주',
     solo: 'art_dobeop',
-    combo: '발동할 때마다 5방향 도기를 함께 뿌린다',
-    fx: () => fan(5, 0.24, D() * 1.3, '#ffc179', 'knife', 'dobeop'),
+    plus: '5방향 도기 추가',
+    fx: () => fan(5, 0.24, D() * 2, '#ffc179', 'knife', 'dobeop'),
   },
   6: {
     name: '철갑공',
     from: '철갑 권승',
     solo: 'art_cheolgap',
-    combo: '발동할 때마다 0.5초 무적, 주변 탄을 지운다',
+    plus: '0.5초 무적, 주변 탄 제거',
     fx: () => {
       G.player.inv = Math.max(G.player.inv, 0.5);
       clearBullets(G.player.x, G.player.y, 95);
@@ -263,10 +267,38 @@ export const ARTS = {
     name: '천마군림',
     from: '천마 교주',
     solo: 'art_cheonma',
-    combo: '발동할 때마다 가까운 적에게 천마 검강이 떨어진다',
+    plus: '가까운 적에게 천마 검강 추가',
     fx: () => {
       const e = nearestEnemy(G.player.x, G.player.y);
       if (e) column(e.x, D() * 6, '#f6bc83', 30, 'cheonma');
     },
   },
 };
+
+/** When a skill goes off, in the player's words (the 발동 line on cards). */
+const WHEN = {
+  step: '좌우 전환할 때',
+  graze: '적이나 탄을 스칠 때',
+  nearKill: '근접 처치할 때',
+  rowClear: '한 줄을 전멸시킬 때',
+  combo10: '연속 10회 처치마다',
+  blast: '필살기를 쓸 때',
+  passive: '항상',
+};
+export function skillWhen(id: string): string {
+  const d = SKILLS[id];
+  return d.cond || (d.trig === 'tick' ? d.cd + '초마다' : WHEN[d.trig]);
+}
+/** ★ for a skill as learned, ★★ once a boss skill has been added to it. */
+export function skillStars(mod?: unknown): string {
+  return mod ? '★★' : '★';
+}
+/** The fixed three lines of a skill card: 발동 (when), 효과 (what), and the ★★ addition if there is one. */
+export function skillLines(id: string, mod?: string | number): string {
+  const row = (k: string, v: string, cls = '') => `<span class="skill-line${cls}"><b>${k}</b>${v}</span>`;
+  return (
+    row('발동', skillWhen(id)) +
+    row('효과', SKILLS[id].effect) +
+    (mod ? row('★★ 강화', '발동할 때마다 ' + ARTS[mod].plus, ' plus') : '')
+  );
+}

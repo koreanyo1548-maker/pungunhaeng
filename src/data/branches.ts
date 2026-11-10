@@ -15,13 +15,3 @@ export const COND = {
   fullCharge: { br: 'gi', label: '필살기 충전 가득 채우기' },
   charge: { br: 'gi', label: '필살기 충전량' },
 };
-export const TRIG_NAME = {
-  step: '좌우 전환 시',
-  graze: '스침 시',
-  nearKill: '근접 처치 시',
-  rowClear: '한 줄 전멸 시',
-  combo10: '연속 10회 처치 시',
-  blast: '필살기 사용 시',
-  tick: '자동',
-  passive: '항상',
-};

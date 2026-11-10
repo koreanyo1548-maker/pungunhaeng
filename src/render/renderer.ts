@@ -1,4 +1,5 @@
 import { drawSkillAnimations } from '../render/skill-animation';
+import { drawCallouts } from './callout';
 import { G } from '../core/context';
 import { H, W, ctx, reduced } from '../core/dom';
 import { clamp, fxRnd } from '../core/math';
@@ -109,6 +110,7 @@ export function draw() {
     ctx.shadowBlur = 0;
   }
   ctx.globalAlpha = 1;
+  drawCallouts();
   drawFinisher();
   drawBossIntro();
   drawBanner();

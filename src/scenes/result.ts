@@ -4,7 +4,7 @@ import { BR, COND } from '../data/branches';
 import { COURSES } from '../data/courses';
 import { HEROES } from '../data/heroes';
 import { NPCS } from '../data/npcs';
-import { ARTS, SKILLS } from '../data/skills';
+import { ARTS, SKILLS, skillStars } from '../data/skills';
 
 // Run results are stored as 성취 / 미달 / 진행 중; shown in plain words.
 const RESULT_TEXT = { 성취: '성공', 미달: '실패' };
@@ -22,7 +22,7 @@ export function runSummary() {
     G.state.skills
       .map(s => {
         const d = SKILLS[s.id];
-        return `<b style="color:${BR[d.br].color}">${d.name}</b>${s.mod ? ' + ' + ARTS[s.mod].name : ''}`;
+        return `<b style="color:${BR[d.br].color}">${d.name}</b> ${skillStars(s.mod)}${s.mod ? ' (' + ARTS[s.mod].name + ')' : ''}`;
       })
       .join(', ') || '없음';
   const rel =

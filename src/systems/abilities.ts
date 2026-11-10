@@ -1,4 +1,5 @@
 import { withSkill, skillCue, skillAura, queueSkillLearn } from '../render/skill-animation';
+import { skillCallout } from '../render/callout';
 import { isFinal } from './run-plan';
 import { random } from '../core/rng';
 import { on } from '../core/events';
@@ -24,7 +25,7 @@ export function trig(type, data = {}) {
     if (d.trig !== type || G.time < (s.ready || 0)) continue;
     s.ready = G.time + (d.cd || 0);
     s.flash = G.time;
-    performSkill(s.id, () => d.fx?.(data, s));
+    performSkill(s, () => d.fx?.(data, s));
     if (s.mod && G.time >= (s.modReady || 0)) {
       s.modReady = G.time + 0.5;
       withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
@@ -45,7 +46,7 @@ export function updateSkills(dt, oldX) {
     if (d.when && !d.when()) continue;
     s.ready = G.time + d.cd;
     s.flash = G.time;
-    performSkill(s.id, () => d.fx(null, s));
+    performSkill(s, () => d.fx(null, s));
     if (s.mod && G.time >= (s.modReady || 0)) {
       s.modReady = G.time + 0.5;
       withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
@@ -153,13 +154,20 @@ export function registerAbilityListeners() {
 }
 
 /** Visuals are emitted only for actual effects; the gameplay callback still always runs. */
-function performSkill(id, fn) {
-  const hp = G.player.hp;
+function performSkill(s, fn) {
+  const id = s.id,
+    hp = G.player.hp,
+    shield = G.player.shield;
   const hasTarget = G.enemies.some(targetable);
   withSkill(id, fn);
   if (id === 'hoegi' && G.player.hp === hp) return;
-  if (id === 'art_cheolgap') return; // State transitions draw creation and consumption.
+  if (id === 'art_cheolgap') {
+    // State transitions draw creation and consumption; the name is called when a shield actually forms.
+    if (G.player.shield && !shield) skillCallout(s);
+    return;
+  }
   if (id === 'art_cheonma' && !hasTarget) return;
+  skillCallout(s);
   if (!['yusu', 'bungsan', 'art_cheonma'].includes(id))
     skillCue(id, G.player.x, G.player.y - 45, id === 'hyeolma' ? 165 : 115);
   if (id === 'muyoung') skillAura(id, 0.3);

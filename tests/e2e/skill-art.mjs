@@ -38,6 +38,7 @@ try {
             '/src/render/skill-animation.ts',
             '/src/render/renderer.ts',
             '/src/render/pfx.ts',
+            '/src/render/callout.ts',
           ].map(p => import(p)),
         )),
       );
@@ -185,6 +186,35 @@ try {
       return M.skillAnimationSnapshot().cues.map(c => c.size);
     });
     assert.ok(area.includes(300), 'area cue missing after a blast that hit six targets');
+    // 초식 이름: a new skill announces itself three times, then stays quiet until it is enhanced.
+    const names = await page.evaluate(() => {
+      resetArtCase();
+      const { G } = M;
+      M.learn('janyoung');
+      const skill = G.state.skills[0];
+      let shown = 0;
+      const fire = n => {
+        for (let i = 0; i < n; i++) {
+          M.clearCallouts();
+          G.time += 2;
+          skill.ready = 0;
+          M.trig('step', { x: G.player.x });
+          M.updateCallouts(0);
+          M.drawCallouts();
+          shown += M.calloutSnapshot().length;
+        }
+        return shown;
+      };
+      const first = fire(5);
+      skill.mod = 3;
+      M.resetCallout(skill);
+      shown = 0;
+      const enhanced = fire(1);
+      return { first, enhanced, sub: M.calloutSnapshot()[0]?.sub };
+    });
+    assert.equal(names.first, 3, 'a new skill is called out exactly three times');
+    assert.equal(names.enhanced, 1, 'an enhanced skill is called out again');
+    assert.ok(names.sub.includes('★★'), 'the enhanced callout carries its grade');
     for (const mod of [3, 6, 7]) {
       const state = await page.evaluate(mod => {
         resetArtCase();

@@ -170,6 +170,50 @@
   font-size: 12px;
   line-height: 1.6;
 }
+/* A skill card reads top to bottom: grade, name, then 발동 / 효과 / ★★ 강화 on fixed lines. */
+.reward-screen .card .stars {
+  order: 1;
+  color: #a8791c;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin: -4px 0 2px;
+}
+.reward-screen .card.tier2 {
+  border-color: #d9a520;
+  box-shadow:
+    inset 0 0 0 3px #ffe9a188,
+    0 0 14px #ffd77a66,
+    0 5px 0 #061b20;
+}
+.reward-screen .card.tier2 .stars {
+  color: #c98a00;
+  font-weight: bold;
+}
+.reward-screen .card .skill-line {
+  display: block;
+  text-align: left;
+  line-height: 1.45;
+  margin-bottom: 5px;
+  word-break: keep-all;
+}
+.reward-screen .card .skill-line b {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: #354840;
+  color: #f1e6c9;
+  font-size: 10px;
+  font-weight: normal;
+}
+.reward-screen .card .skill-line.plus {
+  color: #7a4b00;
+  font-weight: bold;
+}
+.reward-screen .card .skill-line.plus b {
+  background: #c98a00;
+  color: #fff8e0;
+}
 .card-footer {
   order: 4;
   margin-top: auto;

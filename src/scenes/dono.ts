@@ -2,9 +2,9 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { skillImage } from '../core/assets';
 import { josa, rnd } from '../core/math';
-import { BR, TRIG_NAME } from '../data/branches';
+import { BR } from '../data/branches';
 import { NPCS } from '../data/npcs';
-import { SKILLS } from '../data/skills';
+import { SKILLS, skillLines } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
 import { learn } from '../systems/abilities';
@@ -37,10 +37,10 @@ export function openDono() {
         image: skillImage(id),
         artClass: 'skill-choice-art',
         color: BR[d.br].color,
-        tag: d.npc ? '전수 · ' + NPCS[d.npc].name + '의 고유 기술' : BR[d.br].name + ' 계열 · ' + TRIG_NAME[d.trig],
+        tag: d.npc ? NPCS[d.npc].name + '의 고유 기술' : BR[d.br].name + ' 계열',
         title: d.name,
-        desc: d.desc,
-        footer: d.npc ? '인연의 고유 기술' : '새 기술 · ' + TRIG_NAME[d.trig],
+        stars: 1,
+        desc: skillLines(id),
         onPick: () => {
           learn(id);
           done('dono');

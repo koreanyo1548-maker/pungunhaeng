@@ -207,9 +207,31 @@
   height: 24px;
   margin: 0;
 }
+/* Grade marks sit on the icon's lower edge and take no layout space. */
+.skills .chip {
+  position: relative;
+}
+.skills .chip .stars {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  text-align: center;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: #ffe9a8;
+  text-shadow:
+    0 0 2px #000,
+    0 1px 1px #000;
+  pointer-events: none;
+}
 .skills .chip.mod {
-  border-style: double;
-  border-width: 3px;
+  border: 3px solid #f2c14e;
+  box-shadow: 0 0 6px #ffd77a99;
+}
+.skills .chip.mod .stars {
+  color: #ffd24a;
 }
 .skills .chip.lit {
   box-shadow: 0 0 10px var(--c);

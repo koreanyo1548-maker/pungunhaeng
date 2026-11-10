@@ -22,6 +22,7 @@ export const TUNE = {
   mismatch: 0.75,
   sasaRel: 2,
   finalFlight: 16,
+  bossHp: 870, // gate boss health before difficulty scaling (580 until skill projectiles were strengthened)
   bossHpFinal: 1.6,
   orbDistance: 700,
   cloudCharge: 1.3,

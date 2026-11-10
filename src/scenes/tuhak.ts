@@ -38,6 +38,7 @@ export function openTuhak() {
       },
     });
   }
+  const upgradable = cards.length > 0;
   if (!G.state.skills.length)
     cards.push({
       image: skillImage(art.solo),
@@ -75,8 +76,11 @@ export function openTuhak() {
       ' 쓰러뜨리며 그 기술 「' +
       art.name +
       '」을 엿보았다. ' +
-      (G.state.skills.length ? '지닌 기술 하나를 골라 ★★로 강화하거나' : '새 기술로 배우거나') +
-      ', 기술 대신 엽전을 챙긴다.',
+      (upgradable
+        ? '지닌 기술 하나를 골라 ★★로 강화하거나, 기술 대신 엽전을 챙긴다.'
+        : !G.state.skills.length
+          ? '새 기술로 배우거나, 기술 대신 엽전을 챙긴다.'
+          : '지금 지닌 기술에는 더할 수 없어 엽전을 챙긴다.'),
     cards,
   });
 }

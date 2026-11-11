@@ -150,58 +150,6 @@ export function cropArt(im, cols, rows, col, row) {
   );
   return c;
 }
-/**
- * 풍운객's frames come from two sheets drawn at different sizes, and the poses are not centred in their cells.
- * Every frame is redrawn into a run-sized square cell at one uniform scale, with the body axis on the cell
- * centre (the player's x) and the feet on one baseline. Otherwise the body is squashed during attacks and
- * jumps sideways on every swing. Offsets were measured from the art and are in screen pixels at the 114 px
- * draw size: how far each frame's body sits from the centre before correction.
- */
-const PUNGUN_RUN_OFF = 5,
-  PUNGUN_ATTACK_OFF = [-2, -7, 0, -4],
-  PUNGUN_ATTACK_FEET = 0.827; // feet line as a fraction of the attack sheet's height
-function alignPungun(attack) {
-  const run = heroAnimations.pungun,
-    size = run[0].width,
-    px = size / 114,
-    feet = bottomRow(run[0]);
-  const cell = draw => {
-    const c = document.createElement('canvas');
-    c.width = c.height = size;
-    draw(c.getContext('2d'));
-    return c;
-  };
-  for (let i = 0; i < 4; i++) {
-    const frame = run[i];
-    run[i] = cell(g => g.drawImage(frame, -PUNGUN_RUN_OFF * px, 0));
-  }
-  const w = attack.width / 4,
-    k = size / w;
-  for (let col = 0; col < 4; col++)
-    run.push(
-      cell(g =>
-        g.drawImage(
-          attack,
-          col * w,
-          0,
-          w,
-          attack.height,
-          -PUNGUN_ATTACK_OFF[col] * px,
-          feet - attack.height * PUNGUN_ATTACK_FEET * k,
-          size,
-          attack.height * k,
-        ),
-      ),
-    );
-}
-/** The lowest row of a frame that has opaque pixels (where the feet stand). */
-function bottomRow(c) {
-  const { width, height } = c,
-    data = c.getContext('2d').getImageData(0, 0, width, height).data;
-  for (let y = height - 1; y >= 0; y--)
-    for (let x = 0; x < width; x++) if (data[(y * width + x) * 4 + 3] > 128) return y;
-  return height - 1;
-}
 export async function loadNewArt() {
   const [run, fly, npc, icons] = await Promise.all(Object.values(NEW_ART).map(loadImage));
   const ids = Object.keys(HEROES);
@@ -218,14 +166,13 @@ export async function loadNewArt() {
 }
 export async function load() {
   try {
-    const [art, world, mobs, bosses, fx, skyEnemies, attack, skyMotion, simma] = await Promise.all([
+    const [art, world, mobs, bosses, fx, skyEnemies, skyMotion, simma] = await Promise.all([
       loadImage(IMG['title-art']),
       loadImage(IMG['world']),
       loadImage(IMG['mobs']),
       loadImage(IMG['bosses']),
       loadImage(IMG['fx']),
       loadImage(IMG['sky-enemies']),
-      loadImage(IMG['pungun-attack']),
       loadImage(IMG['sky-enemies-motion']),
       loadImage(IMG['simma']),
     ]);
@@ -302,7 +249,6 @@ export async function load() {
       G.worlds.push(c);
     }
     await loadNewArt();
-    alignPungun(attack);
     await loadCombatArt();
     await loadPortraitProps();
     await loadSkillArt();

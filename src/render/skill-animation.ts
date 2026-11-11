@@ -1,6 +1,7 @@
 /** Painted six-frame sequences. Black atlases are intentional additive light passes, not masks. */
 import { G } from '../core/context';
-import { ctx, reduced } from '../core/dom';
+import { combatProjectileArt } from '../core/assets';
+import { H, W, ctx, reduced } from '../core/dom';
 import signature from '../assets/images/skills/signature.png';
 import movement from '../assets/images/skills/movement.png';
 import attack from '../assets/images/skills/attack.png';
@@ -144,6 +145,34 @@ type Cue = {
 };
 const cues: Cue[] = [];
 const learned: string[] = [];
+/** Full-screen light that spreads from a point and fades: the moment a screen-wide skill lands. */
+type Wash = { x: number; y: number; color: string; strength: number; age: number; duration: number };
+const washes: Wash[] = [];
+/**
+ * A screen-scale skill moment: the whole six-frame sequence at `size`, held for `duration` seconds, never
+ * throttled by the per-skill limits, with a screen wash of `color` behind it.
+ */
+export function skillBurst(id: string, x: number, y: number, size: number, duration: number, color: string) {
+  if (!rows[id] || !G.state || !frames[0]) return;
+  if (cues.length >= 48) cues.shift();
+  cues.push({
+    id,
+    x,
+    y,
+    size,
+    age: 0,
+    duration,
+    impact: false,
+    follow: false,
+    owner: G.state.active,
+    stage: G.state.stage,
+  });
+  screenWash(x, y, color, duration * 0.8, 0.34);
+}
+export function screenWash(x: number, y: number, color: string, duration: number, strength: number) {
+  if (washes.length >= 4) washes.shift();
+  washes.push({ x, y, color, strength: reduced ? strength * 0.4 : strength, age: 0, duration });
+}
 export function queueSkillLearn(id: string) {
   learned.push(id);
 }
@@ -169,6 +198,7 @@ export function drawSwapPose(id: string, x: number, y: number, angle: number, al
 }
 export function clearSkillAnimations() {
   cues.length = 0;
+  washes.length = 0;
   learned.length = 0;
   swapPose = null;
   auras.clear();
@@ -211,6 +241,8 @@ export function skillAura(id: string, duration: number, size = 120) {
 }
 export function updateSkillAnimations(dt: number) {
   for (const c of cues) c.age += dt;
+  for (const w of washes) w.age += dt;
+  for (let i = washes.length - 1; i >= 0; i--) if (washes[i].age >= washes[i].duration) washes.splice(i, 1);
   for (let i = cues.length - 1; i >= 0; i--) {
     const c = cues[i];
     if (c.age >= c.duration || c.stage !== G.state?.stage || (c.follow && c.owner !== G.state?.active))
@@ -218,6 +250,7 @@ export function updateSkillAnimations(dt: number) {
   }
   if (!G.player || !G.state || G.player.hp <= 0 || ['title', 'result', 'choice'].includes(G.mode)) {
     cues.length = 0;
+    washes.length = 0;
     auras.clear();
     shield = negate = false;
     return;
@@ -243,6 +276,7 @@ export function updateSkillAnimations(dt: number) {
   negate = nextNegate;
 }
 export function drawSkillAnimations() {
+  drawWashes();
   for (const c of cues) {
     const t = c.age / c.duration;
     const frame = reduced
@@ -283,4 +317,49 @@ export function drawSkillShot(s: any) {
 /** Runtime inspection for the visual regression harness, never used to drive gameplay. */
 export function skillAnimationSnapshot() {
   return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: frames.length, shield, negate };
+}
+function drawWashes() {
+  for (const w of washes) {
+    const t = w.age / w.duration,
+      // spreads out from the point in the first fifth, then fades
+      reach = Math.hypot(W, H) * (0.35 + 0.65 * Math.min(1, t * 5)),
+      alpha = w.strength * (1 - t) ** 1.5;
+    const g = ctx.createRadialGradient(w.x, w.y, 0, w.x, w.y, reach);
+    g.addColorStop(0, w.color);
+    g.addColorStop(0.55, w.color + '88');
+    g.addColorStop(1, w.color + '00');
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+}
+/**
+ * 검우: while the rain lasts, swords fall across the whole screen, not only where they hit. Positions come from
+ * G.time alone, so this draws the same at any frame rate and uses no random numbers.
+ */
+export function drawSwordRain(remaining: number, total: number) {
+  const im = combatProjectileArt[6];
+  if (!im || remaining <= 0) return;
+  const elapsed = total - remaining,
+    fade = Math.min(1, elapsed / 0.15, remaining / 0.35),
+    lanes = reduced ? 7 : 15,
+    fall = reduced ? 500 : 1150;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < lanes; i++) {
+    const x = ((i + 0.5) * W) / lanes + Math.sin(i * 2.7) * 11,
+      span = H + 260,
+      y = ((G.time * fall * (0.85 + (i % 3) * 0.12) + i * 157) % span) - 130,
+      size = 0.8 + (i % 4) * 0.12;
+    ctx.globalAlpha = fade * (0.55 + (i % 3) * 0.15);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI + 0.12);
+    ctx.drawImage(im, -24 * size, -60 * size, 48 * size, 120 * size);
+    ctx.restore();
+  }
+  ctx.restore();
 }

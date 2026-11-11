@@ -1,4 +1,4 @@
-import { visualSkill, skillCue } from '../render/skill-animation';
+import { visualSkill, skillCue, skillBurst } from '../render/skill-animation';
 import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
@@ -56,7 +56,7 @@ export function blast() {
     G.labels[G.labels.length - 1].delay = 0.75;
   }
   emit('blast', { killed });
-  skillCue('blast', G.player.x, G.player.y, 240, true);
+  skillBurst('blast', G.player.x, G.player.y - 40, 460, 0.85, '#7fe6cf');
   paintFX(3, G.player.x, G.player.y - 25, 270, 0.45);
   paintFX(3, 240, 330, 300, 0.4, 0, 0.12, 0.25);
   ring(G.player.x, G.player.y, '#abfff0', 20, 950, 0.65);
@@ -124,7 +124,9 @@ export function column(x, dmg, color, w = 36, art = 'generic') {
   }
   const skill = visualSkill || (art === 'rain' ? 'geomu' : art === 'cheonma' ? 'art_cheonma' : undefined);
   const target = G.enemies.find(e => Math.abs(e.x - x) < w + e.r && e.y > 0);
-  G.strikes.push({ x, y: target?.y ?? 280, skill, w, color, art, life: 0.32, total: 0.32 });
+  // How long the strike stays on screen (display only; the damage above is already done).
+  const show = art === 'rain' ? 0.6 : art === 'cheonma' ? 0.55 : 0.32;
+  G.strikes.push({ x, y: target?.y ?? 280, skill, w, color, art, life: show, total: show });
   tone(180, 0.18, 'sawtooth', 0.05, 90);
 }
 export function clearBullets(x, y, r) {

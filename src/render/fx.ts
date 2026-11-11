@@ -1,4 +1,4 @@
-import { updateSkillAnimations, drawSkillFrame } from '../render/skill-animation';
+import { updateSkillAnimations, drawSkillFrame, drawSwordRain } from '../render/skill-animation';
 import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
 import { projectileArt, combatProjectileArt } from '../core/assets';
@@ -9,6 +9,7 @@ import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
 import { hasSkill } from '../systems/abilities';
 import { region } from '../systems/flow';
+import { RAIN_SECONDS } from '../data/skills';
 import { drawPfx, pfx, ramp, updatePfx } from './pfx';
 import { updateCallouts } from './callout';
 
@@ -275,12 +276,13 @@ export function drawFinisher() {
   ctx.restore();
 }
 export function drawSkillFX() {
+  if (G.state.rain > 0) drawSwordRain(G.state.rain, RAIN_SECONDS);
   // Damage is still resolved instantly along the full column; the slim trail marks its reach.
   for (const s of G.strikes) {
     const t = s.life / s.total;
     ctx.save();
     ctx.strokeStyle = s.color;
-    ctx.globalAlpha = t * 0.24;
+    ctx.globalAlpha = t * (s.art === 'rain' || s.art === 'cheonma' ? 0.4 : 0.24);
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(s.x, 0);
@@ -291,10 +293,10 @@ export function drawSkillFX() {
       s.skill &&
       drawSkillFrame(
         s.skill,
-        reduced ? 3 : Math.min(5, 3 + Math.floor((1 - t) * 3)),
+        reduced ? 3 : Math.min(5, 2 + Math.floor((1 - t) * 4)),
         s.x,
         s.y ?? H * 0.36,
-        s.skill === 'geomu' ? 150 : 220,
+        s.skill === 'geomu' ? 230 : 300,
         t,
       )
     )

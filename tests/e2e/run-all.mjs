@@ -5,6 +5,7 @@
 // Scenario B: 거스름 + 화두 미달 → 관계 그대로, 같은 인연이 다시 나타남 → 거스름 성취 → 관계 −1, 숙적 +1.
 // Scenario C: 사망 → 결과 화면.
 // Scenario D: 보스 기술 보상 (항상 계열뿐이면 새 기술, 발동 기술이 있으면 강화).
+// Scenario E: 메타 성장 (엽전 보관 → 수련 → 다음 판 반영, 저장 코드, 손상된 저장 복구).
 // Every scenario also checks the exact scene sequence (systems/scene-flow.ts).
 import { DEFAULT_BUILD, check, launch, openGame } from '../lib/harness.mjs';
 
@@ -290,12 +291,103 @@ async function scenarioD(browser, seed) {
   return { name: `D seed ${seed}`, failures: f, log: [`passive-only → ${learned} · active → ${enhanced}`] };
 }
 
+// Scenario E: meta progression. An empty profile is the base game; 엽전 left at the end of a run is banked;
+// 수련 spends it; the next run starts with the bought stats; the save code round-trips; bad saves are repaired.
+async function scenarioE(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed });
+  const P = () => g.state(() => JSON.parse(JSON.stringify(window.__g.profile)));
+  const runStart = async () => {
+    await setup(g, 0);
+    await g.act(0);
+    await g.step(2);
+    return g.state(() => ({
+      hp: window.__g.player.hp,
+      bombs: window.__g.state.bombs,
+      meta: window.__g.state.meta.stats,
+    }));
+  };
+  const die = async coins => {
+    await g.eval(coins => {
+      window.__g.state.coins = coins;
+      window.__g.player.hp = 1;
+      window.__g.player.inv = 0;
+    }, coins);
+    for (let i = 0; i < 180 && (await g.mode()) !== 'result'; i++) await g.seconds(1);
+    return g.state(() => window.__g.state.coins);
+  };
+  let p = await P();
+  check(
+    f,
+    p.coins === 0 && Object.values(p.stats).every(v => v === 0),
+    `fresh profile is empty (${JSON.stringify(p)})`,
+  );
+  const base = await runStart();
+  check(f, base.hp === 3 && base.bombs === 2, `empty profile starts with base values (${JSON.stringify(base)})`);
+  const left = await die(700);
+  p = await P();
+  check(f, p.coins === left && left >= 700, `엽전 left at the end is banked (${left} → bank ${p.coins})`);
+  // 수련 from the result screen: buy 공격력 twice (200 + 300)
+  await g.eval(() => document.getElementById('resultTraining').click());
+  for (let i = 0; i < 2; i++) await g.eval(() => document.querySelector('.stat-buy[data-id="power"]').click());
+  p = await P();
+  check(
+    f,
+    p.stats.power === 2 && p.coins === left - 500,
+    `수련 spends the bank (power ${p.stats.power}, bank ${p.coins})`,
+  );
+  const tooDear = await g.eval(() => document.querySelector('.stat-buy[data-id="hp"]').disabled);
+  check(f, tooDear === p.coins < 1500, 'a stat the bank cannot pay for is disabled');
+  // save code: export, wipe, import
+  const code = await g.eval(() => document.getElementById('saveCode').value);
+  await g.eval(() => window.__g.loadProfile({}));
+  check(f, (await P()).coins === 0, 'profile wiped');
+  await g.eval(code => {
+    document.getElementById('saveCode').value = code;
+    document.getElementById('saveLoad').click();
+  }, code);
+  check(f, JSON.stringify(await P()) === JSON.stringify(p), 'save code restores the profile');
+  await g.eval(() => {
+    document.getElementById('saveCode').value = 'not a save code';
+    document.getElementById('saveLoad').click();
+  });
+  check(f, JSON.stringify(await P()) === JSON.stringify(p), 'a wrong code changes nothing');
+  await g.eval(() => document.getElementById('trainingClose').click());
+  // next run reads the bought stats
+  await g.eval(() =>
+    window.__g.loadProfile({ coins: 0, stats: { power: 2, hp: 1, bombs: 1, swap: 2, charge: 99, fortune: -3 } }),
+  );
+  p = await P();
+  check(
+    f,
+    p.stats.charge === 6 && p.stats.fortune === 0,
+    `out-of-range levels are repaired (${JSON.stringify(p.stats)})`,
+  );
+  const next = await runStart();
+  check(
+    f,
+    next.hp === 4 && next.bombs === 3 && next.meta.power === 2,
+    `next run starts stronger (${JSON.stringify(next)})`,
+  );
+  // the run keeps its snapshot even if the profile changes mid-run
+  await g.eval(() => window.__g.loadProfile({ stats: { power: 10 } }));
+  check(f, (await g.state(() => window.__g.state.meta.stats.power)) === 2, 'a run keeps the snapshot it started with');
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return {
+    name: `E seed ${seed}`,
+    failures: f,
+    log: [`bank ${left} → power 2 → next run hp ${next.hp}, 필살기 ${next.bombs}`],
+  };
+}
+
 const browser = await launch();
 const results = [];
 for (const course of [0, 1]) results.push(await scenarioA(browser, course, 101 + course));
 results.push(await scenarioB(browser, 0, 303));
 results.push(await scenarioC(browser, 1, 404));
 results.push(await scenarioD(browser, 505));
+results.push(await scenarioE(browser, 606));
 await browser.close();
 
 let failed = 0;

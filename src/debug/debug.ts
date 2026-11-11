@@ -1,6 +1,7 @@
 import { runSeed } from '../core/rng';
 import { G } from '../core/context';
 import { hitEnemy } from '../entities/enemies';
+import { loadProfile, profile } from '../core/profile';
 import { learn } from '../systems/abilities';
 import { swapHero } from '../systems/formation';
 import { questEvent } from '../systems/quest';
@@ -34,6 +35,11 @@ if (location.hash.includes('debug'))
     },
     questEvent,
     learn,
+    /** the saved profile (meta progression); loadProfile replaces it, for tests */
+    get profile() {
+      return profile;
+    },
+    loadProfile,
     skipFlight() {
       G.state.stageTime = 999;
     },

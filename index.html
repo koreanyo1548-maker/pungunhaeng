@@ -79,6 +79,9 @@
               <span>→</span>
             </div>
             <button class="primary" id="start" disabled>강호를 준비하는 중…</button>
+            <div class="hub-row">
+              <span id="bankCoins">지닌 엽전 0냥</span><button class="hub-button" id="openTraining">수련</button>
+            </div>
             <div class="start-footer">
               <span id="introBest">최고 기록 0</span><button class="sound-toggle" id="soundIntro">♪ 소리 켜짐</button>
             </div>
@@ -106,8 +109,10 @@
               <div><b id="finalKills">0</b><span>처치</span></div>
               <div><b id="finalCoins">0</b><span>엽전</span></div>
             </div>
+            <p class="settle" id="settle"></p>
             <div class="summary" id="summary"></div>
             <button class="primary" id="retry">다시 강호로</button
+            ><button class="secondary" id="resultTraining">수련하러 가기</button
             ><button class="secondary" id="home">처음 화면</button>
           </div>
         </div>
@@ -117,6 +122,25 @@
             <h2 id="choiceTitle"></h2>
             <p class="choice-sub" id="choiceSub"></p>
             <div class="cards" id="choiceCards"></div>
+          </div>
+        </div>
+        <div class="overlay modal hidden" id="training">
+          <div class="panel training-panel">
+            <span class="eyebrow">엽전으로 기본기를 다진다</span>
+            <h2>수련</h2>
+            <p class="bank" id="trainingBank"></p>
+            <div class="stat-list" id="statList"></div>
+            <details class="save-code">
+              <summary>저장 코드</summary>
+              <p>다른 기기나 새 파일에서 이어 하려면 이 코드를 복사해 옮기세요.</p>
+              <textarea id="saveCode" rows="3" spellcheck="false" aria-label="저장 코드"></textarea>
+              <div class="save-actions">
+                <button class="secondary" id="saveCopy">코드 복사</button
+                ><button class="secondary" id="saveLoad">코드 불러오기</button>
+              </div>
+              <p class="save-msg" id="saveMsg" role="status"></p>
+            </details>
+            <button class="primary" id="trainingClose">돌아가기</button>
           </div>
         </div>
         <div class="toast" id="toast" role="status"></div>

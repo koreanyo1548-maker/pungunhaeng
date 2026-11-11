@@ -15,6 +15,10 @@ export function activeHeroId() {
 export function activeFrames() {
   return heroAnimations[activeHeroId()] || G.heroFrames;
 }
+/** Seconds between swaps: the base, shortened by 교체 숙련. */
+export function swapCooldown() {
+  return TUNE.swapCd - 0.5 * G.state.meta.stats.swap;
+}
 export function traitOn(id) {
   return !!G.state && G.state.formation?.[G.state.active] === id && HEROES[id].terrain === G.state.course;
 }
@@ -26,7 +30,7 @@ export function swapHero() {
     m = rescue || opening ? 2 : 1;
   G.afterimages = [];
   G.state.active = 1 - G.state.active;
-  G.state.swapReady = G.time + TUNE.swapCd;
+  G.state.swapReady = G.time + swapCooldown();
   const h = HEROES[G.state.formation[G.state.active]];
   G.player.inv = Math.max(G.player.inv, 0.5);
   if (!pfx('collect', G.player.x, G.player.y + 40, { palette: ramp(h.color) })) {

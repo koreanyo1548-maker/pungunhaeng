@@ -185,3 +185,27 @@
     animation: none;
   }
 }
+
+/* Between-run progress on the title screen: the bank and the way into 수련. */
+.hub-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 8px;
+  background: #0a1f1a99;
+  border: 1px solid #ffd77a44;
+  font-size: 13px;
+  color: #ffe9b0;
+}
+.hub-button {
+  padding: 8px 18px;
+  border-radius: 7px;
+  border: 1px solid #fff2bb88;
+  background: #1d3a33;
+  color: #ffe9b0;
+  font-size: 13px;
+  font-weight: 700;
+}

@@ -5,7 +5,7 @@ import { $ } from './dom';
 import { RANKS } from '../data/enemies';
 import { HEROES } from '../data/heroes';
 import { NPCS } from '../data/npcs';
-import { showBest } from '../ui/hud';
+import { showBank, showBest } from '../ui/hud';
 
 export function atlasCell(atlas, cols, rows, col, row) {
   const c = document.createElement('canvas');
@@ -257,6 +257,7 @@ export async function load() {
     $('start').disabled = false;
     $('start').textContent = '강호에 나서기';
     showBest();
+    showBank();
   } catch (err) {
     $('start').textContent = '다시 불러오기';
     $('start').disabled = false;

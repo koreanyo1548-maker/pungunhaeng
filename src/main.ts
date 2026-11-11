@@ -6,6 +6,7 @@ import './styles/panels.css';
 import './styles/choice.css';
 import './styles/mobile-game.css';
 import './ui/input';
+import './scenes/training';
 import './debug/debug';
 import { load } from './core/assets';
 import { registerQuestListeners } from './systems/quest';

@@ -7,6 +7,8 @@ import { D, aoe, clearBullets, column, fan, fireShot } from '../systems/combat';
 
 // D() is the damage of one basic shot. A skill's projectile is a reward for meeting its condition, so each one
 // hits at least twice as hard as a basic shot (see docs/terms.md).
+/** How long 검우's rain of swords lasts, in seconds. */
+export const RAIN_SECONDS = 1.5;
 export const SKILLS = {
   janyoung: {
     br: 'yu',
@@ -95,7 +97,7 @@ export const SKILLS = {
     effect: '1.5초간 검의 비',
     trig: 'blast',
     fx: () => {
-      G.state.rain = 1.5;
+      G.state.rain = RAIN_SECONDS;
       G.state.rainTimer = 0;
     },
   },

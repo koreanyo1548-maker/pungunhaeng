@@ -166,14 +166,13 @@ export async function loadNewArt() {
 }
 export async function load() {
   try {
-    const [art, world, mobs, bosses, fx, skyEnemies, attack, skyMotion, simma] = await Promise.all([
+    const [art, world, mobs, bosses, fx, skyEnemies, skyMotion, simma] = await Promise.all([
       loadImage(IMG['title-art']),
       loadImage(IMG['world']),
       loadImage(IMG['mobs']),
       loadImage(IMG['bosses']),
       loadImage(IMG['fx']),
       loadImage(IMG['sky-enemies']),
-      loadImage(IMG['pungun-attack']),
       loadImage(IMG['sky-enemies-motion']),
       loadImage(IMG['simma']),
     ]);
@@ -250,12 +249,6 @@ export async function load() {
       G.worlds.push(c);
     }
     await loadNewArt();
-    // The attack sheet has a shared empty top/bottom margin; keep a consistent foot baseline.
-    heroAnimations.pungun.push(
-      ...[0, 1, 2, 3].map(col =>
-        cropProp(attack, [(col * attack.width) / 4, attack.height * 0.08, attack.width / 4, attack.height * 0.8]),
-      ),
-    );
     await loadCombatArt();
     await loadPortraitProps();
     await loadSkillArt();

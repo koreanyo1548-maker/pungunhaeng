@@ -189,11 +189,11 @@ export function drawMartialPlayer() {
     ctx.restore();
   }
   drawHeroSprite(heroPose(), G.player.x, G.player.y + bob - hop, G.player.tilt * (tier === 2 ? 0.65 : 1.5));
-  if (G.player.swing > 0 && (activeHeroId() !== 'pungun' || G.player.swing > 0.42)) {
+  if (G.player.swing > 0) {
     const t = 1 - G.player.swing;
     ctx.save();
     ctx.translate(G.player.x, G.player.y - hop - 20);
-    ctx.rotate(activeHeroId() === 'pungun' ? -0.8 + t * 2.4 : -0.5 + t * 0.9);
+    ctx.rotate(-0.5 + t * 0.9);
     ctx.globalAlpha *= G.player.swing * 0.8;
     ctx.strokeStyle = '#f8ffe2';
     ctx.shadowColor = '#7cebd1';

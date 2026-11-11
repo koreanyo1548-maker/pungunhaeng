@@ -59,8 +59,7 @@ export function shoot() {
   G.player.muzzle = 0.09;
   G.player.swing = 1;
   G.player.swingCount++;
-  if (activeHeroId() !== 'pungun' && G.player.swingCount % 3 === 0)
-    paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
+  if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
   const offsets = G.player.weapon === 1 ? [-9, 9] : G.player.weapon === 2 ? [-18, 0, 18] : [-27, -9, 9, 27];
   for (const x of offsets)
     G.shots.push({
@@ -80,14 +79,6 @@ export function borrowedSword() {
 }
 export function heroPose() {
   if (reduced || borrowedSword()) return 0;
-  if (activeHeroId() === 'pungun' && G.player.swingCount > 0 && ['flight', 'boss'].includes(G.state.phase)) {
-    // Wind up before the next existing shot. Frame 5 is the release at swing=1.
-    // No delays or extra attacks: use the established fire/swing clocks only.
-    if (G.player.fire > 0 && G.player.fire <= 0.035) return 4;
-    if (G.player.swing > 0.65) return 5;
-    if (G.player.swing > 0.32) return 6;
-    return 7;
-  }
   const airborne = HEROES[activeHeroId()].terrain === 'sky';
   if (airborne) return Math.abs(G.player.tilt) > 0.045 ? (G.player.tilt < 0 ? 2 : 3) : Math.floor(G.time * 4) % 2;
   return Math.floor(G.state.runPhase / 1.8) % 4;

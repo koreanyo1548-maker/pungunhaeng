@@ -45,9 +45,11 @@ export function openChoice(o) {
   box.classList.toggle('multi', cols > 1);
   for (const c of o.cards) {
     const el = document.createElement(c.acts ? 'div' : 'button');
-    el.className = 'card';
+    // stars: a skill's grade, shown under its icon; 2 marks a boss-enhanced skill (gold frame)
+    el.className = 'card' + (c.stars === 2 ? ' tier2' : '');
     el.style.setProperty('--c', c.color);
-    el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc && !o.confirm ? `<p>${c.desc}</p>` : ''}${c.footer ? `<span class="card-footer">${c.footer}</span>` : ''}`;
+    const stars = c.stars ? `<span class="stars">${c.starsFrom ? '★ → ' : ''}${'★'.repeat(c.stars)}</span>` : '';
+    el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}${stars}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc && !o.confirm ? `<p>${c.desc}</p>` : ''}${c.footer ? `<span class="card-footer">${c.footer}</span>` : ''}`;
     if (c.acts) {
       const row = document.createElement('div');
       row.className = 'acts';

@@ -112,7 +112,7 @@ export function aoe(x, y, r, dmg, color) {
     if (e.dead) continue;
     if (Math.hypot(e.x - x, e.y - y) < r + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg, visualSkill);
   }
-  if (!visualSkill || !skillCue(visualSkill, x, y, r * 2, true)) {
+  if (!visualSkill || !skillCue(visualSkill, x, y, r * 2, true, false, true)) {
     paintFX(color === BR.yu.color ? 4 : 2, x, y, r * 2, 0.38, 0, 0, 0.72);
     ring(x, y, color, 10, r, 0.35);
   }

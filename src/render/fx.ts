@@ -10,6 +10,7 @@ import { drawVfxSprite } from './projectiles';
 import { hasSkill } from '../systems/abilities';
 import { region } from '../systems/flow';
 import { drawPfx, pfx, ramp, updatePfx } from './pfx';
+import { updateCallouts } from './callout';
 
 export function burst(x, y, color, n = 12, force = 150) {
   for (let i = 0; i < n; i++) {
@@ -38,6 +39,7 @@ export function impact(x, y, color, size = 40) {
 }
 export function effects(dt) {
   updateSkillAnimations(dt);
+  updateCallouts(dt);
   updatePaintedFX(dt);
   updateContactFX(dt);
   updatePfx(dt);

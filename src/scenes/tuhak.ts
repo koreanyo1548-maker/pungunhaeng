@@ -3,8 +3,9 @@ import { coinImage, skillImage } from '../core/assets';
 import { chime } from '../core/audio';
 import { josa } from '../core/math';
 import { BR } from '../data/branches';
-import { ARTS, SKILLS } from '../data/skills';
+import { ARTS, SKILLS, skillLines } from '../data/skills';
 import { TUNE } from '../data/tune';
+import { resetCallout } from '../render/callout';
 import { label } from '../render/fx';
 import { openChoice } from './choice';
 import { learn } from '../systems/abilities';
@@ -23,25 +24,31 @@ export function openTuhak() {
       image: skillImage(s.id),
       artClass: 'skill-choice-art',
       color: BR[d.br].color,
-      tag: '강화 · 지닌 기술에 효과를 더한다',
-      title: d.name + ' + ' + art.name,
-      desc: art.combo,
-      footer: '지닌 기술 「' + d.name + '」 강화',
+      tag: '지닌 기술 강화',
+      title: d.name,
+      stars: 2,
+      starsFrom: true,
+      desc: skillLines(s.id, r.type),
+      footer: art.from + '의 「' + art.name + '」을 더한다',
       onPick: () => {
         s.mod = r.type;
-        label('강화 · ' + d.name + ' + ' + art.name, 240, 400, BR.art.color, 20);
+        resetCallout(s);
+        label(d.name + ' ★★ 강화', 240, 400, '#ffd77a', 22);
         finish();
       },
     });
   }
-  if (!G.state.skills.length)
+  // Nothing to enhance (no skills yet, or only passive or already enhanced ones): learn the boss skill itself.
+  const upgradable = cards.length > 0;
+  if (!upgradable && !G.state.skills.some(s => s.id === art.solo))
     cards.push({
       image: skillImage(art.solo),
       artClass: 'skill-choice-art',
       color: BR.art.color,
-      tag: '새로 배우기 · 강화할 기술이 없어 그대로 배운다',
+      tag: '새 기술 · 강화할 기술이 없어 그대로 배운다',
       title: art.name,
-      desc: SKILLS[art.solo].desc,
+      stars: 1,
+      desc: skillLines(art.solo),
       onPick: () => {
         learn(art.solo);
         finish();
@@ -69,7 +76,9 @@ export function openTuhak() {
       josa(art.from, '을', '를') +
       ' 쓰러뜨리며 그 기술 「' +
       art.name +
-      '」을 엿보았다. 새로 배우거나 지닌 기술을 강화한다. 기술 대신 엽전을 챙길 수도 있다.',
+      '」을 엿보았다. ' +
+      (upgradable ? '지닌 기술 하나를 골라 ★★로 강화하거나' : '강화할 기술이 없어 새 기술로 배우거나') +
+      ', 기술 대신 엽전을 챙긴다.',
     cards,
   });
 }

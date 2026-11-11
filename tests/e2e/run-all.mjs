@@ -4,6 +4,7 @@
 //   (명상, 수소문, 약주) → 3 gates → 최종 관문 → 결과.
 // Scenario B: 거스름 + 화두 미달 → 관계 그대로, 같은 인연이 다시 나타남 → 거스름 성취 → 관계 −1, 숙적 +1.
 // Scenario C: 사망 → 결과 화면.
+// Scenario D: 보스 기술 보상 (항상 계열뿐이면 새 기술, 발동 기술이 있으면 강화).
 // Every scenario also checks the exact scene sequence (systems/scene-flow.ts).
 import { DEFAULT_BUILD, check, launch, openGame } from '../lib/harness.mjs';
 
@@ -251,11 +252,50 @@ async function scenarioC(browser, course, seed) {
   return { name: `C course ${course} seed ${seed}`, failures: f, log: [got.join(' → ')] };
 }
 
+// Scenario D: boss skill rewards. With only a passive skill there is nothing to enhance, so the boss skill is
+// offered as a new ★ skill; with an active skill it is offered as a ★★ enhancement of that skill.
+async function scenarioD(browser, seed) {
+  const f = [];
+  const titles = async () => (await g.cards()).map(c => c.title);
+  let g = await openGame(file, { browser, seed });
+  await setup(g, 0);
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.learn('chukgi'));
+  await clearBoss(g);
+  check(f, (await g.choiceTitle()) === '보스 기술', '보스 기술 opens after the boss');
+  const passiveOnly = await titles();
+  check(f, passiveOnly.includes('녹림도법'), `passive-only: boss skill offered as a new skill (${passiveOnly})`);
+  check(f, await g.pickTitled('녹림도법'), 'the new boss skill can be picked');
+  await g.step(2);
+  const learned = await g.state(() => window.__g.state.skills.map(k => k.id + (k.mod ? '+' + k.mod : '')));
+  check(f, learned.includes('art_dobeop'), `boss skill learned (${learned})`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+
+  g = await openGame(file, { browser, seed });
+  await setup(g, 0);
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.learn('janyoung'));
+  await clearBoss(g);
+  const active = await titles();
+  check(f, active.includes('잔영검') && !active.includes('녹림도법'), `active skill: enhancement only (${active})`);
+  check(f, await g.pickTitled('잔영검'), 'the enhancement can be picked');
+  await g.step(2);
+  const enhanced = await g.state(() => window.__g.state.skills.map(k => k.id + (k.mod ? '+' + k.mod : '')));
+  check(f, enhanced.includes('janyoung+3'), `skill enhanced (${enhanced})`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return { name: `D seed ${seed}`, failures: f, log: [`passive-only → ${learned} · active → ${enhanced}`] };
+}
+
 const browser = await launch();
 const results = [];
 for (const course of [0, 1]) results.push(await scenarioA(browser, course, 101 + course));
 results.push(await scenarioB(browser, 0, 303));
 results.push(await scenarioC(browser, 1, 404));
+results.push(await scenarioD(browser, 505));
 await browser.close();
 
 let failed = 0;

@@ -24,7 +24,7 @@ export function bossSpawn() {
 }
 /** boss phase: spawn the gate boss (entered via setPhase('boss')) */
 export function createBoss() {
-  const hp = 580 * (1 + 0.36 * difficulty()) * (isFinal() ? TUNE.bossHpFinal : 1);
+  const hp = TUNE.bossHp * (1 + 0.36 * difficulty()) * (isFinal() ? TUNE.bossHpFinal : 1);
   G.player.weapon = 3;
   G.enemies.push({
     x: 240,

@@ -11,7 +11,42 @@ import flight from '../assets/images/skills/flight.png';
 import swapPoses from '../assets/images/skills/swap-poses.png';
 
 const sheets = [signature, movement, attack, passive, energy, secret, flight, swapPoses];
-const images: HTMLImageElement[] = [];
+// [columns, rows] of each sheet, in the order above
+const grids = [
+  [6, 4],
+  [6, 4],
+  [6, 4],
+  [6, 4],
+  [6, 4],
+  [6, 4],
+  [6, 6],
+  [4, 6],
+];
+// The generated flight sheet is not on an exact grid: its columns sit this many source pixels right of their
+// cell centres (measured; the same in every row). Cropping with it keeps a looping projectile from wobbling.
+const FLIGHT = 6,
+  FLIGHT_DX = [20, 13, 5, 1, -7, -10];
+/**
+ * frames[sheet][row][column]: every frame cut into its own small canvas when the art loads. Drawing straight
+ * from the 1536x1024 sheets made each call hold the whole decoded sheet until the frame was flushed, which
+ * forced several mid-frame flushes once a few skills were active.
+ */
+const frames: HTMLCanvasElement[][][] = [];
+function slice(im: HTMLImageElement, sheet: number) {
+  const [cols, rows] = grids[sheet],
+    w = im.width / cols,
+    h = im.height / rows;
+  return Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: cols }, (_, col) => {
+      const c = document.createElement('canvas');
+      c.width = Math.round(w - 4);
+      c.height = Math.round(h - 4);
+      const dx = sheet === FLIGHT ? FLIGHT_DX[col] : 0;
+      c.getContext('2d').drawImage(im, col * w + 2 + dx, row * h + 2, w - 4, h - 4, 0, 0, c.width, c.height);
+      return c;
+    }),
+  );
+}
 const groups = [
   ['mancheon', 'yusu', 'art_cheolgap', 'art_cheonma'],
   ['janyoung', 'biyeon', 'muyoung', 'hoeseon'],
@@ -62,7 +97,7 @@ export async function loadSkillArt() {
         new Promise<void>((resolve, reject) => {
           const im = new Image();
           im.onload = () => {
-            images[i] = im;
+            frames[i] = slice(im, i);
             resolve();
           };
           im.onerror = reject;
@@ -83,27 +118,15 @@ export function drawSkillFrame(
 ) {
   const entry = rows[id];
   if (!entry) return false;
-  const [sheet, row] = projectile ? [6, flightRows[id] ?? 1] : entry;
-  const im = images[sheet];
+  const [sheet, row] = projectile ? [FLIGHT, flightRows[id] ?? 1] : entry;
+  const im = frames[sheet]?.[row][Math.max(0, Math.min(5, frame))];
   if (!im) return false;
-  const w = im.width / 6,
-    h = im.height / (sheet === 6 ? 6 : 4);
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.globalCompositeOperation = 'screen';
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(
-    im,
-    Math.max(0, Math.min(5, frame)) * w + 2,
-    row * h + 2,
-    w - 4,
-    h - 4,
-    -size / 2,
-    -size / 2,
-    size,
-    size,
-  );
+  ctx.drawImage(im, -size / 2, -size / 2, size, size);
   ctx.restore();
   return true;
 }
@@ -132,17 +155,15 @@ export function startSwapPose(id: string) {
   swapPose = { id, start: G.time };
 }
 export function drawSwapPose(id: string, x: number, y: number, angle: number, alpha: number) {
-  if (reduced || !swapPose || swapPose.id !== id || G.time - swapPose.start >= 0.32 || !images[7]) return false;
+  if (reduced || !swapPose || swapPose.id !== id || G.time - swapPose.start >= 0.32 || !frames[7]) return false;
   const row = ['pungun', 'cheolhyeol', 'mukyoung', 'bicheon', 'unhak', 'hongryeon'].indexOf(id);
-  const im = images[7],
-    w = im.width / 4,
-    h = im.height / 6,
-    frame = Math.min(3, Math.floor((G.time - swapPose.start) / 0.08));
+  const im = frames[7][row]?.[Math.min(3, Math.floor((G.time - swapPose.start) / 0.08))];
+  if (!im) return false;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(im, frame * w + 2, row * h + 2, w - 4, h - 4, -57, -57, 114, 114);
+  ctx.drawImage(im, -57, -57, 114, 114);
   ctx.restore();
   return true;
 }
@@ -154,12 +175,22 @@ export function clearSkillAnimations() {
   shield = negate = false;
   visualSkill = undefined;
 }
-export function skillCue(id: string, x: number, y: number, size = 110, impact = false, follow = false) {
-  if (!rows[id] || !G.state || !images[0]) return false;
+/**
+ * `area` marks the one cue that shows a whole attack (an area blast). It is never throttled away by the small
+ * per-target cues of the same skill: past the per-skill limit it replaces the oldest of them instead.
+ */
+export function skillCue(id: string, x: number, y: number, size = 110, impact = false, follow = false, area = false) {
+  if (!rows[id] || !G.state || !frames[0]) return false;
   // Throttle presentation only; no combat timer or game RNG is touched.
-  if (cues.some(c => c.id === id && c.impact === impact && c.age < 0.085 && Math.hypot(c.x - x, c.y - y) < 36))
+  if (!area && cues.some(c => c.id === id && c.impact === impact && c.age < 0.085 && Math.hypot(c.x - x, c.y - y) < 36))
     return true;
-  if (cues.filter(c => c.id === id).length >= 5) return true;
+  if (cues.filter(c => c.id === id).length >= 5) {
+    if (!area) return true;
+    cues.splice(
+      cues.findIndex(c => c.id === id),
+      1,
+    );
+  }
   if (cues.length >= 48) cues.shift();
   cues.push({
     id,
@@ -231,21 +262,25 @@ export function drawSkillAnimations() {
   if (negate) drawSkillFrame('hoechun', f, G.player.x, G.player.y + 32, 48, 0.55);
   for (const [id, a] of auras) drawSkillFrame(id, f, G.player.x, G.player.y, a.size, 0.38);
 }
+/**
+ * A skill's projectile is drawn larger than a basic shot (36 to 48 px) and leaves two fading copies of itself
+ * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.
+ */
 export function drawSkillShot(s: any) {
   if (flightRows[s.skill] === undefined) return false;
-  const size = s.kind === 'gang' ? Math.max(48, (s.w || 8) * 4) : s.kind === 'orb' ? 44 : 44;
-  return drawSkillFrame(
-    s.skill,
-    reduced ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
-    s.x,
-    s.y,
-    size,
-    1,
-    Math.atan2(s.vx, s.vy ?? 900),
-    true,
-  );
+  const size = s.kind === 'gang' ? Math.max(66, (s.w || 8) * 5) : s.kind === 'orb' ? 54 : 58,
+    frame = reduced ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
+    vy = s.vy ?? 900,
+    angle = Math.atan2(s.vx, vy);
+  if (!reduced)
+    for (const [back, alpha] of [
+      [0.05, 0.22],
+      [0.025, 0.42],
+    ])
+      drawSkillFrame(s.skill, frame, s.x - s.vx * back, s.y + vy * back, size * 0.92, alpha, angle, true);
+  return drawSkillFrame(s.skill, frame, s.x, s.y, size, 1, angle, true);
 }
 /** Runtime inspection for the visual regression harness, never used to drive gameplay. */
 export function skillAnimationSnapshot() {
-  return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: images.length, shield, negate };
+  return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: frames.length, shield, negate };
 }

@@ -14,7 +14,7 @@ import { hasSkill, updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
 import { difficulty } from './flow';
 import { donoBeat, updatePhase } from './stage-phases';
-import { traitOn } from './formation';
+import { traitFire, traitGraze } from './formation';
 import { syncHUD } from '../ui/hud';
 
 export function update(dt) {
@@ -54,7 +54,7 @@ export function update(dt) {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += 0.148 / (traitOn('hongryeon') ? TUNE.traitFire : 1);
+    G.player.fire += 0.148 / traitFire();
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -108,10 +108,7 @@ export function update(dt) {
       G.player.hp > 0 &&
       Math.abs(e.y - G.player.y) < e.r + 12 &&
       Math.abs(e.x - G.player.x) >= e.r + 10 &&
-      Math.abs(e.x - G.player.x) <
-        e.r +
-          10 +
-          TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * (traitOn('mukyoung') ? TUNE.traitGraze : 1) * 1.15
+      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze() * 1.15
     ) {
       const mate = G.enemies.find(
         o =>
@@ -121,9 +118,7 @@ export function update(dt) {
           !o.grazed &&
           Math.sign(o.x - G.player.x) !== Math.sign(e.x - G.player.x) &&
           Math.abs(o.x - G.player.x) <
-            o.r +
-              10 +
-              TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * (traitOn('mukyoung') ? TUNE.traitGraze : 1) * 1.15,
+            o.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze() * 1.15,
       );
       if (mate) {
         e.grazed = mate.grazed = true;
@@ -141,7 +136,7 @@ export function update(dt) {
       resolveRow(e, true);
     }
   }
-  const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * (traitOn('mukyoung') ? TUNE.traitGraze : 1);
+  const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze();
   for (const h of G.hazards) {
     if (h.warn > 0) {
       h.warn -= dt;

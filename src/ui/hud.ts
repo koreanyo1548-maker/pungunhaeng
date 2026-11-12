@@ -1,5 +1,6 @@
 import { isFinal } from '../systems/run-plan';
 import { G } from '../core/context';
+import { profile } from '../core/profile';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
 import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
@@ -8,6 +9,7 @@ import { HEROES } from '../data/heroes';
 import { ARTS, SKILLS, skillStars } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
+import { swapCooldown } from '../systems/formation';
 
 export function notify(text, duration = 1.5) {
   $('toast').textContent = text;
@@ -17,6 +19,10 @@ export function notify(text, duration = 1.5) {
 export function showBest() {
   $('best').textContent = '최고 ' + fmt(G.best);
   $('introBest').textContent = '최고 기록 ' + fmt(G.best);
+}
+/** The bank of 엽전 on the title screen. */
+export function showBank() {
+  $('bankCoins').textContent = '지닌 엽전 ' + fmt(profile.coins) + '냥';
 }
 export function announce(top, title, sub, color = '#ffe0a0', duration = 2) {
   G.banner = { top, title, sub, color, life: duration, total: duration };
@@ -109,7 +115,7 @@ export function syncSwapHUD() {
     sw = $('swap'),
     ub = $('blast');
   sw.style.setProperty('--c', nxt.color);
-  sw.style.setProperty('--p', String(Math.round(100 - (cd / TUNE.swapCd) * 100)));
+  sw.style.setProperty('--p', String(Math.round(100 - (cd / swapCooldown()) * 100)));
   const pic = heroPictures[nxtId] || '';
   if ($('swapImg').dataset.src !== pic) {
     $('swapImg').dataset.src = pic;

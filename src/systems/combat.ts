@@ -9,20 +9,21 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './abilities';
 import { difficulty, region } from './flow';
-import { traitOn } from './formation';
+import { traitCharge, traitPower } from './formation';
 import { notify, syncHUD } from '../ui/hud';
 
 const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
 export function shotPower() {
-  return 1.3 * (1 + 0.12 * difficulty()) * (traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower : 1);
+  return 1.3 * (1 + 0.12 * difficulty()) * traitPower() * (1 + 0.04 * G.state.meta.stats.power);
 }
 export function gainCharge(n) {
   n *=
     (hasSkill('chukgi') ? 1.5 : 1) *
-    (traitOn('unhak') ? TUNE.traitCharge : 1) *
-    (region().terrain === 'cloud' ? TUNE.cloudCharge : 1);
+    traitCharge() *
+    (region().terrain === 'cloud' ? TUNE.cloudCharge : 1) *
+    (1 + 0.05 * G.state.meta.stats.charge);
   if (G.state.bombs >= G.state.maxBombs) {
     G.state.charge = 100;
     return;

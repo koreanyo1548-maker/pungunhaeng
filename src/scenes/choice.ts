@@ -11,7 +11,10 @@ export function openChoice(o) {
   G.pointer = null;
   $('choiceEyebrow').textContent = o.eyebrow;
   $('choiceTitle').textContent = o.title;
-  $('choiceSub').innerHTML = o.sub || '';
+  // a hero who joined since the last screen is announced on the next one (the toast would be hidden by it)
+  const news = G.state?.heroNews?.splice(0) ?? [];
+  $('choiceSub').innerHTML =
+    (news.length ? `<b class="hero-news">새 영웅 합류 · ${news.join(', ')}</b>` : '') + (o.sub || '');
   const box = $('choiceCards');
   box.innerHTML = '';
   $('choice').querySelector('.formation-preview')?.remove();
@@ -32,10 +35,14 @@ export function openChoice(o) {
     for (const button of box.querySelectorAll('button')) {
       button.setAttribute('aria-pressed', String(button === el));
     }
+    // a hero not yet collected can be looked at, not chosen
+    confirm.disabled = !!c.locked;
+    confirm.textContent = c.locked ? '아직 합류하지 않은 영웅' : o.confirm;
+    preview.classList.toggle('locked', !!c.locked);
     preview.innerHTML = `${artImage(c.fullArt, 'formation-body')}<div><span class="preview-caption">${c.tag}</span><h3>${c.title}</h3><p>${c.detail}</p></div>`;
   }
   confirm.onclick = () => {
-    if (G.mode !== 'choice') return;
+    if (G.mode !== 'choice' || selected.locked) return;
     $('choice').classList.add('hidden');
     selected.onPick();
   };
@@ -46,7 +53,7 @@ export function openChoice(o) {
   for (const c of o.cards) {
     const el = document.createElement(c.acts ? 'div' : 'button');
     // stars: a skill's grade, shown under its icon; 2 marks a boss-enhanced skill (gold frame)
-    el.className = 'card' + (c.stars === 2 ? ' tier2' : '');
+    el.className = 'card' + (c.stars === 2 ? ' tier2' : '') + (c.locked ? ' locked' : '');
     el.style.setProperty('--c', c.color);
     const stars = c.stars ? `<span class="stars">${c.starsFrom ? '★ → ' : ''}${'★'.repeat(c.stars)}</span>` : '';
     el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}${stars}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc && !o.confirm ? `<p>${c.desc}</p>` : ''}${c.footer ? `<span class="card-footer">${c.footer}</span>` : ''}`;

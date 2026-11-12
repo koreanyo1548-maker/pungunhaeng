@@ -5,15 +5,19 @@ import { setPhase } from './stage-phases';
 import { go } from './scene-flow';
 import { seedRun } from '../core/rng';
 import { G } from '../core/context';
+import { metaSnapshot, profile, saveProfile } from '../core/profile';
 import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
 import { fmt, rnd } from '../core/math';
 import { COURSES } from '../data/courses';
+import { HEROES } from '../data/heroes';
+import { settle } from '../data/meta';
 import { TUNE } from '../data/tune';
 import { dominantTitle, runSummary } from '../scenes/result';
 import { hasSkill } from './abilities';
+import { runEnded } from './meta';
 import { closeQuest } from './quest';
-import { announce, showBest, syncHUD } from '../ui/hud';
+import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
 
 export function movementTier() {
@@ -71,13 +75,15 @@ export function start() {
   G.rowId = 0;
   G.heartCache = -1;
   G.hudClock = 0;
+  // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
+  const meta = metaSnapshot();
   G.state = {
     score: 0,
     distance: 0,
     coins: 0,
     kills: 0,
     charge: 0,
-    bombs: 2,
+    bombs: 2 + meta.stats.bombs,
     hyper: 0,
     hyperCooldown: rnd(48, 62),
     hyperDrops: 0,
@@ -126,6 +132,7 @@ export function start() {
     meditate: false,
     forceNpc: null,
     spent: 0,
+    meta,
   };
   G.strikes = [];
   G.skillsKey = '';
@@ -134,8 +141,8 @@ export function start() {
     target: W / 2,
     y: PLAYER_Y,
     targetY: PLAYER_Y,
-    hp: 3,
-    maxHp: 3,
+    hp: 3 + meta.stats.hp,
+    maxHp: 3 + meta.stats.hp,
     shield: 0,
     inv: 2,
     fire: 0,
@@ -179,12 +186,19 @@ export function end(victory = false) {
   if (victory) G.state.score += 20000;
   closeQuest();
   const record = G.state.score > G.best;
-  if (record) {
-    G.best = Math.floor(G.state.score);
-    try {
-      localStorage.setItem('wuxia-best', String(G.best));
-    } catch {}
-  }
+  if (record) G.best = profile.best = Math.floor(G.state.score);
+  // 정산: what is left of this run's 엽전 goes to the bank.
+  const banked = settle(G.state.coins, victory, G.state.meta.stats.fortune);
+  profile.coins += banked;
+  runEnded();
+  saveProfile();
+  $('settle').innerHTML =
+    `남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
+    (banked > G.state.coins ? ` + 보너스 <b>${fmt(banked - G.state.coins)}냥</b>` : '') +
+    ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>` +
+    (G.state.newHeroes?.length
+      ? `<br>새 영웅 <b>${G.state.newHeroes.map(id => HEROES[id].name).join(', ')}</b> 합류`
+      : '');
   $('resultTitle').textContent = victory ? region().win : '강호행 종료';
   $('resultEyebrow').textContent = victory
     ? dominantTitle()
@@ -216,6 +230,7 @@ export function home() {
   $('hud').classList.add('hidden');
   $('intro').classList.remove('hidden');
   showBest();
+  showBank();
 }
 export function nextStage() {
   const oldTier = movementTier();

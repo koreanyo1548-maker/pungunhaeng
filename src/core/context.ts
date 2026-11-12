@@ -1,3 +1,4 @@
+import { profile } from './profile';
 export const G: any = {
   best: 0,
   mode: 'loading',
@@ -52,6 +53,4 @@ export const G: any = {
   skillsKey: '',
   coinPic: '',
 };
-try {
-  G.best = Number(localStorage.getItem('wuxia-best')) || 0;
-} catch {}
+G.best = profile.best;

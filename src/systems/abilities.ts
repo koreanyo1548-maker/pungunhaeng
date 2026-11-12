@@ -8,7 +8,8 @@ import { W } from '../core/dom';
 import { rnd } from '../core/math';
 import { BR } from '../data/branches';
 import { NPCS } from '../data/npcs';
-import { ARTS, SKILLS } from '../data/skills';
+import { ARTS, SKILLS, geumgangSeconds } from '../data/skills';
+import { cardRank } from './relationship';
 import { TUNE } from '../data/tune';
 import { hitEnemy, targetable } from '../entities/enemies';
 import { burst, label } from '../render/fx';
@@ -104,9 +105,11 @@ export function updateSkills(dt, oldX) {
       G.state.allyTimer -= dt;
       if (G.state.allyTimer <= 0) {
         G.state.allyTimer = 4.5;
-        const n = NPCS[allies[Math.floor(rnd(0, allies.length))]];
+        const id = allies[Math.floor(rnd(0, allies.length))],
+          n = NPCS[id];
         label(n.name + '의 도움', boss.x, boss.y + 120, BR[n.br].color, 18);
-        column(boss.x, D() * 10, BR[n.br].color, 44);
+        // a level 5 인연 card makes this 인연's help hit harder
+        column(boss.x, D() * (cardRank(id) >= 5 ? 14 : 10), BR[n.br].color, 44);
       }
     }
     if (foes.length) {
@@ -171,6 +174,6 @@ function performSkill(s, fn) {
   if (!['yusu', 'bungsan', 'art_cheonma'].includes(id))
     skillCue(id, G.player.x, G.player.y - 45, id === 'hyeolma' ? 165 : 115);
   if (id === 'muyoung') skillAura(id, 0.3);
-  if (id === 'geumgang') skillAura(id, 0.45);
+  if (id === 'geumgang') skillAura(id, geumgangSeconds());
   if (id === 'hyeolma') skillAura(id, G.state.hyper, 160);
 }

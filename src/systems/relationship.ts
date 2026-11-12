@@ -1,7 +1,12 @@
 import { G } from '../core/context';
 import { josa, rnd } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
+import { TUNE } from '../data/tune';
 
+/** 인연 card level of this 인연 for the current run (0 to 5), from the snapshot taken when the run started. */
+export const cardRank = (id: string): number => G.state?.meta?.cards?.[id] ?? 0;
+/** 호감도 needed for the 인연 to pass on their unique skill; a level 3 card lowers it by one. */
+export const sasaNeed = (id: string): number => TUNE.sasaRel - (cardRank(id) >= 3 ? 1 : 0);
 export function nextNpcOf(id, qmode) {
   return qmode === 'follow' ? NPC_LINK[id] : NPCS[id].rival;
 }

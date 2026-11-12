@@ -2,7 +2,7 @@ import { runSeed } from '../core/rng';
 import { G } from '../core/context';
 import { hitEnemy } from '../entities/enemies';
 import { loadProfile, profile } from '../core/profile';
-import { learn } from '../systems/abilities';
+import { learn, trig } from '../systems/abilities';
 import { swapHero } from '../systems/formation';
 import { questEvent } from '../systems/quest';
 
@@ -35,6 +35,11 @@ if (location.hash.includes('debug'))
     },
     questEvent,
     learn,
+    /** fire the skills bound to a trigger, as combat would (tests count what they shoot) */
+    trig,
+    get shots() {
+      return G.shots;
+    },
     /** the saved profile (meta progression); loadProfile replaces it, for tests */
     get profile() {
       return profile;

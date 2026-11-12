@@ -5,9 +5,9 @@ import { josa, rnd } from '../core/math';
 import { BR } from '../data/branches';
 import { NPCS } from '../data/npcs';
 import { SKILLS, skillLines } from '../data/skills';
-import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
 import { learn } from '../systems/abilities';
+import { cardRank, sasaNeed } from '../systems/relationship';
 
 export function openDono() {
   const q = G.state.quest,
@@ -15,7 +15,7 @@ export function openDono() {
     owned = new Set(G.state.skills.map(s => s.id));
   const pool = Object.keys(SKILLS).filter(id => SKILLS[id].br === q.br && !SKILLS[id].npc && !owned.has(id)),
     opts = [];
-  const sasa = q.mode === 'follow' && (G.state.rel[q.npc] || 0) >= TUNE.sasaRel && !owned.has(n.unique);
+  const sasa = q.mode === 'follow' && (G.state.rel[q.npc] || 0) >= sasaNeed(q.npc) && !owned.has(n.unique);
   if (sasa) opts.push(n.unique);
   const want = G.state.meditate ? 3 : 2;
   G.state.meditate = false;
@@ -37,7 +37,9 @@ export function openDono() {
         image: skillImage(id),
         artClass: 'skill-choice-art',
         color: BR[d.br].color,
-        tag: d.npc ? NPCS[d.npc].name + '의 고유 기술' : BR[d.br].name + ' 계열',
+        tag: d.npc
+          ? NPCS[d.npc].name + '의 고유 기술' + (cardRank(d.npc) >= 2 ? ' · 인연 카드 ' + cardRank(d.npc) + '단계' : '')
+          : BR[d.br].name + ' 계열',
         title: d.name,
         stars: 1,
         desc: skillLines(id),

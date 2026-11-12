@@ -3,11 +3,10 @@ import { npcPictures } from '../core/assets';
 import { relText } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { NPCS } from '../data/npcs';
-import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
 import { region } from '../systems/flow';
 import { acceptQuest, questTarget } from '../systems/quest';
-import { nextNpcOf, pickNpc } from '../systems/relationship';
+import { nextNpcOf, pickNpc, sasaNeed } from '../systems/relationship';
 
 export function openCrossroads() {
   const r = region();
@@ -21,7 +20,7 @@ export function openCrossroads() {
       next = NPCS[nextNpcOf(id, qm)];
     return {
       color: BR[br].color,
-      html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>${BR[br].name} 계열 기술 · ${qm === 'follow' ? '호감도 +1' : '호감도 −1 · ' + NPCS[n.rival].name + ' 호감도 +1'}</small><small>다음 인연 → ${next.name}</small>`,
+      html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>${BR[br].name} 계열 기술 · ${qm === 'follow' ? '호감도 +1' : '호감도 −1'}</small><small>${qm === 'follow' ? n.name + ' 카드 조각 +1' : NPCS[n.rival].name + ' 호감도 +1 · 카드 조각 +1'}</small><small>다음 인연 → ${next.name}</small>`,
       onPick: () => acceptQuest(id, qm),
     };
   };
@@ -45,7 +44,7 @@ export function openCrossroads() {
           n.title +
           ' · 호감도 ' +
           relText(rel) +
-          (rel >= TUNE.sasaRel - 1 ? ' · 고유 기술 전수 가능' : ''),
+          (rel >= sasaNeed(id) - 1 ? ' · 고유 기술 전수 가능' : ''),
         title: n.name,
         quote: q.say,
         acts: [act('따른다', q.follow, 'follow'), act('거스른다', q.defy, 'defy')],

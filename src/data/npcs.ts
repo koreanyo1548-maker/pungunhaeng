@@ -5,6 +5,8 @@ export const NPCS = {
     br: 'yu',
     rival: 'milsa',
     unique: 'taeguk',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['되돌린 탄 위력 +33%', '탄을 두 발로 되돌림'],
     quests: [
       {
         say: '바람을 거스르지 말게.',
@@ -24,6 +26,8 @@ export const NPCS = {
     br: 'gi',
     rival: 'dosa',
     unique: 'hyeolma',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['무아지경 2초 → 2.5초', '무아지경 2.5초 → 3초'],
     quests: [
       {
         say: '피를 두려워 마라. 한꺼번에 쓸어 버려라.',
@@ -43,6 +47,8 @@ export const NPCS = {
     br: 'gang',
     rival: 'yeonhyeop',
     unique: 'geumgang',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['충격파 범위 +18%', '무적 0.45초 → 0.65초'],
     quests: [
       {
         say: '한 걸음도 물러서지 마시게.',
@@ -62,6 +68,8 @@ export const NPCS = {
     br: 'yu',
     rival: 'monk',
     unique: 'mancheon',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['비도 3자루 → 4자루', '비도 4자루 → 5자루'],
     quests: [
       {
         say: '발끝으로 춤춰 봐요. 서 있으면 죽어요.',
@@ -81,6 +89,8 @@ export const NPCS = {
     br: 'gi',
     rival: 'uijeok',
     unique: 'hoechun',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['막은 뒤 무적 1.3초 → 2초', '관문마다 피격 2회 무효'],
     quests: [
       {
         say: '기는 아껴 모으는 것이네.',
@@ -100,6 +110,8 @@ export const NPCS = {
     br: 'gang',
     rival: 'yakseon',
     unique: 'uihyeop',
+    // 인연 card: what levels 2 and 4 add to the unique skill (the numbers live in data/skills.ts)
+    card: ['도기 위력 +20%', '5방향 → 7방향'],
     quests: [
       {
         say: '한 놈도 놓치지 마라.',

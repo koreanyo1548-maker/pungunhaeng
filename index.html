@@ -83,6 +83,7 @@
               <span id="bankCoins">지닌 엽전 0냥</span
               ><span class="hub-buttons"
                 ><button class="hub-button" id="openRoster">영웅</button
+                ><button class="hub-button" id="openCards">인연</button
                 ><button class="hub-button" id="openTraining">수련</button></span
               >
             </div>
@@ -154,6 +155,18 @@
             <p class="bank" id="rosterCount"></p>
             <div class="stat-list" id="rosterList"></div>
             <button class="primary" id="rosterClose">돌아가기</button>
+          </div>
+        </div>
+        <div class="overlay modal hidden" id="cards">
+          <div class="panel training-panel">
+            <span class="eyebrow">강호에서 맺은 인연</span>
+            <h2>인연 카드</h2>
+            <p class="bank card-help">
+              의뢰를 따라 성공하면 그 인연의 조각을, 거슬러 성공하면 맞수의 조각을 얻는다. 완주하면 도와준 인연마다 하나
+              더. 오른 단계는 다음 판부터 적용된다.
+            </p>
+            <div class="stat-list" id="cardList"></div>
+            <button class="primary" id="cardsClose">돌아가기</button>
           </div>
         </div>
         <div class="toast" id="toast" role="status"></div>

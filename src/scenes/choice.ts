@@ -11,10 +11,9 @@ export function openChoice(o) {
   G.pointer = null;
   $('choiceEyebrow').textContent = o.eyebrow;
   $('choiceTitle').textContent = o.title;
-  // a hero who joined since the last screen is announced on the next one (the toast would be hidden by it)
-  const news = G.state?.heroNews?.splice(0) ?? [];
-  $('choiceSub').innerHTML =
-    (news.length ? `<b class="hero-news">새 영웅 합류 · ${news.join(', ')}</b>` : '') + (o.sub || '');
+  // meta progress made since the last screen (a hero joined, a card piece) is announced on the next one
+  const news: string[] = G.state?.news?.splice(0) ?? [];
+  $('choiceSub').innerHTML = news.map(t => `<b class="news">${t}</b>`).join('') + (o.sub || '');
   const box = $('choiceCards');
   box.innerHTML = '';
   $('choice').querySelector('.formation-preview')?.remove();

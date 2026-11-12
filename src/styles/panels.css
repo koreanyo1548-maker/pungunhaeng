@@ -370,7 +370,7 @@ button:disabled {
   color: #8fa59a;
   box-shadow: none;
 }
-.hero-news {
+.choice-sub .news {
   display: block;
   margin-bottom: 6px;
   padding: 5px 8px;
@@ -378,4 +378,37 @@ button:disabled {
   background: #3a2a0a99;
   border: 1px solid #ffd77a88;
   color: #ffd77a;
+}
+
+/* 인연 카드: same rows as 영웅; the next level's gain is the gold line. */
+.training-panel .card-help {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #9fb5aa;
+  text-align: left;
+}
+.hero-row .next,
+.hero-row .next b {
+  color: #ffd77a;
+}
+#cardList .mastery .stars {
+  font-size: 8px;
+}
+/* Three ways in (영웅, 인연, 수련) beside the bank: keep each on one line, and wrap the group under the bank
+   when a narrow screen cannot hold both. */
+.hub-row {
+  flex-wrap: wrap;
+}
+.hub-row > span:first-child {
+  white-space: nowrap;
+}
+.hub-buttons {
+  margin-left: auto;
+}
+.hub-button {
+  padding: 8px 11px;
+  white-space: nowrap;
+}
+.choice-sub .news + .news {
+  margin-top: -2px;
 }

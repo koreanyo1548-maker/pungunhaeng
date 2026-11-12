@@ -80,7 +80,11 @@
             </div>
             <button class="primary" id="start" disabled>강호를 준비하는 중…</button>
             <div class="hub-row">
-              <span id="bankCoins">지닌 엽전 0냥</span><button class="hub-button" id="openTraining">수련</button>
+              <span id="bankCoins">지닌 엽전 0냥</span
+              ><span class="hub-buttons"
+                ><button class="hub-button" id="openRoster">영웅</button
+                ><button class="hub-button" id="openTraining">수련</button></span
+              >
             </div>
             <div class="start-footer">
               <span id="introBest">최고 기록 0</span><button class="sound-toggle" id="soundIntro">♪ 소리 켜짐</button>
@@ -141,6 +145,15 @@
               <p class="save-msg" id="saveMsg" role="status"></p>
             </details>
             <button class="primary" id="trainingClose">돌아가기</button>
+          </div>
+        </div>
+        <div class="overlay modal hidden" id="roster">
+          <div class="panel training-panel">
+            <span class="eyebrow">함께 강호를 걷는 이들</span>
+            <h2>영웅</h2>
+            <p class="bank" id="rosterCount"></p>
+            <div class="stat-list" id="rosterList"></div>
+            <button class="primary" id="rosterClose">돌아가기</button>
           </div>
         </div>
         <div class="toast" id="toast" role="status"></div>

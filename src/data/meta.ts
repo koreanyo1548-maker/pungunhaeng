@@ -56,10 +56,61 @@ export const STAT_IDS = Object.keys(STATS) as StatId[];
 /** 엽전 added to the bank for finishing the final gate. */
 export const CLEAR_BONUS = 300;
 
+// 영웅 수집: two heroes to start with, the rest join when a condition is met.
+export const HERO_IDS = ['pungun', 'cheolhyeol', 'mukyoung', 'bicheon', 'unhak', 'hongryeon'] as const;
+export type HeroId = (typeof HERO_IDS)[number];
+/** One hero that fits each road. */
+export const STARTERS: HeroId[] = ['pungun', 'bicheon'];
+
+/** Progress counted across runs, for unlock conditions. */
+export type Records = {
+  /** furthest gate cleared on each road (4 = the final gate) */
+  gates: { ground: number; sky: number };
+  clears: { ground: number; sky: number };
+  grazes: number;
+};
+export const emptyRecords = (): Records => ({
+  gates: { ground: 0, sky: 0 },
+  clears: { ground: 0, sky: 0 },
+  grazes: 0,
+});
+type Unlock = { text: string; progress: (r: Records) => [number, number] };
+export const UNLOCKS: Partial<Record<HeroId, Unlock>> = {
+  cheolhyeol: { text: '땅의 길 관문 2 돌파', progress: r => [Math.min(2, r.gates.ground), 2] },
+  unhak: { text: '하늘의 길 관문 2 돌파', progress: r => [Math.min(2, r.gates.sky), 2] },
+  mukyoung: { text: '스침 누적 300회', progress: r => [Math.min(300, r.grazes), 300] },
+  hongryeon: { text: '어느 길이든 완주', progress: r => [Math.min(1, r.clears.ground + r.clears.sky), 1] },
+};
+export function unlocked(id: HeroId, r: Records): boolean {
+  const u = UNLOCKS[id];
+  if (!u) return true;
+  const [now, goal] = u.progress(r);
+  return now >= goal;
+}
+
+/**
+ * 숙련: a hero gains 1 for every gate cleared while in the formation. These totals are the steps ★1 to ★5;
+ * each step strengthens the hero's trait and swap skill (see systems/formation.ts and data/heroes.ts).
+ */
+export const MASTERY_STEPS = [0, 3, 8, 15, 25];
+export const MASTERY_MAX = MASTERY_STEPS.length - 1;
+/** 0 (★1) to 4 (★5) */
+export function masteryLevel(mastery: number): number {
+  let level = 0;
+  while (level < MASTERY_MAX && mastery >= MASTERY_STEPS[level + 1]) level++;
+  return level;
+}
+export const masteryStars = (level: number) => '★'.repeat(level + 1) + '☆'.repeat(MASTERY_MAX - level);
+
 /** What a run reads. Copied from the profile when the run starts, so a seed and a snapshot replay the same run. */
-export type Meta = { stats: Record<StatId, number> };
+export type Meta = {
+  stats: Record<StatId, number>;
+  /** mastery level of each hero, 0 to 4 */
+  heroes: Record<HeroId, number>;
+};
 export const emptyMeta = (): Meta => ({
   stats: { power: 0, charge: 0, fortune: 0, hp: 0, bombs: 0, swap: 0 },
+  heroes: { pungun: 0, cheolhyeol: 0, mukyoung: 0, bicheon: 0, unhak: 0, hongryeon: 0 },
 });
 
 /** 엽전 a run adds to the bank: what is left, plus the clear bonus, raised by 재물운. */

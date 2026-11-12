@@ -4,7 +4,7 @@ import { clamp } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { TUNE } from '../data/tune';
 import { hasSkill } from '../systems/abilities';
-import { traitOn } from '../systems/formation';
+import { traitGraze } from '../systems/formation';
 
 export function drawQuestCue() {
   const q = G.state?.quest;
@@ -12,7 +12,7 @@ export function drawQuestCue() {
   const c = BR[q.br].color;
   ctx.save();
   if (q.t === 'graze') {
-    const r = 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * (traitOn('mukyoung') ? TUNE.traitGraze : 1) + 8;
+    const r = 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze() + 8;
     ctx.strokeStyle = c;
     ctx.globalAlpha = 0.62;
     ctx.setLineDash([6, 6]);

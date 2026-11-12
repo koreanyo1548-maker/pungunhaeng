@@ -6,6 +6,7 @@
 // Scenario C: 사망 → 결과 화면.
 // Scenario D: 보스 기술 보상 (항상 계열뿐이면 새 기술, 발동 기술이 있으면 강화).
 // Scenario E: 메타 성장 (엽전 보관 → 수련 → 다음 판 반영, 저장 코드, 손상된 저장 복구).
+// Scenario F: 영웅 수집 (시작 영웅 2명, 잠긴 영웅은 미리보기만, 관문 돌파로 숙련·합류, 다음 판 반영).
 // Every scenario also checks the exact scene sequence (systems/scene-flow.ts).
 import { DEFAULT_BUILD, check, launch, openGame } from '../lib/harness.mjs';
 
@@ -381,6 +382,196 @@ async function scenarioE(browser, seed) {
   };
 }
 
+// Scenario F: hero collection, with the default roster (two starters). Locked heroes can be previewed, not chosen;
+// clearing gates raises mastery and records, which unlock heroes; the next run reads the new mastery level.
+async function scenarioF(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed, roster: false });
+  const P = () => g.state(() => JSON.parse(JSON.stringify(window.__g.profile)));
+  const owned = p =>
+    Object.keys(p.heroes)
+      .filter(id => p.heroes[id].owned)
+      .sort()
+      .join();
+  const formation = () =>
+    g.page.$$eval('#choice button.card', els =>
+      els.map(e => ({ name: e.querySelector('h3').textContent, locked: e.classList.contains('locked') })),
+    );
+  let p = await P();
+  check(f, owned(p) === 'bicheon,pungun', `a fresh profile owns the two starters (${owned(p)})`);
+
+  // 영웅 screen on the title
+  await g.eval(() => document.getElementById('openRoster').click());
+  const rows = await g.page.$$eval('#rosterList .hero-row', els => els.map(e => e.classList.contains('locked')));
+  check(
+    f,
+    rows.length === 6 && rows.filter(Boolean).length === 4 && !rows[0] && !rows[1],
+    `영웅 lists 2 joined, then 4 locked (${rows})`,
+  );
+  const cond = await g.page.$$eval('#rosterList .hero-row.locked .unlock', els => els.map(e => e.textContent));
+  check(
+    f,
+    cond.length === 4 && cond.every(t => /\(\d+ \/ \d+\)/.test(t)),
+    `locked heroes show a condition and progress (${cond.join(' | ')})`,
+  );
+  await g.eval(() => document.getElementById('rosterClose').click());
+
+  // formation: owned heroes first; a locked hero cannot be confirmed
+  await g.eval(() => window.__g.traceScenes());
+  await g.eval(() => document.getElementById('start').click());
+  await g.step(2);
+  await g.pick(0); // 땅의 길
+  await g.step(2);
+  let cards = await formation();
+  check(
+    f,
+    cards.length === 6 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
+    `출전: 2 owned first, 4 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
+  );
+  check(f, cards[0].name === '풍운객', `the starter that fits the road comes first (${cards[0].name})`);
+  await g.pick(-1);
+  await g.step(2);
+  const stuck = await g.eval(() => ({
+    title: document.getElementById('choiceTitle').textContent,
+    disabled: document.getElementById('formationConfirm').disabled,
+    detail: document.querySelector('.formation-preview').textContent,
+    formation: window.__g.state.formation.join(),
+  }));
+  check(
+    f,
+    stuck.title === '출전' && stuck.disabled && /합류 조건/.test(stuck.detail),
+    `a locked hero is previewed with its condition and cannot be confirmed (${JSON.stringify(stuck)})`,
+  );
+  await g.pick(0);
+  await g.step(2);
+  cards = await formation();
+  check(
+    f,
+    cards.length === 5 && !cards[0].locked && cards.slice(1).every(c => c.locked),
+    `대기: the other starter, then 4 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
+  );
+  await g.pick(0);
+  await g.step(2);
+  check(
+    f,
+    (await g.state(() => window.__g.state.formation.join())) === 'pungun,bicheon',
+    'formation is the two starters',
+  );
+
+  // gates 1 and 2 of 땅의 길: mastery +1 each, 철혈 joins after gate 2
+  const news = [];
+  for (let gate = 1; gate <= 2; gate++) {
+    await g.act(0);
+    await g.step(2);
+    await g.eval(() => window.__g.god());
+    await clearBoss(g);
+    check(f, (await g.choiceTitle()) === '보스 기술', `gate ${gate}: 보스 기술 opens`);
+    news.push(await g.eval(() => document.querySelector('#choiceSub .hero-news')?.textContent ?? ''));
+    p = await P();
+    check(
+      f,
+      p.heroes.pungun.mastery === gate && p.heroes.bicheon.mastery === gate && p.heroes.cheolhyeol.mastery === 0,
+      `gate ${gate}: formation heroes gain mastery (${p.heroes.pungun.mastery}, ${p.heroes.bicheon.mastery})`,
+    );
+    check(f, p.records.gates.ground === gate, `gate ${gate}: road record ${p.records.gates.ground}`);
+    await g.pick(-1);
+    await g.step(2);
+    await g.pick(-1);
+    await g.step(2);
+  }
+  check(f, owned(p) === 'bicheon,cheolhyeol,pungun', `철혈 joins after 땅의 길 관문 2 (${owned(p)})`);
+  check(f, news[0] === '' && /철혈/.test(news[1]), `the next screen announces the new hero (${JSON.stringify(news)})`);
+  check(
+    f,
+    (await g.state(() => window.__g.state.meta.heroes.pungun)) === 0,
+    'the run keeps the mastery level it started with',
+  );
+
+  // through the final gate: a clear, 홍련 joins, mastery 4 → level 1
+  await finish(g);
+  p = await P();
+  const settle = await g.page.$eval('#settle', e => e.textContent);
+  check(
+    f,
+    (await g.mode()) === 'result' && p.records.clears.ground === 1,
+    `the road is cleared (${p.records.clears.ground})`,
+  );
+  check(
+    f,
+    p.heroes.hongryeon.owned && /새 영웅.*홍련/.test(settle),
+    `홍련 joins on a clear; the result says so (${settle})`,
+  );
+  check(
+    f,
+    p.heroes.pungun.mastery === 4 && p.records.gates.ground === 4,
+    `mastery 4 after 4 gates (${p.heroes.pungun.mastery})`,
+  );
+
+  // next run: mastery level 1 is in the snapshot and in the trait text; 스침 300 unlocks 무영 at the end of the run
+  await g.eval(() => document.getElementById('start').click());
+  await g.step(2);
+  await g.pick(0);
+  await g.step(2);
+  cards = await formation();
+  check(
+    f,
+    cards.filter(c => !c.locked).length === 4 && cards.slice(0, 4).every(c => !c.locked),
+    `next run: 4 owned first (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
+  );
+  const preview = await g.eval(() => document.querySelector('.formation-preview').textContent);
+  check(
+    f,
+    /숙련 2단계/.test(preview) && /충전 \+6/.test(preview),
+    `풍운객 shows mastery 2단계 and the stronger trait (${preview})`,
+  );
+  await g.pick(0);
+  await g.step(2);
+  await g.pick(0);
+  await g.step(2);
+  await g.act(0);
+  await g.step(2);
+  const level = await g.state(() => window.__g.state.meta.heroes);
+  check(
+    f,
+    level.pungun === 1 && level.bicheon === 1 && level.cheolhyeol === 0,
+    `snapshot has the new levels (${JSON.stringify(level)})`,
+  );
+  await g.eval(() => {
+    window.__g.state.grazes = 300;
+    window.__g.player.hp = 1;
+    window.__g.player.inv = 0;
+  });
+  for (let i = 0; i < 180 && (await g.mode()) !== 'result'; i++) await g.seconds(1);
+  p = await P();
+  check(
+    f,
+    p.records.grazes >= 300 && p.heroes.mukyoung.owned,
+    `스침 300 → 무영 joins (${p.records.grazes}, ${owned(p)})`,
+  );
+  check(f, !p.heroes.unhak.owned, '운학 is still locked (하늘의 길 not played)');
+
+  // a save whose records already meet a condition owns that hero; mastery is capped
+  await g.eval(() =>
+    window.__g.loadProfile({
+      records: { gates: { sky: 2 } },
+      heroes: { pungun: { mastery: 999 }, mukyoung: { owned: true } },
+    }),
+  );
+  p = await P();
+  check(
+    f,
+    owned(p) === 'bicheon,mukyoung,pungun,unhak' && p.heroes.pungun.mastery === 25,
+    `a loaded save is repaired (${owned(p)}, mastery ${p.heroes.pungun.mastery})`,
+  );
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return {
+    name: `F seed ${seed}`,
+    failures: f,
+    log: [`joined in order: 철혈 → 홍련 → 무영; preview "${preview.slice(0, 60)}…"`],
+  };
+}
+
 const browser = await launch();
 const results = [];
 for (const course of [0, 1]) results.push(await scenarioA(browser, course, 101 + course));
@@ -388,6 +579,7 @@ results.push(await scenarioB(browser, 0, 303));
 results.push(await scenarioC(browser, 1, 404));
 results.push(await scenarioD(browser, 505));
 results.push(await scenarioE(browser, 606));
+results.push(await scenarioF(browser, 707));
 await browser.close();
 
 let failed = 0;

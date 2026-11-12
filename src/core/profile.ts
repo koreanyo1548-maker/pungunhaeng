@@ -1,8 +1,23 @@
 // The player's profile: everything kept between runs, in one localStorage entry.
 // A run never reads this directly. It takes a snapshot (metaSnapshot) when it starts, so a run is reproducible
 // from its seed and its snapshot. An empty profile plays exactly like the game without meta progression.
-import { STATS, STAT_IDS, emptyMeta } from '../data/meta';
-import type { Meta, StatId } from '../data/meta';
+import {
+  HERO_IDS,
+  MASTERY_STEPS,
+  STARTERS,
+  STATS,
+  STAT_IDS,
+  emptyMeta,
+  emptyRecords,
+  masteryLevel,
+  unlocked,
+} from '../data/meta';
+import type { HeroId, Meta, Records, StatId } from '../data/meta';
+
+// Debug only (#debug&roster): every hero is owned, the way the game was before heroes had to be collected.
+// The regression tests use it so that their formations and their results stay comparable across versions.
+const ROSTER = typeof location !== 'undefined' && /debug/.test(location.hash) && /[#&]roster\b/.test(location.hash);
+const starter = (id: HeroId) => ROSTER || STARTERS.includes(id);
 
 const KEY = 'pungun-profile',
   LEGACY_BEST = 'wuxia-best';
@@ -13,9 +28,19 @@ export type Profile = {
   coins: number;
   stats: Record<StatId, number>;
   best: number;
+  /** owned: can be put in the formation. mastery: gates cleared while in the formation. */
+  heroes: Record<HeroId, { owned: boolean; mastery: number }>;
+  records: Records;
 };
 
-const fresh = (): Profile => ({ v: 1, coins: 0, stats: emptyMeta().stats, best: 0 });
+const fresh = (): Profile => ({
+  v: 1,
+  coins: 0,
+  stats: emptyMeta().stats,
+  best: 0,
+  heroes: Object.fromEntries(HERO_IDS.map(id => [id, { owned: starter(id), mastery: 0 }])) as Profile['heroes'],
+  records: emptyRecords(),
+});
 
 const whole = (n: unknown, max = Number.MAX_SAFE_INTEGER) =>
   typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(0, Math.floor(n))) : 0;
@@ -27,6 +52,18 @@ export function sanitize(raw: any): Profile {
   p.coins = whole(raw.coins);
   p.best = whole(raw.best);
   for (const id of STAT_IDS) p.stats[id] = whole(raw.stats?.[id], STATS[id].costs.length);
+  const r = raw.records;
+  p.records = {
+    gates: { ground: whole(r?.gates?.ground, 4), sky: whole(r?.gates?.sky, 4) },
+    clears: { ground: whole(r?.clears?.ground), sky: whole(r?.clears?.sky) },
+    grazes: whole(r?.grazes),
+  };
+  for (const id of HERO_IDS)
+    p.heroes[id] = {
+      // a hero whose condition the records already meet is owned, whatever the save says
+      owned: starter(id) || raw.heroes?.[id]?.owned === true || (!!r && unlocked(id, p.records)),
+      mastery: whole(raw.heroes?.[id]?.mastery, MASTERY_STEPS[MASTERY_STEPS.length - 1]),
+    };
   return p;
 }
 
@@ -60,7 +97,10 @@ export function loadProfile(raw: unknown) {
 }
 
 export function metaSnapshot(): Meta {
-  return { stats: { ...profile.stats } };
+  return {
+    stats: { ...profile.stats },
+    heroes: Object.fromEntries(HERO_IDS.map(id => [id, masteryLevel(profile.heroes[id].mastery)])) as Meta['heroes'],
+  };
 }
 
 export function statCost(id: StatId): number | null {

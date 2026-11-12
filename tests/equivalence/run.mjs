@@ -31,7 +31,7 @@ async function run(file, seed, steps, course, frameMs) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(init(seed, frameMs));
-  await page.goto('file://' + path.resolve(file) + '#debug', { timeout: 120000 });
+  await page.goto('file://' + path.resolve(file) + '#debug&roster', { timeout: 120000 });
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
   await page.evaluate(() => document.getElementById('start').click());
   const pick = () =>

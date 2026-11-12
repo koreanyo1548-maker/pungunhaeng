@@ -23,8 +23,12 @@ export async function launch() {
 /**
  * Opens a build in debug mode with a forced seed and waits for assets to load.
  * Returns helpers bound to that page. Pass an existing browser to share it between runs.
+ * Every hero is owned unless roster is false (the default profile starts with two).
  */
-export async function openGame(file = DEFAULT_BUILD, { seed = 1, frameMs = 1000 / 60, browser, viewport } = {}) {
+export async function openGame(
+  file = DEFAULT_BUILD,
+  { seed = 1, frameMs = 1000 / 60, browser, viewport, roster = true } = {},
+) {
   const page = await browser.newPage({ viewport: viewport || { width: 480, height: 800 } });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
@@ -32,7 +36,7 @@ export async function openGame(file = DEFAULT_BUILD, { seed = 1, frameMs = 1000 
     if (m.type() === 'error') errors.push('console: ' + m.text());
   });
   await page.addInitScript(clockScript(frameMs, seed));
-  await page.goto('file://' + path.resolve(file) + '#debug&seed=' + seed);
+  await page.goto('file://' + path.resolve(file) + '#debug&seed=' + seed + (roster ? '&roster' : ''));
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
 
   const step = n => page.evaluate(n => window.__step(n), n);

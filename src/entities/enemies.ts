@@ -17,7 +17,7 @@ import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/abilities';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
-import { traitOn } from '../systems/formation';
+import { traitNearCharge, traitOn } from '../systems/formation';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
@@ -174,7 +174,7 @@ export function kill(e, byHyper = false) {
     if (!byHyper && !G.state.blasting) {
       if (G.player.y - e.y < TUNE.nearDy) {
         emit('nearKill', { e });
-        if (traitOn('pungun')) gainCharge(5);
+        if (traitOn('pungun')) gainCharge(traitNearCharge());
       }
       emit('kill', { e });
       if (G.state.combo % 10 === 0) emit('combo10');

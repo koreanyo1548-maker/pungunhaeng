@@ -52,7 +52,7 @@ async function run(viewport) {
   const browser = await chromium.launch();
   const page = await browser.newPage(viewport);
   await page.addInitScript(init);
-  await page.goto('file://' + path.resolve(file) + '#debug');
+  await page.goto('file://' + path.resolve(file) + '#debug&roster');
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
   await page.addStyleTag({ content: freeze });
   const step = n => page.evaluate(n => window.__step(n), n);

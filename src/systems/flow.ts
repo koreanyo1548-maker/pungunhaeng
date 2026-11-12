@@ -10,10 +10,12 @@ import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
 import { fmt, rnd } from '../core/math';
 import { COURSES } from '../data/courses';
+import { HEROES } from '../data/heroes';
 import { settle } from '../data/meta';
 import { TUNE } from '../data/tune';
 import { dominantTitle, runSummary } from '../scenes/result';
 import { hasSkill } from './abilities';
+import { runEnded } from './meta';
 import { closeQuest } from './quest';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
@@ -188,11 +190,15 @@ export function end(victory = false) {
   // 정산: what is left of this run's 엽전 goes to the bank.
   const banked = settle(G.state.coins, victory, G.state.meta.stats.fortune);
   profile.coins += banked;
+  runEnded();
   saveProfile();
   $('settle').innerHTML =
     `남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
     (banked > G.state.coins ? ` + 보너스 <b>${fmt(banked - G.state.coins)}냥</b>` : '') +
-    ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>`;
+    ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>` +
+    (G.state.newHeroes?.length
+      ? `<br>새 영웅 <b>${G.state.newHeroes.map(id => HEROES[id].name).join(', ')}</b> 합류`
+      : '');
   $('resultTitle').textContent = victory ? region().win : '강호행 종료';
   $('resultEyebrow').textContent = victory
     ? dominantTitle()

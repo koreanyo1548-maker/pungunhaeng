@@ -284,3 +284,98 @@ button:disabled {
   margin: 6px 0 0;
   color: #ffd77a;
 }
+
+/* 영웅: one row per hero. A hero who has not joined is dimmed and shows how to meet them. */
+.hero-row {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0a1f1a99;
+  border: 1px solid #b1c7a833;
+  border-left: 3px solid var(--c);
+  text-align: left;
+}
+.hero-row img {
+  width: 54px;
+  height: 64px;
+  object-fit: contain;
+}
+.hero-row small b {
+  font-size: 10px;
+  color: #cfe0d4;
+}
+.hero-row.locked {
+  border-left-color: #ffffff22;
+}
+.hero-row.locked img {
+  filter: brightness(0.25) saturate(0);
+}
+.hero-row.locked .stat-head b {
+  color: #9fb5aa;
+}
+.hero-row .unlock,
+.hero-row .unlock b {
+  color: #ffd77a;
+}
+.hero-row .unlock i,
+.formation-preview i {
+  font-style: normal;
+  opacity: 0.75;
+}
+.mastery {
+  display: block;
+  font-size: 10px;
+  color: #b7c9be;
+}
+.mastery .stars {
+  font-style: normal;
+  color: #ffd77a;
+  letter-spacing: 1px;
+  margin-right: 3px;
+}
+.hub-buttons {
+  display: flex;
+  gap: 6px;
+}
+/* Formation: a hero who has not joined can be previewed, not chosen. */
+.formation-screen .hero-grid .card.locked .hero-choice-art {
+  filter: brightness(0.25) saturate(0);
+}
+.formation-screen .hero-grid .card.locked h3 {
+  color: #8fa59a;
+}
+.formation-screen .hero-grid .card.locked::before {
+  content: '잠김';
+  position: absolute;
+  left: 50%;
+  top: 30px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #0b1a1ccc;
+  border: 1px solid #ffffff33;
+  color: #d9e6dc;
+  font-size: 10px;
+  z-index: 1;
+}
+.formation-preview.locked .formation-body {
+  filter: brightness(0.3) saturate(0);
+}
+#formationConfirm:disabled {
+  background: #1b2f2a;
+  border-color: #ffffff22;
+  color: #8fa59a;
+  box-shadow: none;
+}
+.hero-news {
+  display: block;
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #3a2a0a99;
+  border: 1px solid #ffd77a88;
+  color: #ffd77a;
+}

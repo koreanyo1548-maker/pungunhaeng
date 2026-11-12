@@ -17,7 +17,7 @@ try {
     await page.addInitScript(() => {
       window.requestAnimationFrame = () => 0;
     });
-    await page.goto('http://127.0.0.1:5188/#debug', { timeout: 120000 });
+    await page.goto('http://127.0.0.1:5188/#debug&roster', { timeout: 120000 });
     await page.waitForFunction(() => window.__g && !document.getElementById('start').disabled, null, {
       timeout: 120000,
     });

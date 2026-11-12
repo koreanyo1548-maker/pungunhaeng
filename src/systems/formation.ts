@@ -19,6 +19,19 @@ export function activeFrames() {
 export function swapCooldown() {
   return TUNE.swapCd - 0.5 * G.state.meta.stats.swap;
 }
+/** Mastery level (0 to 4) the run started with for this hero. */
+export function heroLevel(id = activeHeroId()) {
+  return G.state.meta.heroes[id] ?? 0;
+}
+// A trait's strength at the active hero's mastery level, or its neutral value when the trait is off.
+// The per-level steps match the text in data/heroes.ts.
+export const traitPower = () =>
+  traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower + 0.04 * heroLevel() : 1;
+export const traitCharge = () => (traitOn('unhak') ? TUNE.traitCharge + 0.05 * heroLevel() : 1);
+export const traitGraze = () => (traitOn('mukyoung') ? TUNE.traitGraze + 0.05 * heroLevel() : 1);
+export const traitFire = () => (traitOn('hongryeon') ? TUNE.traitFire + 0.03 * heroLevel() : 1);
+/** 풍운객: 필살기 충전 for a close kill, or 0 when the trait is off. */
+export const traitNearCharge = () => (traitOn('pungun') ? 5 + heroLevel() : 0);
 export function traitOn(id) {
   return !!G.state && G.state.formation?.[G.state.active] === id && HEROES[id].terrain === G.state.course;
 }
@@ -38,7 +51,7 @@ export function swapHero() {
     burst(G.player.x, G.player.y, h.color, m > 1 ? 30 : 16, 220);
   }
   startSwapPose(activeHeroId());
-  withSkill(activeHeroId(), () => h.fx(m));
+  withSkill(activeHeroId(), () => h.fx(m, heroLevel()));
   skillCue(activeHeroId(), G.player.x, G.player.y - 30, m > 1 ? 170 : 125);
   if (activeHeroId() === 'mukyoung') skillAura('mukyoung', 0.6 * m + 0.2);
 

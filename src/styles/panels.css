@@ -336,10 +336,6 @@ button:disabled {
   letter-spacing: 1px;
   margin-right: 3px;
 }
-.hub-buttons {
-  display: flex;
-  gap: 6px;
-}
 /* Formation: a hero who has not joined can be previewed, not chosen. */
 .formation-screen .hero-grid .card.locked .hero-choice-art {
   filter: brightness(0.25) saturate(0);
@@ -393,21 +389,6 @@ button:disabled {
 }
 #cardList .mastery .stars {
   font-size: 8px;
-}
-/* Three ways in (영웅, 인연, 수련) beside the bank: keep each on one line, and wrap the group under the bank
-   when a narrow screen cannot hold both. */
-.hub-row {
-  flex-wrap: wrap;
-}
-.hub-row > span:first-child {
-  white-space: nowrap;
-}
-.hub-buttons {
-  margin-left: auto;
-}
-.hub-button {
-  padding: 8px 11px;
-  white-space: nowrap;
 }
 .choice-sub .news + .news {
   margin-top: -2px;

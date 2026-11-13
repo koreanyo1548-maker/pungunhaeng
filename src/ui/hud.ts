@@ -1,11 +1,12 @@
 import { isFinal } from '../systems/run-plan';
 import { G } from '../core/context';
-import { profile } from '../core/profile';
+import { profile, statCost } from '../core/profile';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
 import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { HEROES } from '../data/heroes';
+import { HERO_IDS, NPC_IDS, STAT_IDS } from '../data/meta';
 import { ARTS, SKILLS, skillStars } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
@@ -22,7 +23,17 @@ export function showBest() {
 }
 /** The bank of 엽전 on the title screen. */
 export function showBank() {
-  $('bankCoins').textContent = '지닌 엽전 ' + fmt(profile.coins) + '냥';
+  $('bankCoins').textContent = fmt(profile.coins) + '냥';
+  // the three ways in on the title: how far each one has come, and a mark on 수련 when something can be bought
+  const heroes = HERO_IDS.filter(id => profile.heroes[id].owned).length,
+    cards = NPC_IDS.filter(id => profile.cards[id] > 0).length,
+    costs = STAT_IDS.map(statCost).filter(c => c !== null),
+    canBuy = costs.some(c => profile.coins >= c);
+  $('hubHeroes').textContent = `${heroes} / ${HERO_IDS.length}`;
+  $('hubCards').textContent = `카드 ${cards} / ${NPC_IDS.length}`;
+  $('hubTraining').textContent = canBuy ? '강화 가능' : costs.length ? '능력치 강화' : '최고 단계';
+  $('hubBadge').classList.toggle('hidden', !canBuy);
+  $('openTraining').classList.toggle('ready', canBuy);
 }
 export function announce(top, title, sub, color = '#ffe0a0', duration = 2) {
   G.banner = { top, title, sub, color, life: duration, total: duration };

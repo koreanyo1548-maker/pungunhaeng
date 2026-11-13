@@ -102,15 +102,39 @@ export function masteryLevel(mastery: number): number {
 }
 export const masteryStars = (level: number) => '★'.repeat(level + 1) + '☆'.repeat(MASTERY_MAX - level);
 
+/**
+ * 인연 카드: one card per 인연, built from pieces (조각). A piece comes from succeeding at a 의뢰 (the 인연 you
+ * followed, or the rival of the one you defied) and from each 인연 who helped at a cleared final gate.
+ * The card's level strengthens that 인연's unique skill (see data/skills.ts) and eases its 전수.
+ */
+export const NPC_IDS = ['dosa', 'milsa', 'monk', 'yeonhyeop', 'yakseon', 'uijeok'] as const;
+export type NpcId = (typeof NPC_IDS)[number];
+/** total pieces needed for levels 1 to 5 */
+export const CARD_STEPS = [1, 3, 6, 10, 15];
+export const CARD_MAX = CARD_STEPS.length;
+export const PIECES_MAX = CARD_STEPS[CARD_MAX - 1];
+/** 0 (no card yet) to 5 */
+export function cardLevel(pieces: number): number {
+  let level = 0;
+  while (level < CARD_MAX && pieces >= CARD_STEPS[level]) level++;
+  return level;
+}
+/** What each card level adds, apart from the two skill boosts, which differ per 인연 (data/npcs.ts `card`). */
+export const CARD_EASE = '의뢰를 한 번만 따라 성공해도 고유 기술 전수',
+  CARD_HELP = '최종 관문에서 이 인연의 도움 위력 +40%';
+
 /** What a run reads. Copied from the profile when the run starts, so a seed and a snapshot replay the same run. */
 export type Meta = {
   stats: Record<StatId, number>;
   /** mastery level of each hero, 0 to 4 */
   heroes: Record<HeroId, number>;
+  /** 인연 card level of each 인연, 0 to 5 */
+  cards: Record<NpcId, number>;
 };
 export const emptyMeta = (): Meta => ({
   stats: { power: 0, charge: 0, fortune: 0, hp: 0, bombs: 0, swap: 0 },
   heroes: { pungun: 0, cheolhyeol: 0, mukyoung: 0, bicheon: 0, unhak: 0, hongryeon: 0 },
+  cards: { dosa: 0, milsa: 0, monk: 0, yeonhyeop: 0, yakseon: 0, uijeok: 0 },
 });
 
 /** 엽전 a run adds to the bank: what is left, plus the clear bonus, raised by 재물운. */

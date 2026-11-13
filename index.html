@@ -65,6 +65,10 @@
           </div>
         </div>
         <div class="overlay title-screen" id="intro">
+          <div class="title-bar">
+            <span class="coin-chip"><img id="bankIcon" alt="" /><b id="bankCoins">0냥</b></span>
+            <button class="sound-toggle" id="soundIntro">♪ 소리 켜짐</button>
+          </div>
           <div class="top-mark"><span class="wing">✧</span> 한 걸음, 하늘 끝까지 <span class="wing">✧</span></div>
           <h2>풍운<span>행</span></h2>
           <p class="subtitle">질주에서 경공으로, 경공에서 어검으로</p>
@@ -73,21 +77,20 @@
             <img id="heroArt" alt="붉은 수건과 청록 띠를 두른 백의 협객" />
           </div>
           <div class="launch">
-            <div class="control-hint">
-              <span>←</span>
-              <p>좌우로 움직여 길을 뚫으세요<small>공격은 자동 · 이동은 당신의 손끝으로</small></p>
-              <span>→</span>
-            </div>
+            <p class="best-record" id="introBest">최고 기록 0</p>
             <button class="primary" id="start" disabled>강호를 준비하는 중…</button>
-            <div class="hub-row">
-              <span id="bankCoins">지닌 엽전 0냥</span
-              ><span class="hub-buttons"
-                ><button class="hub-button" id="openRoster">영웅</button
-                ><button class="hub-button" id="openTraining">수련</button></span
-              >
-            </div>
-            <div class="start-footer">
-              <span id="introBest">최고 기록 0</span><button class="sound-toggle" id="soundIntro">♪ 소리 켜짐</button>
+            <p class="control-hint"><span>←</span> 좌우로 움직이면 공격은 자동 <span>→</span></p>
+            <div class="hub-menu">
+              <button class="hub-tile" id="openRoster">
+                <span class="hub-icon"><img id="hubHeroIcon" alt="" /></span><b>영웅</b
+                ><small id="hubHeroes"></small></button
+              ><button class="hub-tile" id="openCards">
+                <span class="hub-icon"><img id="hubCardIcon" alt="" /></span><b>인연</b
+                ><small id="hubCards"></small></button
+              ><button class="hub-tile" id="openTraining">
+                <span class="hub-icon"><img id="hubTrainIcon" alt="" /></span><b>수련</b><small id="hubTraining"></small
+                ><i class="hub-badge hidden" id="hubBadge" aria-hidden="true"></i>
+              </button>
             </div>
             <p class="load-error hidden" id="loadError">리소스를 불러오지 못했어요. 새로고침해 주세요.</p>
           </div>
@@ -154,6 +157,18 @@
             <p class="bank" id="rosterCount"></p>
             <div class="stat-list" id="rosterList"></div>
             <button class="primary" id="rosterClose">돌아가기</button>
+          </div>
+        </div>
+        <div class="overlay modal hidden" id="cards">
+          <div class="panel training-panel">
+            <span class="eyebrow">강호에서 맺은 인연</span>
+            <h2>인연 카드</h2>
+            <p class="bank card-help">
+              의뢰를 따라 성공하면 그 인연의 조각을, 거슬러 성공하면 맞수의 조각을 얻는다. 완주하면 도와준 인연마다 하나
+              더. 오른 단계는 다음 판부터 적용된다.
+            </p>
+            <div class="stat-list" id="cardList"></div>
+            <button class="primary" id="cardsClose">돌아가기</button>
           </div>
         </div>
         <div class="toast" id="toast" role="status"></div>

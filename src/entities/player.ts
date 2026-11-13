@@ -5,6 +5,7 @@ import { reduced } from '../core/dom';
 import { fxRnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
+import { hoechunSeconds } from '../data/skills';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
@@ -28,9 +29,11 @@ export function damagePlayer() {
     return;
   }
   if (G.state.negate) {
-    G.state.negate = false;
+    // 회춘단: one block per gate, two with a level 4 card
+    G.state.negateLeft = (G.state.negateLeft ?? 1) - 1;
+    G.state.negate = G.state.negateLeft > 0;
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
-    G.player.inv = 1.3;
+    G.player.inv = hoechunSeconds();
     G.state.bombs = Math.min(G.state.maxBombs, G.state.bombs + 1);
     if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
     label('회춘단', G.player.x, G.player.y - 55, BR.gi.color, 20);

@@ -336,10 +336,6 @@ button:disabled {
   letter-spacing: 1px;
   margin-right: 3px;
 }
-.hub-buttons {
-  display: flex;
-  gap: 6px;
-}
 /* Formation: a hero who has not joined can be previewed, not chosen. */
 .formation-screen .hero-grid .card.locked .hero-choice-art {
   filter: brightness(0.25) saturate(0);
@@ -370,7 +366,7 @@ button:disabled {
   color: #8fa59a;
   box-shadow: none;
 }
-.hero-news {
+.choice-sub .news {
   display: block;
   margin-bottom: 6px;
   padding: 5px 8px;
@@ -378,4 +374,22 @@ button:disabled {
   background: #3a2a0a99;
   border: 1px solid #ffd77a88;
   color: #ffd77a;
+}
+
+/* 인연 카드: same rows as 영웅; the next level's gain is the gold line. */
+.training-panel .card-help {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #9fb5aa;
+  text-align: left;
+}
+.hero-row .next,
+.hero-row .next b {
+  color: #ffd77a;
+}
+#cardList .mastery .stars {
+  font-size: 8px;
+}
+.choice-sub .news + .news {
+  margin-top: -2px;
 }

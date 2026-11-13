@@ -4,15 +4,18 @@
 import {
   HERO_IDS,
   MASTERY_STEPS,
+  NPC_IDS,
+  PIECES_MAX,
   STARTERS,
   STATS,
   STAT_IDS,
   emptyMeta,
+  cardLevel,
   emptyRecords,
   masteryLevel,
   unlocked,
 } from '../data/meta';
-import type { HeroId, Meta, Records, StatId } from '../data/meta';
+import type { HeroId, Meta, NpcId, Records, StatId } from '../data/meta';
 
 // Debug only (#debug&roster): every hero is owned, the way the game was before heroes had to be collected.
 // The regression tests use it so that their formations and their results stay comparable across versions.
@@ -31,6 +34,8 @@ export type Profile = {
   /** owned: can be put in the formation. mastery: gates cleared while in the formation. */
   heroes: Record<HeroId, { owned: boolean; mastery: number }>;
   records: Records;
+  /** 인연 card pieces per 인연 */
+  cards: Record<NpcId, number>;
 };
 
 const fresh = (): Profile => ({
@@ -40,6 +45,7 @@ const fresh = (): Profile => ({
   best: 0,
   heroes: Object.fromEntries(HERO_IDS.map(id => [id, { owned: starter(id), mastery: 0 }])) as Profile['heroes'],
   records: emptyRecords(),
+  cards: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Profile['cards'],
 });
 
 const whole = (n: unknown, max = Number.MAX_SAFE_INTEGER) =>
@@ -58,6 +64,7 @@ export function sanitize(raw: any): Profile {
     clears: { ground: whole(r?.clears?.ground), sky: whole(r?.clears?.sky) },
     grazes: whole(r?.grazes),
   };
+  for (const id of NPC_IDS) p.cards[id] = whole(raw.cards?.[id], PIECES_MAX);
   for (const id of HERO_IDS)
     p.heroes[id] = {
       // a hero whose condition the records already meet is owned, whatever the save says
@@ -100,6 +107,7 @@ export function metaSnapshot(): Meta {
   return {
     stats: { ...profile.stats },
     heroes: Object.fromEntries(HERO_IDS.map(id => [id, masteryLevel(profile.heroes[id].mastery)])) as Meta['heroes'],
+    cards: Object.fromEntries(NPC_IDS.map(id => [id, cardLevel(profile.cards[id])])) as Meta['cards'],
   };
 }
 

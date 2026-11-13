@@ -7,6 +7,7 @@
 // Scenario D: 보스 기술 보상 (항상 계열뿐이면 새 기술, 발동 기술이 있으면 강화).
 // Scenario E: 메타 성장 (엽전 보관 → 수련 → 다음 판 반영, 저장 코드, 손상된 저장 복구).
 // Scenario F: 영웅 수집 (시작 영웅 2명, 잠긴 영웅은 미리보기만, 관문 돌파로 숙련·합류, 다음 판 반영).
+// Scenario G: 인연 카드 (의뢰 성공·완주로 조각, 카드 단계로 고유 기술 강화와 전수 조건 완화).
 // Every scenario also checks the exact scene sequence (systems/scene-flow.ts).
 import { DEFAULT_BUILD, check, launch, openGame } from '../lib/harness.mjs';
 
@@ -466,7 +467,7 @@ async function scenarioF(browser, seed) {
     await g.eval(() => window.__g.god());
     await clearBoss(g);
     check(f, (await g.choiceTitle()) === '보스 기술', `gate ${gate}: 보스 기술 opens`);
-    news.push(await g.eval(() => document.querySelector('#choiceSub .hero-news')?.textContent ?? ''));
+    news.push(await g.eval(() => document.querySelector('#choiceSub .news')?.textContent ?? ''));
     p = await P();
     check(
       f,
@@ -572,6 +573,178 @@ async function scenarioF(browser, seed) {
   };
 }
 
+// Scenario G: 인연 cards. A piece for each 의뢰 success (the 인연 followed, or the rival of the one defied) and
+// for each helper at a cleared final gate; card levels strengthen the unique skill and ease its 전수 from the
+// next run on.
+async function scenarioG(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed });
+  const P = () => g.state(() => JSON.parse(JSON.stringify(window.__g.profile)));
+  const succeed = async () => {
+    await g.eval(() => {
+      const q = window.__g.state.quest;
+      if (q.t === 'combo') window.__g.state.combo = 999;
+      window.__g.questEvent(q.t, 999);
+    });
+    await g.seconds(2);
+  };
+  const news = () => g.page.$$eval('#choiceSub .news', els => els.map(e => e.textContent));
+  let p = await P();
+  check(
+    f,
+    Object.values(p.cards).every(v => v === 0),
+    `a fresh profile has no cards (${JSON.stringify(p.cards)})`,
+  );
+
+  // 인연 카드 screen on the title
+  await g.eval(() => document.getElementById('openCards').click());
+  let rows = await g.page.$$eval('#cardList .hero-row', els =>
+    els.map(e => ({ locked: e.classList.contains('locked'), text: e.textContent })),
+  );
+  check(f, rows.length === 6 && rows.every(r => r.locked && /조각 0 \/ 1/.test(r.text)), 'six cards, none owned yet');
+  await g.eval(() => document.getElementById('cardsClose').click());
+
+  // gate 1: follow and succeed → a piece for that 인연, announced on the 기술 선택 screen
+  await setup(g, 0);
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.god());
+  const first = await g.state(() => window.__g.state.quest.npc);
+  await succeed();
+  p = await P();
+  check(f, p.cards[first] === 1, `따른다 성공 → that 인연's piece (${first}: ${p.cards[first]})`);
+  let n = await news();
+  check(f, (await g.choiceTitle()) === '기술 선택' && /새 인연 카드/.test(n.join()), `기술 선택 announces it (${n})`);
+  const offered = await g.cards();
+  check(
+    f,
+    offered.every(c => !/고유 기술/.test(c.tag)),
+    'no 전수 on the first success without a level 3 card',
+  );
+  check(
+    f,
+    (await g.state(() => window.__g.state.meta.cards[window.__g.state.quest.npc])) === 0,
+    'the run keeps its snapshot',
+  );
+  await g.pick(0);
+  await g.step(2);
+  await clearBoss(g);
+  await g.pick(-1);
+  await g.step(2);
+  await g.pick(-1);
+  await g.step(2);
+
+  // gate 2: defy and succeed → a piece for the rival
+  const second = await g.eval(() => {
+    const el = document.querySelectorAll('#choice .act')[1];
+    el.click();
+    return window.__g.state.quest.npc;
+  });
+  await g.step(2);
+  await g.eval(() => window.__g.god());
+  const before = await P();
+  await succeed();
+  p = await P();
+  const gained = Object.keys(p.cards).filter(k => p.cards[k] > before.cards[k]);
+  const rel = await g.state(() => window.__g.state.rel);
+  check(
+    f,
+    gained.length === 1 && gained[0] !== second && rel[gained[0]] >= 1 && rel[second] <= 0,
+    `거스른다 성공 → the rival's piece (defied ${second}, piece ${gained})`,
+  );
+
+  // finish the road: every helper at the final gate adds a piece; the result lists the pieces
+  await finish(g);
+  const end = await P();
+  const helpers = Object.keys(rel).filter(k => rel[k] > 0);
+  const settle = await g.page.$eval('#settle', e => e.textContent);
+  check(
+    f,
+    (await g.mode()) === 'result' && helpers.every(k => end.cards[k] === p.cards[k] + 1),
+    `완주 → +1 for each helper (${helpers}: ${helpers.map(k => p.cards[k] + '→' + end.cards[k])})`,
+  );
+  check(f, /인연 카드 조각/.test(settle), `the result lists the pieces (${settle})`);
+
+  // level 3 card: 전수 on the first followed success; level 2 and 4 strengthen the unique skill
+  await g.eval(() => window.__g.loadProfile({ cards: { dosa: 6, yeonhyeop: 10, monk: 15, milsa: 99, uijeok: 1 } }));
+  p = await P();
+  check(f, p.cards.milsa === 15, `pieces are capped (${p.cards.milsa})`);
+  await g.eval(() => document.getElementById('openCards').click());
+  rows = await g.page.$$eval('#cardList .hero-row', els => els.map(e => e.textContent));
+  check(
+    f,
+    /3단계/.test(rows[0]) && /비도 5자루/.test(rows[3]) && /최고 단계/.test(rows[2]) && /조각 1 \/ 3/.test(rows[5]),
+    `the screen shows levels and the skill as strengthened (${rows[0]} | ${rows[3]})`,
+  );
+  await g.eval(() => document.getElementById('cardsClose').click());
+  await g.eval(() => document.getElementById('start').click());
+  await g.step(2);
+  await g.pick(0);
+  await g.step(2);
+  await g.pick(0);
+  await g.step(2);
+  await g.pick(0);
+  await g.step(2);
+  // meet 청운 도인 (level 3) and follow once
+  await g.eval(() => {
+    window.__g.state.forceNpc = 'dosa';
+  });
+  let meta = await g.state(() => window.__g.state.meta.cards);
+  check(
+    f,
+    meta.dosa === 3 && meta.yeonhyeop === 4 && meta.monk === 5,
+    `snapshot has card levels (${JSON.stringify(meta)})`,
+  );
+  // the crossroads is already open with a random 인연: finish this gate, then 청운 도인 is forced at the next
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.god());
+  await clearBoss(g);
+  await finishGateScreens(g);
+  const tag = await g.page.$eval('#choice .card .tag', e => e.textContent);
+  check(f, /청운 도인|구름/.test(await g.page.$eval('#choice .card', e => e.textContent)), '수소문 brings 청운 도인');
+  check(f, /전수 가능/.test(tag), `a level 3 card shows 전수 가능 before any 호감도 (${tag})`);
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.god());
+  await succeed();
+  const cards = await g.cards();
+  check(
+    f,
+    cards.some(c => c.title === '태극운검' && /인연 카드 3단계/.test(c.tag)),
+    `전수 on the first followed success (${cards.map(c => c.title + ' [' + c.tag + ']').join(', ')})`,
+  );
+  // strengthened unique skills: count what one trigger fires
+  const shots = await g.eval(() => {
+    const G = window.__g;
+    G.learn('mancheon');
+    G.learn('uihyeop');
+    G.trig('step', { x: G.player.x, y: G.player.y });
+    G.trig('rowClear');
+    return {
+      mancheon: G.shots.filter(s => s.art === 'mancheon').length,
+      uihyeop: G.shots.filter(s => s.color === '#ffb38f').length,
+    };
+  });
+  check(f, shots.mancheon === 5, `만천화우 at level 4 throws 5 knives (${shots.mancheon})`);
+  check(f, shots.uihyeop === 5, `의협난도 at level 1 is unchanged, 5 blades (${shots.uihyeop})`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return {
+    name: `G seed ${seed}`,
+    failures: f,
+    log: [`pieces: ${first} follow, defy ${second} → ${gained}, helpers ${helpers}; ${settle.slice(-60)}`],
+  };
+}
+
+// after a boss: 보스 기술 (take the 엽전) → 객잔 (leave)
+async function finishGateScreens(g) {
+  await g.pick(-1);
+  await g.step(2);
+  await g.pick(-1);
+  await g.step(2);
+}
+
 const browser = await launch();
 const results = [];
 for (const course of [0, 1]) results.push(await scenarioA(browser, course, 101 + course));
@@ -580,6 +753,7 @@ results.push(await scenarioC(browser, 1, 404));
 results.push(await scenarioD(browser, 505));
 results.push(await scenarioE(browser, 606));
 results.push(await scenarioF(browser, 707));
+results.push(await scenarioG(browser, 808));
 await browser.close();
 
 let failed = 0;

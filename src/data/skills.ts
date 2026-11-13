@@ -4,6 +4,7 @@ import { BR } from './branches';
 import { nearestEnemy, strongestEnemy } from '../entities/enemies';
 import { label, paintFX, ring } from '../render/fx';
 import { D, aoe, clearBullets, column, fan, fireShot } from '../systems/combat';
+import { cardRank } from '../systems/relationship';
 
 // D() is the damage of one basic shot. A skill's projectile is a reward for meeting its condition, so each one
 // hits at least twice as hard as a basic shot (see docs/terms.md).
@@ -149,67 +150,77 @@ export const SKILLS = {
     br: 'yu',
     npc: 'dosa',
     name: '태극운검',
-    effect: '스친 탄을 추적탄으로 되돌려 보냄',
+    effect: r => (r >= 4 ? '스친 탄을 추적탄 2발로 되돌려 보냄' : '스친 탄을 추적탄으로 되돌려 보냄'),
     trig: 'graze',
     fx: d => {
+      const r = cardRank('dosa'),
+        dmg = D() * (r >= 2 ? 4 : 3);
       if (d.h) d.h.dead = true;
-      fireShot(d.x, d.y, 0, D() * 3, { kind: 'orb', color: BR.yu.color, homing: true, vy: 700 });
+      for (const vx of r >= 4 ? [-110, 110] : [0])
+        fireShot(d.x, d.y, vx, dmg, { kind: 'orb', color: BR.yu.color, homing: true, vy: 700 });
     },
   },
   hyeolma: {
     br: 'gi',
     npc: 'milsa',
     name: '혈마해방',
-    effect: '2초간 무아지경',
+    effect: r => hyeolmaSeconds(r) + '초간 무아지경',
     trig: 'blast',
     fx: () => {
-      G.state.hyper = Math.max(G.state.hyper, 2);
-      G.player.inv = Math.max(G.player.inv, 2.4);
+      const t = hyeolmaSeconds(cardRank('milsa'));
+      G.state.hyper = Math.max(G.state.hyper, t);
+      G.player.inv = Math.max(G.player.inv, t + 0.4);
     },
   },
   geumgang: {
     br: 'gang',
     npc: 'monk',
     name: '금강부동',
-    effect: '짧은 무적과 큰 충격파',
+    effect: r => (r >= 4 ? '무적 0.65초와 ' : '짧은 무적과 ') + (r >= 2 ? '더 넓은 충격파' : '큰 충격파'),
     trig: 'nearKill',
     cd: 0.35,
     fx: d => {
-      G.player.inv = Math.max(G.player.inv, 0.45);
-      aoe(d.e.x, d.e.y, 140, D() * 7, '#ffd2a8');
+      const r = cardRank('monk');
+      G.player.inv = Math.max(G.player.inv, geumgangSeconds(r));
+      aoe(d.e.x, d.e.y, r >= 2 ? 165 : 140, D() * 7, '#ffd2a8');
     },
   },
   mancheon: {
     br: 'yu',
     npc: 'yeonhyeop',
     name: '만천화우',
-    effect: '비도 3자루를 부채꼴로 투척',
+    effect: r => `비도 ${mancheonKnives(r)}자루를 부채꼴로 투척`,
     trig: 'step',
     cd: 0.26,
     fx: () => {
-      fan(3, 0.32, D() * 3, '#bdf7ea', 'knife', 'mancheon');
+      // more knives sit closer together, so the fan only widens a little
+      const n = mancheonKnives(cardRank('yeonhyeop'));
+      fan(n, n === 3 ? 0.32 : n === 4 ? 0.24 : 0.2, D() * 3, '#bdf7ea', 'knife', 'mancheon');
     },
   },
   hoechun: {
     br: 'gi',
     npc: 'yakseon',
     name: '회춘단',
-    effect: '관문마다 첫 피격 무효, 필살기 +1회',
+    effect: r => `관문마다 ${r >= 4 ? '피격 2회' : '첫 피격'} 무효, 막을 때 필살기 +1회`,
     trig: 'passive',
     gain: () => {
       G.state.negate = true;
+      G.state.negateLeft = hoechunBlocks();
     },
   },
   uihyeop: {
     br: 'gang',
     npc: 'uijeok',
     name: '의협난도',
-    effect: '5방향 관통 도기 발사',
+    effect: r => `${r >= 4 ? 7 : 5}방향 관통 도기 발사`,
     trig: 'rowClear',
     cd: 0.2,
     fx: () => {
-      for (const vx of [-320, -160, 0, 160, 320])
-        fireShot(G.player.x, G.player.y - 40, vx, D() * 5, { kind: 'gang', pierce: true, w: 8, color: '#ffb38f' });
+      const r = cardRank('uijeok'),
+        dmg = D() * (r >= 2 ? 6 : 5);
+      for (const vx of r >= 4 ? [-480, -320, -160, 0, 160, 320, 480] : [-320, -160, 0, 160, 320])
+        fireShot(G.player.x, G.player.y - 40, vx, dmg, { kind: 'gang', pierce: true, w: 8, color: '#ffb38f' });
     },
   },
   // 투학(偸學) 변경·습득: 보스의 무공을 그대로 익힌다
@@ -277,6 +288,22 @@ export const ARTS = {
   },
 };
 
+// 인연 card levels 2 and 4 strengthen the unique skills above. The level is the run's snapshot (cardRank), so
+// a card that levels up during a run takes effect from the next one. Level 0 or 1 is the skill as it always was.
+const hyeolmaSeconds = (r: number) => (r >= 4 ? 3 : r >= 2 ? 2.5 : 2);
+/** 금강부동's invulnerability, in seconds. */
+export const geumgangSeconds = (r = cardRank('monk')) => (r >= 4 ? 0.65 : 0.45);
+const mancheonKnives = (r: number) => (r >= 4 ? 5 : r >= 2 ? 4 : 3);
+/** How many hits 회춘단 turns aside per gate, and how long the player is safe after one. */
+export const hoechunBlocks = () => (cardRank('yakseon') >= 4 ? 2 : 1);
+export const hoechunSeconds = () => (cardRank('yakseon') >= 2 ? 2 : 1.3);
+
+/** A skill's 효과 line. Unique skills word it by their 인연 card level. */
+export function skillEffect(id: string, rank = SKILLS[id].npc ? cardRank(SKILLS[id].npc) : 0): string {
+  const e = SKILLS[id].effect;
+  return typeof e === 'function' ? e(rank) : e;
+}
+
 /** When a skill goes off, in the player's words (the 발동 line on cards). */
 const WHEN = {
   step: '좌우 전환할 때',
@@ -300,7 +327,7 @@ export function skillLines(id: string, mod?: string | number): string {
   const row = (k: string, v: string, cls = '') => `<span class="skill-line${cls}"><b>${k}</b>${v}</span>`;
   return (
     row('발동', skillWhen(id)) +
-    row('효과', SKILLS[id].effect) +
+    row('효과', skillEffect(id)) +
     (mod ? row('★★ 강화', '발동할 때마다 ' + ARTS[mod].plus, ' plus') : '')
   );
 }

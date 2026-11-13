@@ -8,6 +8,7 @@ import './styles/mobile-game.css';
 import './ui/input';
 import './scenes/training';
 import './scenes/roster';
+import './scenes/cards';
 import './debug/debug';
 import { load } from './core/assets';
 import { registerQuestListeners } from './systems/quest';

@@ -11,10 +11,11 @@ import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier } from '../systems/flow';
 import { go } from '../systems/scene-flow';
-import { activeHeroId } from '../systems/formation';
+import { activeHeroId, replaceFallenHero } from '../systems/formation';
 
 export function damagePlayer() {
-  if (G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear') return;
+  if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
+    return;
   if (G.player.shield > 0) {
     G.player.shield = 0;
     paintFX(6, G.player.x, G.player.y, 112, 0.32);
@@ -55,8 +56,12 @@ export function damagePlayer() {
   }
   boom(true);
   if (navigator.vibrate) navigator.vibrate(40);
-  if (G.player.hp <= 0) go('result', false);
-  else label('피격', G.player.x, G.player.y - 55, '#ffac96', 21);
+  if (G.player.hp <= 0) {
+    const fallen = activeHeroId();
+    G.state.heroHealth[fallen].fallen = true;
+    label(HEROES[fallen].name + ' 전투불능', G.player.x, G.player.y - 65, '#ffac96', 20);
+    if (!replaceFallenHero()) go('result', false);
+  } else label('피격', G.player.x, G.player.y - 55, '#ffac96', 21);
 }
 export function shoot() {
   G.player.muzzle = 0.09;

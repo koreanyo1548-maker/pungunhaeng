@@ -104,7 +104,7 @@ try {
       auras: M.skillAnimationSnapshot().auras.length,
     };
   });
-  assert.deepEqual(reset, { hp: 3, coins: 0, skills: 0, shots: 0, hazards: 0, best: 100000, cues: 0, auras: 0 });
+  assert.deepEqual(reset, { hp: 1, coins: 0, skills: 0, shots: 0, hazards: 0, best: 100000, cues: 0, auras: 0 });
   assert.deepEqual(errors, []);
   console.log(
     'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart',

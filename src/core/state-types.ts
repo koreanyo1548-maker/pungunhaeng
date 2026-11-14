@@ -28,7 +28,13 @@ export interface PathEntry {
   mode: string;
   result: string;
 }
+export interface HeroHealth {
+  hp: number;
+  maxHp: number;
+  fallen: boolean;
+}
 export interface RunState {
+  heroHealth: Record<HeroId, HeroHealth>;
   score: number;
   distance: number;
   coins: number;

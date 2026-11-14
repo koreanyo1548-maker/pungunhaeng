@@ -53,7 +53,7 @@ export function start() {
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();
   G.state = createRunState(meta, rnd(48, 62));
-  G.player = createPlayer(W, PLAYER_Y);
+  G.player = createPlayer(W, PLAYER_Y, () => G.state.heroHealth[G.state.formation[G.state.active]]);
   $('toast').classList.remove('show');
   showBest();
   syncHUD();

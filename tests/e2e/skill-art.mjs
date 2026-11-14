@@ -36,6 +36,7 @@ try {
             '/src/entities/player.ts',
             '/src/systems/formation.ts',
             '/src/render/skill-animation.ts',
+            '/src/core/skill-context.ts',
             '/src/render/renderer.ts',
             '/src/render/pfx.ts',
             '/src/render/callout.ts',

@@ -2,11 +2,13 @@ import { G } from '../core/context';
 import { targetable } from '../entities/enemies';
 import { ring } from '../render/fx';
 import { D, aoe, clearBullets, column, fan, fireShot, gainCharge } from '../systems/combat';
+import type { HeroArt, HeroId } from './roster';
 
-// `L` is the hero's mastery level, 0 (★1) to 4 (★5): it strengthens the trait (see systems/formation.ts for the
+// `L` is the hero's 성급 minus one, 0 (★1) to 4 (★5): it strengthens the trait (see systems/formation.ts for the
 // numbers the game uses) and the swap skill. `m` is 2 for a well-timed swap.
 export const HEROES = {
   pungun: {
+    art: { frames: { sheet: 'hero-run', row: 0 }, portrait: { sheet: 'portraits', col: 0, row: 0 }, swapPose: 0 },
     name: '풍운객',
     terrain: 'ground',
     tint: null,
@@ -26,6 +28,7 @@ export const HEROES = {
     },
   },
   cheolhyeol: {
+    art: { frames: { sheet: 'hero-run', row: 1 }, portrait: { sheet: 'portraits', col: 1, row: 0 }, swapPose: 1 },
     name: '철혈',
     terrain: 'ground',
     tint: 'rgba(150,28,18,.42)',
@@ -37,6 +40,7 @@ export const HEROES = {
     fx: (m, L = 0) => aoe(G.player.x, G.player.y - 40, 120 + 50 * m, D() * 6 * m * (1 + 0.1 * L), '#ff6b57'),
   },
   mukyoung: {
+    art: { frames: { sheet: 'hero-run', row: 2 }, portrait: { sheet: 'portraits', col: 2, row: 0 }, swapPose: 2 },
     name: '묵영',
     terrain: 'ground',
     tint: 'rgba(8,12,30,.55)',
@@ -51,6 +55,7 @@ export const HEROES = {
     },
   },
   bicheon: {
+    art: { frames: { sheet: 'hero-fly', row: 0 }, portrait: { sheet: 'portraits', col: 0, row: 1 }, swapPose: 3 },
     name: '비천',
     terrain: 'sky',
     tint: 'rgba(30,190,180,.36)',
@@ -70,6 +75,7 @@ export const HEROES = {
     },
   },
   unhak: {
+    art: { frames: { sheet: 'hero-fly', row: 1 }, portrait: { sheet: 'portraits', col: 1, row: 1 }, swapPose: 4 },
     name: '운학',
     terrain: 'sky',
     tint: 'rgba(245,238,214,.5)',
@@ -84,6 +90,7 @@ export const HEROES = {
     },
   },
   hongryeon: {
+    art: { frames: { sheet: 'hero-fly', row: 2 }, portrait: { sheet: 'portraits', col: 2, row: 1 }, swapPose: 5 },
     name: '홍련',
     terrain: 'sky',
     tint: 'rgba(210,50,105,.4)',
@@ -94,4 +101,4 @@ export const HEROES = {
     tagDesc: '부채꼴로 비도를 흩뿌린다',
     fx: (m, L = 0) => fan(5 + 4 * m + L, 0.15, D() * 1.8, '#ff8fb0'),
   },
-};
+} satisfies Record<HeroId, { name: string; art: HeroArt; [key: string]: unknown }>;

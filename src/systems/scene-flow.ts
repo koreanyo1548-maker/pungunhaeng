@@ -20,7 +20,6 @@ import { openInn } from '../scenes/inn';
 import { openCourseSelect, openFormation } from '../scenes/setup';
 import { openTuhak } from '../scenes/tuhak';
 import { beginStage, end, nextStage } from './flow';
-import { gateCleared } from './meta';
 
 export type Scene =
   'title' | 'course' | 'formation' | 'crossroads' | 'finalGate' | 'stage' | 'dono' | 'tuhak' | 'inn' | 'result';
@@ -75,7 +74,6 @@ export function done(scene: Scene, outcome?: any): void {
       enter('stage');
       return resumePlay();
     case 'stage':
-      gateCleared();
       return isFinal() ? go('result', true) : go('tuhak');
     case 'tuhak':
       G.mode = 'play';

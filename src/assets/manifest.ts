@@ -38,3 +38,12 @@ export const IMG: Record<string, string> = {
   'combat-projectiles': combatProjectiles,
   fx: fx,
 };
+
+// Pictures for one character each (see images/characters/README.md): every PNG in images/characters is registered
+// as 'characters/<file name without .png>', so adding a character's art needs no edit here.
+const characterArt = import.meta.glob('./images/characters/*.png', { eager: true, import: 'default' }) as Record<
+  string,
+  string
+>;
+for (const [path, url] of Object.entries(characterArt))
+  IMG['characters/' + path.slice(path.lastIndexOf('/') + 1, -'.png'.length)] = url;

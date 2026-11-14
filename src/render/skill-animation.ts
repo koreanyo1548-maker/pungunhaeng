@@ -1,4 +1,5 @@
 /** Painted six-frame sequences. Black atlases are intentional additive light passes, not masks. */
+import { HEROES } from '../data/heroes';
 import { G } from '../core/context';
 import { combatProjectileArt } from '../core/assets';
 import { H, W, ctx, reduced } from '../core/dom';
@@ -185,8 +186,8 @@ export function startSwapPose(id: string) {
 }
 export function drawSwapPose(id: string, x: number, y: number, angle: number, alpha: number) {
   if (reduced || !swapPose || swapPose.id !== id || G.time - swapPose.start >= 0.32 || !frames[7]) return false;
-  const row = ['pungun', 'cheolhyeol', 'mukyoung', 'bicheon', 'unhak', 'hongryeon'].indexOf(id);
-  const im = frames[7][row]?.[Math.min(3, Math.floor((G.time - swapPose.start) / 0.08))];
+  const row: number | undefined = HEROES[id]?.art.swapPose;
+  const im = row === undefined ? null : frames[7][row]?.[Math.min(3, Math.floor((G.time - swapPose.start) / 0.08))];
   if (!im) return false;
   ctx.save();
   ctx.translate(x, y);

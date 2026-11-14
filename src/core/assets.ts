@@ -5,6 +5,8 @@ import { $ } from './dom';
 import { RANKS } from '../data/enemies';
 import { HEROES } from '../data/heroes';
 import { NPCS } from '../data/npcs';
+import { HERO_IDS, NPC_IDS } from '../data/roster';
+import type { Cell } from '../data/roster';
 import { showBank, showBest } from '../ui/hud';
 
 export function atlasCell(atlas, cols, rows, col, row) {
@@ -38,7 +40,7 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
     im.src = src;
   });
 }
-export const PORTRAIT_PROPS = { portraits: IMG['portraits'], props: IMG['props'] };
+export const PORTRAIT_PROPS = { props: IMG['props'] };
 export const propArt = [],
   rockHitArt = [];
 export function cropProp(im, rect) {
@@ -50,10 +52,7 @@ export function cropProp(im, rect) {
   return c;
 }
 export async function loadPortraitProps() {
-  const [portraits, props] = await Promise.all(Object.values(PORTRAIT_PROPS).map(loadImage));
-  Object.keys(HEROES).forEach((id, i) => {
-    heroPictures[id] = cropArt(portraits, 3, 2, i % 3, Math.floor(i / 3)).toDataURL();
-  });
+  const [props] = await Promise.all(Object.values(PORTRAIT_PROPS).map(loadImage));
   const rects = [
     [130, 135, 305, 275],
     [635, 120, 300, 295],
@@ -74,7 +73,6 @@ export async function loadPortraitProps() {
     x.fillRect(0, 0, c.width, c.height);
     rockHitArt.push(c);
   }
-  $('heroArt').src = heroPictures.pungun;
 }
 export const COMBAT_ART = { projectile: IMG['projectile'], impact: IMG['impact'], utility: IMG['utility'] };
 export const projectileArt = [];
@@ -92,11 +90,43 @@ export async function loadCombatArt() {
   }
 }
 export const NEW_ART = {
-  run: IMG['hero-run'],
-  fly: IMG['hero-fly'],
-  npc: IMG['npc-portraits'],
   icon: IMG['skill-icons'],
 };
+/**
+ * Grid (columns, rows) of each sheet shared by several characters. A sheet not listed here holds one character:
+ * a single picture, or one row of four frames (see data/roster.ts, Cell).
+ */
+export const SHEET_GRIDS: Record<string, [number, number]> = {
+  'hero-run': [4, 3],
+  'hero-fly': [4, 3],
+  portraits: [3, 2],
+  'npc-portraits': [3, 2],
+};
+const gridOf = (sheet: string, frames: boolean) => SHEET_GRIDS[sheet] ?? (frames ? [4, 1] : [1, 1]);
+function cut(sheets: Map<string, HTMLImageElement>, cell: Cell, frames: boolean, col = cell.col ?? 0) {
+  const [cols, rows] = gridOf(cell.sheet, frames);
+  return cropArt(sheets.get(cell.sheet), cols, rows, col, cell.row ?? 0);
+}
+/** Every character's pictures, from the cells their data names (data/heroes.ts, data/npcs.ts). */
+async function loadCharacterArt() {
+  const cells: Cell[] = [
+    ...HERO_IDS.flatMap(id => [HEROES[id].art.frames, HEROES[id].art.portrait]),
+    ...NPC_IDS.map(id => NPCS[id].art),
+  ];
+  const sheets = new Map<string, HTMLImageElement>();
+  await Promise.all(
+    [...new Set(cells.map(c => c.sheet))].map(async sheet => {
+      if (!IMG[sheet]) throw new Error('missing character sheet: ' + sheet);
+      sheets.set(sheet, await loadImage(IMG[sheet]));
+    }),
+  );
+  for (const id of HERO_IDS) {
+    const art = HEROES[id].art;
+    heroAnimations[id] = [0, 1, 2, 3].map(col => cut(sheets, art.frames, true, col));
+    heroPictures[id] = cut(sheets, art.portrait, false).toDataURL();
+  }
+  for (const id of NPC_IDS) npcPictures[id] = cut(sheets, NPCS[id].art, false).toDataURL();
+}
 export const heroAnimations: Record<string, any> = {},
   heroPictures: Record<string, string> = {},
   npcPictures: Record<string, string> = {},
@@ -151,15 +181,7 @@ export function cropArt(im, cols, rows, col, row) {
   return c;
 }
 export async function loadNewArt() {
-  const [run, fly, npc, icons] = await Promise.all(Object.values(NEW_ART).map(loadImage));
-  const ids = Object.keys(HEROES);
-  ids.forEach((id, i) => {
-    heroAnimations[id] = [0, 1, 2, 3].map(col => cropArt(i < 3 ? run : fly, 4, 3, col, i % 3));
-    heroPictures[id] = heroAnimations[id][0].toDataURL();
-  });
-  Object.keys(NPCS).forEach((id, i) => {
-    npcPictures[id] = cropArt(npc, 3, 2, i % 3, Math.floor(i / 3)).toDataURL();
-  });
+  const [[icons]] = await Promise.all([Promise.all(Object.values(NEW_ART).map(loadImage)), loadCharacterArt()]);
   for (let i = 0; i < 16; i++) skillPictures.push(cropArt(icons, 4, 4, i % 4, Math.floor(i / 4)).toDataURL());
   $('heroArt').src = heroPictures.pungun;
   $('blast').querySelector('.blast-icon').innerHTML = artImage(skillPictures[9]);
@@ -258,10 +280,10 @@ export async function load() {
     $('start').textContent = '강호에 나서기';
     showBest();
     showBank();
-    // title menu icons: a hero, an 인연 and a coin stand for 영웅, 인연 and 수련
+    // title menu icons: a hero, an 인연 and a coin stand for 영웅, 인연 and 뽑기
     $('hubHeroIcon').src = heroPictures.bicheon;
     $('hubCardIcon').src = npcPictures.yeonhyeop;
-    $('hubTrainIcon').src = $('bankIcon').src = coinImage();
+    $('hubDrawIcon').src = $('bankIcon').src = coinImage();
   } catch (err) {
     $('start').textContent = '다시 불러오기';
     $('start').disabled = false;

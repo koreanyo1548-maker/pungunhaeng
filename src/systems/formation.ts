@@ -15,15 +15,15 @@ export function activeHeroId() {
 export function activeFrames() {
   return heroAnimations[activeHeroId()] || G.heroFrames;
 }
-/** Seconds between swaps: the base, shortened by 교체 숙련. */
+/** Seconds between swaps. */
 export function swapCooldown() {
-  return TUNE.swapCd - 0.5 * G.state.meta.stats.swap;
+  return TUNE.swapCd;
 }
-/** Mastery level (0 to 4) the run started with for this hero. */
+/** The hero's 성급 minus one (0 = ★1 to 4 = ★5), as the run started with it. */
 export function heroLevel(id = activeHeroId()) {
   return G.state.meta.heroes[id] ?? 0;
 }
-// A trait's strength at the active hero's mastery level, or its neutral value when the trait is off.
+// A trait's strength at the active hero's 성급, or its neutral value when the trait is off.
 // The per-level steps match the text in data/heroes.ts.
 export const traitPower = () =>
   traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower + 0.04 * heroLevel() : 1;

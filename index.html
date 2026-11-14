@@ -87,8 +87,8 @@
               ><button class="hub-tile" id="openCards">
                 <span class="hub-icon"><img id="hubCardIcon" alt="" /></span><b>인연</b
                 ><small id="hubCards"></small></button
-              ><button class="hub-tile" id="openTraining">
-                <span class="hub-icon"><img id="hubTrainIcon" alt="" /></span><b>수련</b><small id="hubTraining"></small
+              ><button class="hub-tile" id="openGacha">
+                <span class="hub-icon"><img id="hubDrawIcon" alt="" /></span><b>뽑기</b><small id="hubDraw"></small
                 ><i class="hub-badge hidden" id="hubBadge" aria-hidden="true"></i>
               </button>
             </div>
@@ -119,7 +119,7 @@
             <p class="settle" id="settle"></p>
             <div class="summary" id="summary"></div>
             <button class="primary" id="retry">다시 강호로</button
-            ><button class="secondary" id="resultTraining">수련하러 가기</button
+            ><button class="secondary" id="resultGacha">뽑기하러 가기</button
             ><button class="secondary" id="home">처음 화면</button>
           </div>
         </div>
@@ -131,12 +131,16 @@
             <div class="cards" id="choiceCards"></div>
           </div>
         </div>
-        <div class="overlay modal hidden" id="training">
-          <div class="panel training-panel">
-            <span class="eyebrow">엽전으로 기본기를 다진다</span>
-            <h2>수련</h2>
-            <p class="bank" id="trainingBank"></p>
-            <div class="stat-list" id="statList"></div>
+        <div class="overlay modal hidden" id="gacha">
+          <div class="panel training-panel gacha-panel">
+            <span class="eyebrow">강호의 인연은 엽전으로 닿는다</span>
+            <h2>뽑기</h2>
+            <p class="bank" id="gachaBank"></p>
+            <p class="gacha-rates" id="gachaRates"></p>
+            <div class="gacha-buttons">
+              <button class="primary" id="drawOne"></button><button class="primary" id="drawTen"></button>
+            </div>
+            <div class="collection-grid gacha-results hidden" id="gachaResults" aria-live="polite"></div>
             <details class="save-code">
               <summary>저장 코드</summary>
               <p>다른 기기나 새 파일에서 이어 하려면 이 코드를 복사해 옮기세요.</p>
@@ -147,7 +151,7 @@
               </div>
               <p class="save-msg" id="saveMsg" role="status"></p>
             </details>
-            <button class="primary" id="trainingClose">돌아가기</button>
+            <button class="secondary" id="gachaClose">돌아가기</button>
           </div>
         </div>
         <div class="overlay modal hidden" id="collection">

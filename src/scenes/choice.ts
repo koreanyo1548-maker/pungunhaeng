@@ -11,9 +11,7 @@ export function openChoice(o) {
   G.pointer = null;
   $('choiceEyebrow').textContent = o.eyebrow;
   $('choiceTitle').textContent = o.title;
-  // meta progress made since the last screen (a hero joined, a card piece) is announced on the next one
-  const news: string[] = G.state?.news?.splice(0) ?? [];
-  $('choiceSub').innerHTML = news.map(t => `<b class="news">${t}</b>`).join('') + (o.sub || '');
+  $('choiceSub').innerHTML = o.sub || '';
   const box = $('choiceCards');
   box.innerHTML = '';
   $('choice').querySelector('.formation-preview')?.remove();
@@ -64,6 +62,7 @@ export function openChoice(o) {
         b.className = 'act';
         b.style.setProperty('--c', a.color);
         b.innerHTML = a.html;
+        b.disabled = !!a.disabled;
         b.onclick = () => {
           if (G.mode !== 'choice') return;
           $('choice').classList.add('hidden');

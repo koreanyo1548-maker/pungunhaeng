@@ -1,10 +1,18 @@
 // 인연 카드: each 인연's card level, pieces, and what the card does to their unique skill. Opened from the title.
-// Read only: pieces come from 의뢰 and cleared final gates (systems/meta.ts).
+// Read only: pieces come from 뽑기 (systems/gacha.ts). Only 인연 with a card appear in runs.
 import { npcPictures } from '../core/assets';
 import { $ } from '../core/dom';
 import { profile } from '../core/profile';
 import { BR } from '../data/branches';
-import { CARD_EASE, CARD_HELP, CARD_MAX, CARD_STEPS, NPC_IDS, cardLevel } from '../data/meta';
+import {
+  CARD_EASE,
+  CARD_HELP,
+  LEVEL_MAX as CARD_MAX,
+  NPC_IDS,
+  PIECE_STEPS as CARD_STEPS,
+  pieceLevel as cardLevel,
+  pipText,
+} from '../data/meta';
 import type { NpcId } from '../data/meta';
 import { NPCS } from '../data/npcs';
 import { SKILLS, skillEffect, skillWhen } from '../data/skills';
@@ -19,7 +27,7 @@ export function cardGain(id: string, level: number): string {
     level - 1
   ];
 }
-const pips = (level: number) => '●'.repeat(level) + '○'.repeat(CARD_MAX - level);
+const pips = pipText;
 
 /** [pieces toward the next level, pieces that level needs in total] (a full card counts as full) */
 function toNext(id: NpcId): [number, number] {
@@ -68,7 +76,7 @@ function detail(id: NpcId): Detail {
       { title: `고유 기술 「${skill.name}」`, body: `${skillWhen(n.unique)} · ${skillEffect(n.unique, level)}` },
       {
         title: '조각 얻는 법',
-        body: `${n.name}의 의뢰를 따라 성공 · 맞수 ${NPCS[n.rival].name}의 의뢰를 거슬러 성공 · 완주할 때 도와준 인연이면 +1`,
+        body: '뽑기. 카드가 생기면 이 인연이 판에 나타나고, 카드가 없으면 그 자리에 행인이 나온다.',
       },
     ],
     track: {

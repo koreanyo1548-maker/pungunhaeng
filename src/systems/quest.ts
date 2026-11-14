@@ -7,7 +7,6 @@ import { NPCS } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { label, ring } from '../render/fx';
 import { region } from './flow';
-import { questSucceeded } from './meta';
 import { announce, syncHUD } from '../ui/hud';
 
 export function questTarget(c) {
@@ -41,7 +40,6 @@ export function completeQuest() {
     G.state.rel[n.rival] = (G.state.rel[n.rival] || 0) + 1;
   }
   if (G.state.questPath) G.state.questPath.result = '성취';
-  questSucceeded(q.npc, q.mode);
   announce(
     '의뢰 성공',
     BR[q.br].name + ' 계열 기술',

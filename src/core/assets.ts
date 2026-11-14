@@ -280,10 +280,10 @@ export async function load() {
     $('start').textContent = '강호에 나서기';
     showBest();
     showBank();
-    // title menu icons: a hero, an 인연 and a coin stand for 영웅, 인연 and 수련
+    // title menu icons: a hero, an 인연 and a coin stand for 영웅, 인연 and 뽑기
     $('hubHeroIcon').src = heroPictures.bicheon;
     $('hubCardIcon').src = npcPictures.yeonhyeop;
-    $('hubTrainIcon').src = $('bankIcon').src = coinImage();
+    $('hubDrawIcon').src = $('bankIcon').src = coinImage();
   } catch (err) {
     $('start').textContent = '다시 불러오기';
     $('start').disabled = false;

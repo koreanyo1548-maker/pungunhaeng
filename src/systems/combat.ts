@@ -16,14 +16,10 @@ const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
 export function shotPower() {
-  return 1.3 * (1 + 0.12 * difficulty()) * traitPower() * (1 + 0.04 * G.state.meta.stats.power);
+  return 1.3 * (1 + 0.12 * difficulty()) * traitPower();
 }
 export function gainCharge(n) {
-  n *=
-    (hasSkill('chukgi') ? 1.5 : 1) *
-    traitCharge() *
-    (region().terrain === 'cloud' ? TUNE.cloudCharge : 1) *
-    (1 + 0.05 * G.state.meta.stats.charge);
+  n *= (hasSkill('chukgi') ? 1.5 : 1) * traitCharge() * (region().terrain === 'cloud' ? TUNE.cloudCharge : 1);
   if (G.state.bombs >= G.state.maxBombs) {
     G.state.charge = 100;
     return;

@@ -4,7 +4,7 @@ import { ring } from '../render/fx';
 import { D, aoe, clearBullets, column, fan, fireShot, gainCharge } from '../systems/combat';
 import type { HeroArt, HeroId } from './roster';
 
-// `L` is the hero's mastery level, 0 (★1) to 4 (★5): it strengthens the trait (see systems/formation.ts for the
+// `L` is the hero's 성급 minus one, 0 (★1) to 4 (★5): it strengthens the trait (see systems/formation.ts for the
 // numbers the game uses) and the swap skill. `m` is 2 for a well-timed swap.
 export const HEROES = {
   pungun: {

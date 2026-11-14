@@ -64,6 +64,10 @@ button.card:hover {
 .act:hover {
   background: #ffffff22;
 }
+.act:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 .act small {
   display: block;
   color: #bcd0c6;

@@ -3,19 +3,20 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { npcPictures, skillPictures } from '../core/assets';
 import { chime } from '../core/audio';
-import { josaRo } from '../core/math';
+import { josa, josaRo } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
 import { TUNE } from '../data/tune';
 import { openChoice } from './choice';
-import { nextNpcOf } from '../systems/relationship';
+import { hasCard, nextNpcOf } from '../systems/relationship';
 
 export function innAlternative() {
   const last = G.state.path[G.state.path.length - 1];
-  if (!last || isFinal()) return null;
+  if (!last || !last.npc || isFinal()) return null;
   const cur = last.result === '미달' ? last.npc : nextNpcOf(last.npc, last.mode);
   const alt =
     last.result === '미달' ? NPC_LINK[last.npc] : nextNpcOf(last.npc, last.mode === 'follow' ? 'defy' : 'follow');
-  return alt && alt !== cur ? { cur, alt } : null;
+  // only an 인연 with a card can be sought out
+  return alt && alt !== cur && hasCard(alt) ? { cur, alt } : null;
 }
 export function openInn() {
   const alt = innAlternative(),
@@ -55,7 +56,9 @@ export function openInn() {
     },
     alt && {
       title: '수소문',
-      desc: '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + josaRo(NPCS[alt.alt].name) + ' 바꾼다',
+      desc: hasCard(alt.cur)
+        ? '다음 인연을 ' + NPCS[alt.cur].name + ' 대신 ' + josaRo(NPCS[alt.alt].name) + ' 바꾼다'
+        : '행인 대신 ' + josa(NPCS[alt.alt].name, '을', '를') + ' 만난다',
       image: npcPictures[alt.alt],
       cost: TUNE.innScout,
       done: G.state.forceNpc === alt.alt,

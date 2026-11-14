@@ -1,62 +1,58 @@
-// 영웅: who has joined, how to meet the rest, and each hero's mastery. Opened from the title screen.
-// Read only: heroes join by meeting their condition in a run, and mastery grows by clearing gates.
+// 영웅: who has joined and each hero's 성급. Opened from the title screen.
+// Read only: heroes join and rise in 성급 through pieces from 뽑기 (systems/gacha.ts).
 import { heroPictures } from '../core/assets';
 import { $ } from '../core/dom';
-import { profile } from '../core/profile';
+import { heroOwned, heroStars, profile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, MASTERY_MAX, MASTERY_STEPS, masteryLevel, masteryStars, unlockOf } from '../data/meta';
+import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
+import { LOCKED_HOW } from './setup';
 
 const ROLE = { mukyoung: '회피', unhak: '필살' };
 const road = (id: HeroId) => (HEROES[id].terrain === 'ground' ? '땅' : '하늘');
 
-/** [mastery now, mastery needed for the next level] (the last level counts as full) */
+/** [pieces held, pieces the next 성급 needs] (the last 성급 counts as full) */
 function toNext(id: HeroId): [number, number] {
-  const m = profile.heroes[id].mastery,
-    level = masteryLevel(m);
-  return level >= MASTERY_MAX ? [1, 1] : [m - MASTERY_STEPS[level], MASTERY_STEPS[level + 1] - MASTERY_STEPS[level]];
+  const pieces = profile.heroes[id],
+    stars = heroStars(id);
+  return stars >= LEVEL_MAX ? [1, 1] : [pieces, PIECE_STEPS[stars]];
 }
 
 function tile(id: HeroId): Tile {
-  const h = HEROES[id],
-    hero = profile.heroes[id];
-  if (!hero.owned) {
-    const [now, goal] = unlockOf(id)!.progress(profile.records);
-    return {
-      id,
-      name: h.name,
-      image: heroPictures[id],
-      color: h.color,
-      locked: true,
-      note: `${now} / ${goal}`,
-      progress: [now, goal],
-    };
-  }
+  const h = HEROES[id];
+  if (!heroOwned(id))
+    return { id, name: h.name, image: heroPictures[id], color: h.color, locked: true, note: '뽑기에서 획득' };
+  const [now, goal] = toNext(id);
   return {
     id,
     name: h.name,
     image: heroPictures[id],
     color: h.color,
-    grade: masteryStars(masteryLevel(hero.mastery)),
-    note: road(id) + '의 고수',
-    progress: toNext(id),
+    grade: starText(heroStars(id)),
+    note: heroStars(id) >= LEVEL_MAX ? '최고 성급' : `조각 ${now} / ${goal}`,
+    progress: [now, goal],
   };
 }
 
 function detail(id: HeroId): Detail {
   const h = HEROES[id],
-    hero = profile.heroes[id],
-    level = masteryLevel(hero.mastery),
+    stars = heroStars(id),
     caption = `${road(id)}의 고수 · ${ROLE[id] ?? '공격'}`;
   const sections = [
-    { title: `특성 「${h.trait}」`, body: h.traitDesc(hero.owned ? level : 0) },
+    { title: `특성 「${h.trait}」`, body: h.traitDesc(Math.max(0, stars - 1)) },
     { title: `교체 기술 「${h.tag}」`, body: h.tagDesc },
   ];
-  if (!hero.owned) {
-    const u = unlockOf(id)!,
-      [now, goal] = u.progress(profile.records);
+  const track = {
+    title: '성급 · 뽑기에서 같은 영웅의 조각을 모으면 오른다',
+    steps: PIECE_STEPS.map((need, i) => ({
+      label: `★${i + 1}`,
+      text: `조각 ${need}개 · ${i ? h.traitDesc(i) : '합류 · ' + h.traitDesc(0)}`,
+      state: (i + 1 < stars ? 'done' : i + 1 === stars ? 'current' : 'next') as 'done' | 'current' | 'next',
+    })),
+  };
+  if (!stars)
     return {
       name: h.name,
       image: heroPictures[id],
@@ -64,43 +60,34 @@ function detail(id: HeroId): Detail {
       caption,
       grade: '잠김',
       locked: true,
-      progress: { label: '합류 조건', text: `${u.text} (${now} / ${goal})`, now, goal },
+      progress: { label: '합류', text: LOCKED_HOW, now: 0, goal: 1 },
       sections,
+      track,
     };
-  }
   const [now, goal] = toNext(id);
   return {
     name: h.name,
     image: heroPictures[id],
     color: h.color,
     caption,
-    grade: `${masteryStars(level)} 숙련 ${level + 1}단계`,
+    grade: `${starText(stars)} 성급 ${stars}`,
     progress: {
-      label: '숙련',
-      text: level >= MASTERY_MAX ? '최고 단계' : `다음 단계까지 관문 ${goal - now}개`,
+      label: '조각',
+      text: stars >= LEVEL_MAX ? `${now}개 · 최고 성급` : `${now} / ${goal} · 다음 성급까지 ${goal - now}개`,
       now,
       goal,
     },
     sections,
-    track: {
-      title: '숙련 단계 · 편대에 넣고 관문을 돌파하면 오른다',
-      steps: MASTERY_STEPS.map((need, i) => ({
-        label: `★${i + 1}`,
-        text: `${i ? `관문 ${need}개` : '합류'} · ${h.traitDesc(i)}`,
-        state: i < level ? 'done' : i === level ? 'current' : 'next',
-      })),
-    },
+    track,
   };
 }
 
 const ROSTER: Collection = {
   eyebrow: '함께 강호를 걷는 이들',
   title: '영웅',
-  summary: () =>
-    `합류한 영웅 <b>${HERO_IDS.filter(id => profile.heroes[id].owned).length} / ${HERO_IDS.length}</b> · 눌러서 자세히 보기`,
+  summary: () => `합류한 영웅 <b>${HERO_IDS.filter(heroOwned).length} / ${HERO_IDS.length}</b> · 눌러서 자세히 보기`,
   // joined heroes first, the rest in roster order
-  tiles: () =>
-    [...HERO_IDS].sort((a, b) => Number(profile.heroes[b].owned) - Number(profile.heroes[a].owned)).map(tile),
+  tiles: () => [...HERO_IDS].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a))).map(tile),
   detail: id => detail(id as HeroId),
 };
 

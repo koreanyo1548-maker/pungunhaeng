@@ -20,7 +20,7 @@ export type Tile = {
   /** progress toward the next step, drawn as a thin bar (now, goal) */
   progress?: [number, number];
 };
-/** One step on a growth track (mastery levels, card levels, later 레벨 and 초월). */
+/** One step on a growth track (성급, card levels, later 레벨 and 초월). */
 export type Step = { label: string; text: string; state: 'done' | 'current' | 'next' };
 export type Action = { label: string; note?: string; disabled?: boolean; onClick?: () => void };
 /** What the popup shows for one entry. Every part but the header is optional. */

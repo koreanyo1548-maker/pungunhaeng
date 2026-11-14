@@ -5,9 +5,10 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { heroPictures, heroAnimations } from '../core/assets';
 import { COURSES } from '../data/courses';
-import { profile } from '../core/profile';
+import { heroOwned, profile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, MASTERY_MAX, MASTERY_STEPS, masteryLevel, masteryStars, unlockOf } from '../data/meta';
+import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText } from '../data/meta';
+import type { HeroId } from '../data/meta';
 import { openChoice } from './choice';
 
 export function openCourseSelect() {
@@ -27,24 +28,18 @@ export function openCourseSelect() {
     })),
   });
 }
-/** "★★☆☆☆ 숙련 2단계 · 다음 단계까지 관문 3개" for a hero's mastery (gates cleared while in the formation). */
-export function masteryLine(id) {
-  const mastery = profile.heroes[id].mastery,
-    level = masteryLevel(mastery);
-  const next = level >= MASTERY_MAX ? '최고 단계' : `다음 단계까지 관문 ${MASTERY_STEPS[level + 1] - mastery}개`;
-  return `<span class="mastery"><i class="stars">${masteryStars(level)}</i> 숙련 ${level + 1}단계 · ${next}</span>`;
+/** "★★☆☆☆ 성급 2 · 다음 성급까지 조각 2개" for a hero's 성급 (raised by pieces from 뽑기). */
+export function starLine(id: HeroId) {
+  const pieces = profile.heroes[id],
+    stars = pieceLevel(pieces);
+  const next = stars >= LEVEL_MAX ? '최고 성급' : `다음 성급까지 조각 ${PIECE_STEPS[stars] - pieces}개`;
+  return `<span class="mastery"><i class="stars">${starText(stars)}</i> 성급 ${stars} · ${next}</span>`;
 }
-/** "땅의 길 관문 2 돌파 (1 / 2)" for a hero not yet owned. */
-export function unlockLine(id) {
-  const u = unlockOf(id);
-  if (!u) return '';
-  const [now, goal] = u.progress(profile.records);
-  return `${u.text} <i>(${now} / ${goal})</i>`;
-}
+export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
 export function heroCard(id, slot) {
   const h = HEROES[id],
     ok = h.terrain === G.state.course,
-    locked = !profile.heroes[id].owned,
+    locked = !heroOwned(id),
     level = G.state.meta.heroes[id];
   if (locked)
     return {
@@ -55,7 +50,7 @@ export function heroCard(id, slot) {
       tag: '잠김 · ' + (h.terrain === 'ground' ? '땅' : '하늘') + '의 고수',
       title: h.name,
       fullArt: heroAnimations[id][0].toDataURL(),
-      detail: `<b>합류 조건</b> ${unlockLine(id)}<br><b>특성 「${h.trait}」</b> ${h.traitDesc(0)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
+      detail: `<b>합류</b> ${LOCKED_HOW}<br><b>특성 「${h.trait}」</b> ${h.traitDesc(0)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
       onPick: () => {},
     };
   return {
@@ -66,7 +61,7 @@ export function heroCard(id, slot) {
     title: h.name,
     desc: `<span class="hero-role"><img alt="" src="${id === 'mukyoung' ? dodge : id === 'unhak' ? energy : strike}">${id === 'mukyoung' ? '회피' : id === 'unhak' ? '필살' : '공격'}</span>${h.traitDesc(level)}`,
     fullArt: heroAnimations[id][0].toDataURL(),
-    detail: `${masteryLine(id)}<b>특성 「${h.trait}」</b> ${h.traitDesc(level)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
+    detail: `${starLine(id)}<b>특성 「${h.trait}」</b> ${h.traitDesc(level)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
     onPick: () => {
       G.state.formation[slot] = id;
       if (slot === 1) G.state.active = 0;
@@ -80,7 +75,7 @@ export function openFormation(slot) {
     // owned heroes first, then the ones that fit this road (the sort is stable, so ties keep the roster order)
     .sort(
       (a, b) =>
-        Number(profile.heroes[b].owned) - Number(profile.heroes[a].owned) ||
+        Number(heroOwned(b)) - Number(heroOwned(a)) ||
         Number(HEROES[b].terrain === G.state.course) - Number(HEROES[a].terrain === G.state.course),
     );
   openChoice({

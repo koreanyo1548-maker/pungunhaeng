@@ -6,7 +6,7 @@ import './styles/panels.css';
 import './styles/choice.css';
 import './styles/mobile-game.css';
 import './ui/input';
-import './scenes/training';
+import './scenes/gacha';
 import './scenes/roster';
 import './scenes/cards';
 import './debug/debug';

@@ -4,7 +4,7 @@ import { heroPictures } from '../core/assets';
 import { $ } from '../core/dom';
 import { profile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, MASTERY_MAX, MASTERY_STEPS, UNLOCKS, masteryLevel, masteryStars } from '../data/meta';
+import { HERO_IDS, MASTERY_MAX, MASTERY_STEPS, masteryLevel, masteryStars, unlockOf } from '../data/meta';
 import type { HeroId } from '../data/meta';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
@@ -23,7 +23,7 @@ function tile(id: HeroId): Tile {
   const h = HEROES[id],
     hero = profile.heroes[id];
   if (!hero.owned) {
-    const [now, goal] = UNLOCKS[id]!.progress(profile.records);
+    const [now, goal] = unlockOf(id)!.progress(profile.records);
     return {
       id,
       name: h.name,
@@ -55,7 +55,7 @@ function detail(id: HeroId): Detail {
     { title: `교체 기술 「${h.tag}」`, body: h.tagDesc },
   ];
   if (!hero.owned) {
-    const u = UNLOCKS[id]!,
+    const u = unlockOf(id)!,
       [now, goal] = u.progress(profile.records);
     return {
       name: h.name,

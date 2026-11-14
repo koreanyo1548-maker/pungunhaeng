@@ -1,6 +1,11 @@
 // Meta progression numbers: what is kept between runs. See docs/meta-progression-plan.md.
 // A stat's level is the number of entries of `costs` already bought; level 0 is the base game.
 
+import { HERO_IDS, NPC_IDS } from './roster';
+import type { HeroId, NpcId } from './roster';
+export { HERO_IDS, NPC_IDS };
+export type { HeroId, NpcId };
+
 export type StatId = 'power' | 'charge' | 'fortune' | 'hp' | 'bombs' | 'swap';
 
 type Stat = {
@@ -57,10 +62,10 @@ export const STAT_IDS = Object.keys(STATS) as StatId[];
 export const CLEAR_BONUS = 300;
 
 // 영웅 수집: two heroes to start with, the rest join when a condition is met.
-export const HERO_IDS = ['pungun', 'cheolhyeol', 'mukyoung', 'bicheon', 'unhak', 'hongryeon'] as const;
-export type HeroId = (typeof HERO_IDS)[number];
 /** One hero that fits each road. */
-export const STARTERS: HeroId[] = ['pungun', 'bicheon'];
+export const STARTERS = ['pungun', 'bicheon'] as const satisfies readonly HeroId[];
+type Starter = (typeof STARTERS)[number];
+export const isStarter = (id: HeroId) => (STARTERS as readonly HeroId[]).includes(id);
 
 /** Progress counted across runs, for unlock conditions. */
 export type Records = {
@@ -75,14 +80,17 @@ export const emptyRecords = (): Records => ({
   grazes: 0,
 });
 type Unlock = { text: string; progress: (r: Records) => [number, number] };
-export const UNLOCKS: Partial<Record<HeroId, Unlock>> = {
+/** How each hero but the starters joins. A new hero without an entry here is a type error. */
+export const UNLOCKS: Record<Exclude<HeroId, Starter>, Unlock> = {
   cheolhyeol: { text: '땅의 길 관문 2 돌파', progress: r => [Math.min(2, r.gates.ground), 2] },
   unhak: { text: '하늘의 길 관문 2 돌파', progress: r => [Math.min(2, r.gates.sky), 2] },
   mukyoung: { text: '스침 누적 300회', progress: r => [Math.min(300, r.grazes), 300] },
   hongryeon: { text: '어느 길이든 완주', progress: r => [Math.min(1, r.clears.ground + r.clears.sky), 1] },
 };
+/** A hero's unlock condition; none for a starter. */
+export const unlockOf = (id: HeroId): Unlock | undefined => (UNLOCKS as Partial<Record<HeroId, Unlock>>)[id];
 export function unlocked(id: HeroId, r: Records): boolean {
-  const u = UNLOCKS[id];
+  const u = unlockOf(id);
   if (!u) return true;
   const [now, goal] = u.progress(r);
   return now >= goal;
@@ -107,8 +115,6 @@ export const masteryStars = (level: number) => '★'.repeat(level + 1) + '☆'.r
  * followed, or the rival of the one you defied) and from each 인연 who helped at a cleared final gate.
  * The card's level strengthens that 인연's unique skill (see data/skills.ts) and eases its 전수.
  */
-export const NPC_IDS = ['dosa', 'milsa', 'monk', 'yeonhyeop', 'yakseon', 'uijeok'] as const;
-export type NpcId = (typeof NPC_IDS)[number];
 /** total pieces needed for levels 1 to 5 */
 export const CARD_STEPS = [1, 3, 6, 10, 15];
 export const CARD_MAX = CARD_STEPS.length;
@@ -133,8 +139,8 @@ export type Meta = {
 };
 export const emptyMeta = (): Meta => ({
   stats: { power: 0, charge: 0, fortune: 0, hp: 0, bombs: 0, swap: 0 },
-  heroes: { pungun: 0, cheolhyeol: 0, mukyoung: 0, bicheon: 0, unhak: 0, hongryeon: 0 },
-  cards: { dosa: 0, milsa: 0, monk: 0, yeonhyeop: 0, yakseon: 0, uijeok: 0 },
+  heroes: Object.fromEntries(HERO_IDS.map(id => [id, 0])) as Meta['heroes'],
+  cards: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Meta['cards'],
 });
 
 /** 엽전 a run adds to the bank: what is left, plus the clear bonus, raised by 재물운. */

@@ -6,7 +6,7 @@ import {
   MASTERY_STEPS,
   NPC_IDS,
   PIECES_MAX,
-  STARTERS,
+  isStarter,
   STATS,
   STAT_IDS,
   emptyMeta,
@@ -20,7 +20,7 @@ import type { HeroId, Meta, NpcId, Records, StatId } from '../data/meta';
 // Debug only (#debug&roster): every hero is owned, the way the game was before heroes had to be collected.
 // The regression tests use it so that their formations and their results stay comparable across versions.
 const ROSTER = typeof location !== 'undefined' && /debug/.test(location.hash) && /[#&]roster\b/.test(location.hash);
-const starter = (id: HeroId) => ROSTER || STARTERS.includes(id);
+const starter = (id: HeroId) => ROSTER || isStarter(id);
 
 const KEY = 'pungun-profile',
   LEGACY_BEST = 'wuxia-best';

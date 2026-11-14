@@ -7,7 +7,7 @@ import { heroPictures, heroAnimations } from '../core/assets';
 import { COURSES } from '../data/courses';
 import { profile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { MASTERY_MAX, MASTERY_STEPS, UNLOCKS, masteryLevel, masteryStars } from '../data/meta';
+import { HERO_IDS, MASTERY_MAX, MASTERY_STEPS, masteryLevel, masteryStars, unlockOf } from '../data/meta';
 import { openChoice } from './choice';
 
 export function openCourseSelect() {
@@ -36,7 +36,7 @@ export function masteryLine(id) {
 }
 /** "땅의 길 관문 2 돌파 (1 / 2)" for a hero not yet owned. */
 export function unlockLine(id) {
-  const u = UNLOCKS[id];
+  const u = unlockOf(id);
   if (!u) return '';
   const [now, goal] = u.progress(profile.records);
   return `${u.text} <i>(${now} / ${goal})</i>`;
@@ -75,7 +75,7 @@ export function heroCard(id, slot) {
   };
 }
 export function openFormation(slot) {
-  const ids = Object.keys(HEROES)
+  const ids = [...HERO_IDS]
     .filter(id => slot === 0 || id !== G.state.formation[0])
     // owned heroes first, then the ones that fit this road (the sort is stable, so ties keep the roster order)
     .sort(

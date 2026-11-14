@@ -1,6 +1,7 @@
 import { G } from '../core/context';
 import { josa, rnd } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
+import { NPC_IDS } from '../data/roster';
 import { TUNE } from '../data/tune';
 
 /** 인연 card level of this 인연 for the current run (0 to 5), from the snapshot taken when the run started. */
@@ -18,7 +19,7 @@ export function pickNpc() {
   }
   const last = G.state.path[G.state.path.length - 1];
   if (!last) {
-    const ids = Object.keys(NPCS);
+    const ids = NPC_IDS;
     const id = ids[Math.floor(rnd(0, ids.length))];
     return { id, why: josa(NPCS[id].name, '이', '가') + ' 길목에서 기다리고 있다.' };
   }

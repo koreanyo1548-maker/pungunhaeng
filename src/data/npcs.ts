@@ -1,5 +1,8 @@
+import type { Cell, NpcId } from './roster';
+
 export const NPCS = {
   dosa: {
+    art: { sheet: 'npc-portraits', col: 0, row: 0 },
     name: '청운 도인',
     title: '구름을 따라 떠도는 도사',
     br: 'yu',
@@ -21,6 +24,7 @@ export const NPCS = {
     ],
   },
   milsa: {
+    art: { sheet: 'npc-portraits', col: 1, row: 0 },
     name: '혈마 밀사',
     title: '천마신교의 그림자',
     br: 'gi',
@@ -42,6 +46,7 @@ export const NPCS = {
     ],
   },
   monk: {
+    art: { sheet: 'npc-portraits', col: 2, row: 0 },
     name: '철벽 노승',
     title: '산문을 지키는 노승',
     br: 'gang',
@@ -63,6 +68,7 @@ export const NPCS = {
     ],
   },
   yeonhyeop: {
+    art: { sheet: 'npc-portraits', col: 0, row: 1 },
     name: '비연 낭자',
     title: '암기를 쓰는 여협',
     br: 'yu',
@@ -84,6 +90,7 @@ export const NPCS = {
     ],
   },
   yakseon: {
+    art: { sheet: 'npc-portraits', col: 1, row: 1 },
     name: '떠돌이 약선',
     title: '산을 떠도는 의원',
     br: 'gi',
@@ -105,6 +112,7 @@ export const NPCS = {
     ],
   },
   uijeok: {
+    art: { sheet: 'npc-portraits', col: 2, row: 1 },
     name: '녹림 의적',
     title: '채주를 등진 산적',
     br: 'gang',
@@ -125,7 +133,7 @@ export const NPCS = {
       },
     ],
   },
-};
+} satisfies Record<NpcId, { name: string; rival: NpcId; art: Cell; [key: string]: unknown }>;
 export const NPC_LINK = {
   dosa: 'monk',
   monk: 'yakseon',
@@ -133,4 +141,4 @@ export const NPC_LINK = {
   milsa: 'uijeok',
   uijeok: 'yeonhyeop',
   yeonhyeop: 'milsa',
-};
+} satisfies Record<NpcId, NpcId>;

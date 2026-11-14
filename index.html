@@ -150,25 +150,21 @@
             <button class="primary" id="trainingClose">돌아가기</button>
           </div>
         </div>
-        <div class="overlay modal hidden" id="roster">
-          <div class="panel training-panel">
-            <span class="eyebrow">함께 강호를 걷는 이들</span>
-            <h2>영웅</h2>
-            <p class="bank" id="rosterCount"></p>
-            <div class="stat-list" id="rosterList"></div>
-            <button class="primary" id="rosterClose">돌아가기</button>
+        <div class="overlay modal hidden" id="collection">
+          <div class="panel collection-panel">
+            <span class="eyebrow" id="collectionEyebrow"></span>
+            <h2 id="collectionTitle"></h2>
+            <p class="collection-summary" id="collectionSummary"></p>
+            <div class="collection-grid" id="collectionGrid"></div>
+            <button class="primary" id="collectionClose">돌아가기</button>
           </div>
         </div>
-        <div class="overlay modal hidden" id="cards">
-          <div class="panel training-panel">
-            <span class="eyebrow">강호에서 맺은 인연</span>
-            <h2>인연 카드</h2>
-            <p class="bank card-help">
-              의뢰를 따라 성공하면 그 인연의 조각을, 거슬러 성공하면 맞수의 조각을 얻는다. 완주하면 도와준 인연마다 하나
-              더. 오른 단계는 다음 판부터 적용된다.
-            </p>
-            <div class="stat-list" id="cardList"></div>
-            <button class="primary" id="cardsClose">돌아가기</button>
+        <div class="overlay modal hidden" id="detail" role="dialog" aria-modal="true">
+          <div class="panel detail-panel">
+            <button class="detail-close" id="detailClose" aria-label="닫기">×</button>
+            <div id="detailBody"></div>
+            <div class="detail-actions hidden" id="detailActions"></div>
+            <button class="secondary" id="detailBack">닫기</button>
           </div>
         </div>
         <div class="toast" id="toast" role="status"></div>

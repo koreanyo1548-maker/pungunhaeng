@@ -5,8 +5,11 @@ import { $ } from '../core/dom';
 import { profile } from '../core/profile';
 import { BR } from '../data/branches';
 import { CARD_EASE, CARD_HELP, CARD_MAX, CARD_STEPS, NPC_IDS, cardLevel } from '../data/meta';
+import type { NpcId } from '../data/meta';
 import { NPCS } from '../data/npcs';
-import { SKILLS, skillEffect } from '../data/skills';
+import { SKILLS, skillEffect, skillWhen } from '../data/skills';
+import { openCollection } from '../ui/collection';
+import type { Collection, Detail, Tile } from '../ui/collection';
 
 /** What reaching this level adds (1 to 5). */
 export function cardGain(id: string, level: number): string {
@@ -16,24 +19,78 @@ export function cardGain(id: string, level: number): string {
     level - 1
   ];
 }
+const pips = (level: number) => '●'.repeat(level) + '○'.repeat(CARD_MAX - level);
 
-function render() {
-  $('cardList').innerHTML = NPC_IDS.map(id => {
-    const n = NPCS[id],
-      pieces = profile.cards[id],
-      level = cardLevel(pieces),
-      max = level >= CARD_MAX;
-    const pips = '●'.repeat(level) + '○'.repeat(CARD_MAX - level);
-    const count = max ? '최고 단계' : `조각 ${pieces} / ${CARD_STEPS[level]}`;
-    const next = max ? '' : `<small class="next"><b>${level + 1}단계</b> ${cardGain(id, level + 1)}</small>`;
-    return `<div class="hero-row${level ? '' : ' locked'}" style="--c:${BR[n.br].color}"><img alt="" src="${npcPictures[id]}"><div class="stat-info"><span class="stat-head"><b>${n.name}</b><span class="stat-value">${level ? `인연 카드 <b>${level}단계</b>` : '카드 없음'}</span></span><span class="mastery"><i class="stars">${pips}</i> ${count}</span><small><b>고유 기술 「${SKILLS[n.unique].name}」</b> ${skillEffect(n.unique, level)}</small>${next}</div></div>`;
-  }).join('');
+/** [pieces toward the next level, pieces that level needs in total] (a full card counts as full) */
+function toNext(id: NpcId): [number, number] {
+  const pieces = profile.cards[id],
+    level = cardLevel(pieces);
+  return level >= CARD_MAX ? [1, 1] : [pieces, CARD_STEPS[level]];
 }
 
-export function openCards() {
-  render();
-  $('cards').classList.remove('hidden');
-  $('cards').querySelector('.panel').scrollTop = 0;
+function tile(id: NpcId): Tile {
+  const n = NPCS[id],
+    level = cardLevel(profile.cards[id]),
+    [now, goal] = toNext(id);
+  return {
+    id,
+    name: n.name,
+    image: npcPictures[id],
+    color: BR[n.br].color,
+    locked: !level,
+    lockText: '카드 없음',
+    grade: pips(level),
+    note: level >= CARD_MAX ? '최고 단계' : `조각 ${now} / ${goal}`,
+    progress: [now, goal],
+  };
 }
+
+function detail(id: NpcId): Detail {
+  const n = NPCS[id],
+    pieces = profile.cards[id],
+    level = cardLevel(pieces),
+    [now, goal] = toNext(id),
+    skill = SKILLS[n.unique];
+  return {
+    name: n.name,
+    image: npcPictures[id],
+    color: BR[n.br].color,
+    caption: n.title,
+    grade: level ? `${pips(level)} 인연 카드 ${level}단계` : '카드 없음',
+    locked: !level,
+    progress: {
+      label: '조각',
+      text: level >= CARD_MAX ? `${pieces}개 · 최고 단계` : `${now} / ${goal} · 다음 단계까지 ${goal - now}개`,
+      now,
+      goal,
+    },
+    sections: [
+      { title: `고유 기술 「${skill.name}」`, body: `${skillWhen(n.unique)} · ${skillEffect(n.unique, level)}` },
+      {
+        title: '조각 얻는 법',
+        body: `${n.name}의 의뢰를 따라 성공 · 맞수 ${NPCS[n.rival].name}의 의뢰를 거슬러 성공 · 완주할 때 도와준 인연이면 +1`,
+      },
+    ],
+    track: {
+      title: '카드 단계 · 오른 단계는 다음 판부터 적용',
+      steps: CARD_STEPS.map((need, i) => ({
+        label: `${i + 1}단계`,
+        text: `조각 ${need}개 · ${cardGain(id, i + 1)}`,
+        state: i + 1 <= level ? 'done' : i === level ? 'current' : 'next',
+      })),
+    },
+  };
+}
+
+const CARDS: Collection = {
+  eyebrow: '강호에서 맺은 인연',
+  title: '인연 카드',
+  summary: () =>
+    `가진 카드 <b>${NPC_IDS.filter(id => profile.cards[id] > 0).length} / ${NPC_IDS.length}</b> · 눌러서 자세히 보기`,
+  // cards held first, the rest in 인연 order
+  tiles: () => [...NPC_IDS].sort((a, b) => Number(profile.cards[b] > 0) - Number(profile.cards[a] > 0)).map(tile),
+  detail: id => detail(id as NpcId),
+};
+
+export const openCards = () => openCollection(CARDS);
 $('openCards').onclick = openCards;
-$('cardsClose').onclick = () => $('cards').classList.add('hidden');

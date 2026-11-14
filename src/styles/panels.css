@@ -285,42 +285,6 @@ button:disabled {
   color: #ffd77a;
 }
 
-/* 영웅: one row per hero. A hero who has not joined is dimmed and shows how to meet them. */
-.hero-row {
-  display: grid;
-  grid-template-columns: 54px 1fr;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #0a1f1a99;
-  border: 1px solid #b1c7a833;
-  border-left: 3px solid var(--c);
-  text-align: left;
-}
-.hero-row img {
-  width: 54px;
-  height: 64px;
-  object-fit: contain;
-}
-.hero-row small b {
-  font-size: 10px;
-  color: #cfe0d4;
-}
-.hero-row.locked {
-  border-left-color: #ffffff22;
-}
-.hero-row.locked img {
-  filter: brightness(0.25) saturate(0);
-}
-.hero-row.locked .stat-head b {
-  color: #9fb5aa;
-}
-.hero-row .unlock,
-.hero-row .unlock b {
-  color: #ffd77a;
-}
-.hero-row .unlock i,
 .formation-preview i {
   font-style: normal;
   opacity: 0.75;
@@ -376,20 +340,267 @@ button:disabled {
   color: #ffd77a;
 }
 
-/* 인연 카드: same rows as 영웅; the next level's gain is the gold line. */
-.training-panel .card-help {
-  font-size: 11px;
-  line-height: 1.5;
-  color: #9fb5aa;
-  text-align: left;
-}
-.hero-row .next,
-.hero-row .next b {
-  color: #ffd77a;
-}
-#cardList .mastery .stars {
-  font-size: 8px;
-}
 .choice-sub .news + .news {
   margin-top: -2px;
+}
+
+/* Collection screens (영웅, 인연 카드): a grid of tiles; tapping one opens the detail popup (ui/collection.ts). */
+.collection-panel {
+  padding: 22px 14px 16px;
+}
+.collection-panel h2 {
+  margin: 8px 0 6px;
+}
+.collection-summary {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #b7c9be;
+}
+.collection-summary b {
+  color: #ffd77a;
+}
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 4px 7px;
+  border-radius: 9px;
+  border: 1px solid #ffffff1f;
+  border-top: 3px solid var(--c);
+  background: linear-gradient(#173029, #0b1d1a);
+  color: #fff0c4;
+}
+.tile:active {
+  transform: translateY(1px);
+}
+.tile-art {
+  position: relative;
+  width: 100%;
+  height: 76px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%);
+}
+.tile-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.tile-art em {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #0b1a1ccc;
+  border: 1px solid #ffffff33;
+  color: #d9e6dc;
+  font-size: 10px;
+  font-style: normal;
+  white-space: nowrap;
+}
+.tile > b {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.tile-grade {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #ffd77a;
+}
+.tile small {
+  font-size: 9px;
+  color: #9fb5aa;
+  white-space: nowrap;
+}
+.tile .meter {
+  width: 84%;
+  margin-top: 3px;
+}
+.tile.locked {
+  border-top-color: #ffffff22;
+}
+.tile.locked .tile-art img {
+  filter: brightness(0.25) saturate(0);
+}
+.tile.locked > b {
+  color: #9fb5aa;
+}
+.tile.locked .tile-grade {
+  color: #6f857b;
+}
+.meter {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: #ffffff1a;
+  overflow: hidden;
+}
+.meter i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #c9a35c, #ffd77a);
+}
+
+/* Detail popup: header, progress, what it does now, the growth track, and (later) actions. */
+#detail {
+  padding: 22px;
+}
+.detail-panel {
+  position: relative;
+  padding: 18px 16px 14px;
+  text-align: left;
+  border-color: #ffd77a55;
+}
+.detail-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #cfe0d4;
+  font-size: 22px;
+  line-height: 1;
+}
+.detail-head {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-right: 26px;
+}
+.detail-art {
+  display: block;
+  height: 100px;
+  border-radius: 8px;
+  border: 1px solid #ffffff22;
+  border-bottom: 3px solid var(--c);
+  background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--c) 35%, transparent), #0b1d1a 72%);
+  overflow: hidden;
+}
+.detail-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.detail-head.locked .detail-art img {
+  filter: brightness(0.3) saturate(0);
+}
+.detail-caption {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #9fb5aa;
+}
+.detail-head h3 {
+  margin: 2px 0 4px;
+  font-size: 22px;
+  color: #fff0c4;
+}
+.detail-grade {
+  font-size: 11px;
+  color: #ffd77a;
+}
+.detail-head.locked .detail-grade {
+  color: #9fb5aa;
+}
+.detail-progress {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0a1f1a99;
+  border: 1px solid #ffd77a33;
+  font-size: 11px;
+  color: #d9e6dc;
+}
+.detail-progress span b {
+  margin-right: 6px;
+  color: #ffd77a;
+}
+.detail-progress .meter {
+  margin-top: 6px;
+  height: 6px;
+}
+.detail-section {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.detail-section b,
+.detail-track > b {
+  display: block;
+  font-size: 11px;
+  color: #f5e6bc;
+}
+.detail-section p {
+  margin: 2px 0 0;
+  color: #c5d7cd;
+  line-height: 1.45;
+}
+.detail-track {
+  margin: 10px 0 12px;
+}
+.detail-track ol {
+  list-style: none;
+  margin: 5px 0 0;
+  padding: 0;
+}
+.detail-track li {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  padding: 5px 8px;
+  border-left: 2px solid #ffffff1a;
+  font-size: 11px;
+  color: #7f958b;
+}
+.detail-track li span {
+  font-weight: 700;
+}
+.detail-track li p {
+  margin: 0;
+}
+.detail-track li.done {
+  border-left-color: #c9a35c;
+  color: #c5d7cd;
+}
+.detail-track li.done span {
+  color: #ffd77a;
+}
+.detail-track li.current {
+  border-left-color: #ffd77a;
+  background: #ffd77a14;
+  color: #fff0c4;
+}
+.detail-track li.current span {
+  color: #ffd77a;
+}
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.detail-actions small {
+  display: block;
+  font-size: 11px;
+  font-weight: normal;
+}
+.detail-panel #detailBack {
+  width: 100%;
 }

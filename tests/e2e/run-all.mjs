@@ -401,21 +401,34 @@ async function scenarioF(browser, seed) {
   let p = await P();
   check(f, owned(p) === 'bicheon,pungun', `a fresh profile owns the two starters (${owned(p)})`);
 
-  // 영웅 screen on the title
+  // 영웅 screen on the title: a grid, joined heroes first; a tile opens its detail popup
   await g.eval(() => document.getElementById('openRoster').click());
-  const rows = await g.page.$$eval('#rosterList .hero-row', els => els.map(e => e.classList.contains('locked')));
+  const tiles = await g.page.$$eval('#collectionGrid .tile', els =>
+    els.map(e => ({ locked: e.classList.contains('locked'), text: e.textContent })),
+  );
   check(
     f,
-    rows.length === 6 && rows.filter(Boolean).length === 4 && !rows[0] && !rows[1],
-    `영웅 lists 2 joined, then 4 locked (${rows})`,
+    tiles.length === 6 && tiles.filter(t => t.locked).length === 4 && !tiles[0].locked && !tiles[1].locked,
+    `영웅 grid: 2 joined, then 4 locked (${tiles.map(t => t.locked)})`,
   );
-  const cond = await g.page.$$eval('#rosterList .hero-row.locked .unlock', els => els.map(e => e.textContent));
   check(
     f,
-    cond.length === 4 && cond.every(t => /\(\d+ \/ \d+\)/.test(t)),
-    `locked heroes show a condition and progress (${cond.join(' | ')})`,
+    tiles.slice(2).every(t => /\d+ \/ \d+/.test(t.text)),
+    'locked tiles show their progress',
   );
-  await g.eval(() => document.getElementById('rosterClose').click());
+  const owned0 = await detailOf(g, 0),
+    locked0 = await detailOf(g, 2);
+  check(
+    f,
+    /숙련 1단계/.test(owned0.head) && owned0.track.length === 5 && owned0.track[0] === 'current',
+    `a joined hero's popup: mastery and a 5-step track (${owned0.head}, ${owned0.track})`,
+  );
+  check(
+    f,
+    /잠김/.test(locked0.head) && /합류 조건.*\(\d+ \/ \d+\)/.test(locked0.progress) && !locked0.track.length,
+    `a locked hero's popup: condition and progress (${locked0.progress})`,
+  );
+  await g.eval(() => document.getElementById('collectionClose').click());
 
   // formation: owned heroes first; a locked hero cannot be confirmed
   await g.eval(() => window.__g.traceScenes());
@@ -598,11 +611,11 @@ async function scenarioG(browser, seed) {
 
   // 인연 카드 screen on the title
   await g.eval(() => document.getElementById('openCards').click());
-  let rows = await g.page.$$eval('#cardList .hero-row', els =>
+  let rows = await g.page.$$eval('#collectionGrid .tile', els =>
     els.map(e => ({ locked: e.classList.contains('locked'), text: e.textContent })),
   );
   check(f, rows.length === 6 && rows.every(r => r.locked && /조각 0 \/ 1/.test(r.text)), 'six cards, none owned yet');
-  await g.eval(() => document.getElementById('cardsClose').click());
+  await g.eval(() => document.getElementById('collectionClose').click());
 
   // gate 1: follow and succeed → a piece for that 인연, announced on the 기술 선택 screen
   await setup(g, 0);
@@ -670,13 +683,35 @@ async function scenarioG(browser, seed) {
   p = await P();
   check(f, p.cards.milsa === 15, `pieces are capped (${p.cards.milsa})`);
   await g.eval(() => document.getElementById('openCards').click());
-  rows = await g.page.$$eval('#cardList .hero-row', els => els.map(e => e.textContent));
+  const grid = await g.page.$$eval('#collectionGrid .tile', els => els.map(e => e.textContent));
+  // cards held first, in 인연 order: 청운 도인, 혈마 밀사, 철벽 노승, 비연 낭자, 녹림 의적, then 떠돌이 약선 (none)
   check(
     f,
-    /3단계/.test(rows[0]) && /비도 5자루/.test(rows[3]) && /최고 단계/.test(rows[2]) && /조각 1 \/ 3/.test(rows[5]),
-    `the screen shows levels and the skill as strengthened (${rows[0]} | ${rows[3]})`,
+    /최고 단계/.test(grid[1]) && /최고 단계/.test(grid[2]) && /조각 1 \/ 3/.test(grid[4]) && /카드 없음/.test(grid[5]),
+    `the grid shows card progress (${grid.join(' | ')})`,
   );
-  await g.eval(() => document.getElementById('cardsClose').click());
+  const dosa = await detailOf(g, 0),
+    yeon = await detailOf(g, 3);
+  check(
+    f,
+    /3단계/.test(dosa.head) && dosa.track.join() === 'done,done,done,current,next',
+    `청운 도인 popup: level 3 and the track (${dosa.head}, ${dosa.track})`,
+  );
+  check(f, /비도 5자루/.test(yeon.body), `비연 낭자 popup: the skill as strengthened (${yeon.body.slice(0, 80)})`);
+  // Escape closes the popup, then the screen
+  await g.eval(() => document.querySelectorAll('#collectionGrid .tile')[0].click());
+  await g.key('Escape');
+  const afterOne = await g.eval(() => [
+    document.getElementById('detail').classList.contains('hidden'),
+    document.getElementById('collection').classList.contains('hidden'),
+  ]);
+  await g.key('Escape');
+  const afterTwo = await g.eval(() => document.getElementById('collection').classList.contains('hidden'));
+  check(
+    f,
+    afterOne.join() === 'true,false' && afterTwo,
+    `Escape closes the popup, then the screen (${afterOne}, ${afterTwo})`,
+  );
   await g.eval(() => document.getElementById('start').click());
   await g.step(2);
   await g.pick(0);
@@ -735,6 +770,20 @@ async function scenarioG(browser, seed) {
     failures: f,
     log: [`pieces: ${first} follow, defy ${second} → ${gained}, helpers ${helpers}; ${settle.slice(-60)}`],
   };
+}
+
+/** Opens the detail popup of the i-th tile on the open collection screen, reads it, and closes it. */
+async function detailOf(g, i) {
+  await g.eval(i => document.querySelectorAll('#collectionGrid .tile')[i].click(), i);
+  const d = await g.eval(() => ({
+    open: !document.getElementById('detail').classList.contains('hidden'),
+    head: document.querySelector('#detailBody .detail-head')?.textContent ?? '',
+    progress: document.querySelector('#detailBody .detail-progress')?.textContent ?? '',
+    body: document.getElementById('detailBody').textContent,
+    track: [...document.querySelectorAll('#detailBody .detail-track li')].map(li => li.className),
+  }));
+  await g.eval(() => document.getElementById('detailClose').click());
+  return d;
 }
 
 // after a boss: 보스 기술 (take the 엽전) → 객잔 (leave)

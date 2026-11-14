@@ -1,3 +1,4 @@
+import { heroCanFight } from '../core/hero-health';
 import { skillCue, skillAura, startSwapPose } from '../render/skill-animation';
 import { withSkill } from '../core/skill-context';
 import { G } from '../core/context';
@@ -36,12 +37,32 @@ export const traitNearCharge = () => (traitOn('pungun') ? 5 + heroLevel() : 0);
 export function traitOn(id) {
   return !!G.state && G.state.formation?.[G.state.active] === id && HEROES[id].terrain === G.state.course;
 }
+/** Manual swap never selects a fallen reserve. */
+export function hasLivingReserve() {
+  return !!G.state && heroCanFight(G.state, G.state.formation[1 - G.state.active]);
+}
 export function swapHero() {
-  if (G.mode !== 'play' || !['flight', 'boss', 'warning'].includes(G.state.phase) || G.time < G.state.swapReady) return;
+  if (
+    G.mode !== 'play' ||
+    !['flight', 'boss', 'warning'].includes(G.state.phase) ||
+    G.time < G.state.swapReady ||
+    !hasLivingReserve()
+  )
+    return;
+  enterReserve(false);
+}
+/** Lethal damage bypasses the manual cooldown and does not award a doubled rescue attack. */
+export function replaceFallenHero(): boolean {
+  if (G.mode !== 'play' || !G.state.heroHealth[activeHeroId()].fallen || G.player.hp > 0 || !hasLivingReserve())
+    return false;
+  enterReserve(true);
+  return true;
+}
+function enterReserve(automatic: boolean) {
   const boss = G.enemies.find(e => e.boss && !e.dead),
     rescue = G.time - G.state.lastHurt < 1.5,
     opening = !!boss && boss.action === 'recover',
-    m = rescue || opening ? 2 : 1;
+    m = !automatic && (rescue || opening) ? 2 : 1;
   G.afterimages = [];
   G.state.active = 1 - G.state.active;
   G.state.swapReady = G.time + swapCooldown();
@@ -57,7 +78,11 @@ export function swapHero() {
   if (activeHeroId() === 'mukyoung') skillAura('mukyoung', 0.6 * m + 0.2);
 
   label(
-    (m > 1 ? (rescue ? '위기 교체 ×2 · ' : '제때 교체 ×2 · ') : '교체 · ') + h.name + ' 「' + h.tag + '」',
+    (automatic ? '자동 교체 · ' : m > 1 ? (rescue ? '위기 교체 ×2 · ' : '제때 교체 ×2 · ') : '교체 · ') +
+      h.name +
+      ' 「' +
+      h.tag +
+      '」',
     240,
     470,
     h.color,

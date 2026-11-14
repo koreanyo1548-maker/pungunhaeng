@@ -43,6 +43,7 @@ try {
     await g.pick(0);
     await g.step(2);
     await g.act(0);
+    await g.eval(() => (window.__g.player.inv = 999)); // UI input checks do not depend on combat survival.
     await g.seconds(5);
     // A touch drag moves the player; tapping an action must not move it.
     const c = await g.page.locator('canvas').boundingBox();

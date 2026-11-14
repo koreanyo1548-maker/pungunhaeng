@@ -10,7 +10,7 @@ import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
 import { ARTS, SKILLS, skillStars } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
-import { swapCooldown } from '../systems/formation';
+import { swapCooldown, hasLivingReserve } from '../systems/formation';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -139,11 +139,18 @@ export function syncSwapHUD() {
     $('swapImg').dataset.src = pic;
     $('swapImg').src = pic;
   }
-  $('swapCd').textContent = cd > 0 ? String(Math.ceil(cd)) : '';
-  $('swapName').textContent = '교체 · ' + nxt.name;
+  const reserveAlive = hasLivingReserve();
+  sw.disabled = !reserveAlive || G.mode !== 'play' || !['flight', 'boss', 'warning'].includes(G.state.phase) || cd > 0;
+  sw.setAttribute('aria-label', reserveAlive ? '편대 교체' : '대기 영웅 전투불능');
+  $('swapCd').textContent = !reserveAlive ? '×' : cd > 0 ? String(Math.ceil(cd)) : '';
+  $('swapName').textContent = (reserveAlive ? '교체 · ' : '전투불능 · ') + nxt.name;
   const boss = G.enemies.find(e => e.boss && !e.dead),
-    win = cd <= 0 && G.mode === 'play' && (G.time - G.state.lastHurt < 1.5 || (!!boss && boss.action === 'recover'));
-  sw.classList.toggle('cool', cd > 0);
+    win =
+      reserveAlive &&
+      cd <= 0 &&
+      G.mode === 'play' &&
+      (G.time - G.state.lastHurt < 1.5 || (!!boss && boss.action === 'recover'));
+  sw.classList.toggle('cool', !reserveAlive || cd > 0);
   sw.classList.toggle('burst', win);
   ub.style.setProperty('--c', '#ffd77a');
   ub.style.setProperty('--p', String(G.state.bombs >= G.state.maxBombs ? 100 : Math.round(G.state.charge)));

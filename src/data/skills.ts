@@ -1,3 +1,4 @@
+import { changePartyMaxHealth } from '../core/hero-health';
 import { G } from '../core/context';
 import { rnd } from '../core/math';
 import { BR } from './branches';
@@ -71,12 +72,10 @@ export const SKILLS = {
     effect: '최대 체력 +1, 즉시 1 회복',
     trig: 'passive',
     gain: () => {
-      G.player.maxHp++;
-      G.player.hp++;
+      changePartyMaxHealth(G.state, 1);
     },
     lose: () => {
-      G.player.maxHp--;
-      G.player.hp = Math.min(G.player.hp, G.player.maxHp);
+      changePartyMaxHealth(G.state, -1);
     },
   },
   yeonhwan: {

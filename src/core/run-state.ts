@@ -1,8 +1,10 @@
+import { createHeroHealth, BASE_HEALTH } from './hero-health';
 import type { Meta } from '../data/meta';
-import type { RunState, Player, Enemy, Shot } from './state-types';
+import type { RunState, Player, Enemy, Shot, HeroHealth } from './state-types';
 
 export function createRunState(meta: Meta, hyperCooldown: number): RunState {
   return {
+    heroHealth: createHeroHealth(),
     score: 0,
     distance: 0,
     coins: 0,
@@ -62,14 +64,27 @@ export function createRunState(meta: Meta, hyperCooldown: number): RunState {
     meta,
   };
 }
-export function createPlayer(W: number, PLAYER_Y: number): Player {
+export function createPlayer(W: number, PLAYER_Y: number, getHealth: () => HeroHealth): Player {
   return {
     x: W / 2,
     target: W / 2,
     y: PLAYER_Y,
     targetY: PLAYER_Y,
-    hp: 3,
-    maxHp: 3,
+    get hp() {
+      return getHealth().hp;
+    },
+    set hp(value: number) {
+      const h = getHealth();
+      if (!h.fallen) h.hp = Math.max(0, value);
+    },
+    get maxHp() {
+      return getHealth().maxHp;
+    },
+    set maxHp(value: number) {
+      const h = getHealth();
+      h.maxHp = Math.max(BASE_HEALTH, value);
+      h.hp = Math.min(h.hp, h.maxHp);
+    },
     shield: 0,
     inv: 2,
     fire: 0,

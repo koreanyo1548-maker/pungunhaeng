@@ -314,7 +314,7 @@ async function scenarioE(browser, seed) {
   await g.act(1);
   await g.step(2);
   const base = await g.state(() => ({ hp: window.__g.player.hp, bombs: window.__g.state.bombs }));
-  check(f, base.hp === 3 && base.bombs === 2, `a run starts with the base values (${JSON.stringify(base)})`);
+  check(f, base.hp === 1 && base.bombs === 2, `a run starts with the base values (${JSON.stringify(base)})`);
   await g.eval(() => {
     window.__g.state.coins = 700;
     window.__g.player.hp = 1;
@@ -579,6 +579,10 @@ async function scenarioG(browser, seed) {
   await g.eval(() => {
     window.__g.state.coins = 1000;
     window.__g.state.virtue = 2;
+    for (const health of Object.values(window.__g.state.heroHealth)) {
+      health.fallen = false;
+      health.maxHp = health.hp = 1;
+    }
     window.__g.player.hp = 1;
     window.__g.player.maxHp = 1;
     window.__g.player.inv = 0;

@@ -1,3 +1,4 @@
+import { syncHUD } from '../ui/hud';
 import { runSeed } from '../core/rng';
 import { G } from '../core/context';
 import { hitEnemy } from '../entities/enemies';
@@ -56,11 +57,14 @@ if (location.hash.includes('debug'))
       }
     },
     god() {
-      G.player.hp = 99;
-      G.player.maxHp = 99;
+      for (const health of Object.values(G.state.heroHealth)) {
+        health.fallen = false;
+        health.maxHp = health.hp = 99;
+      }
     },
     swapHero,
     setSwap() {
       G.state.swapReady = 0;
+      syncHUD();
     },
   };

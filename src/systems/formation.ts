@@ -1,4 +1,5 @@
-import { withSkill, skillCue, skillAura, startSwapPose } from '../render/skill-animation';
+import { skillCue, skillAura, startSwapPose } from '../render/skill-animation';
+import { withSkill } from '../core/skill-context';
 import { G } from '../core/context';
 import { heroAnimations } from '../core/assets';
 import { chime, tone } from '../core/audio';

@@ -7,7 +7,7 @@ import { clamp, fxRnd } from '../core/math';
 import { fxRandom } from '../core/rng';
 import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
-import { hasSkill } from '../systems/abilities';
+import { hasSkill } from '../systems/skill-state';
 import { region } from '../systems/flow';
 import { RAIN_SECONDS } from '../data/skills';
 import { drawPfx, pfx, ramp, updatePfx } from './pfx';

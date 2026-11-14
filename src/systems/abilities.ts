@@ -1,4 +1,6 @@
-import { withSkill, skillCue, skillAura, queueSkillLearn } from '../render/skill-animation';
+import { hasSkill } from './skill-state';
+import { skillCue, skillAura, queueSkillLearn } from '../render/skill-animation';
+import { withSkill } from '../core/skill-context';
 import { skillCallout } from '../render/callout';
 import { isFinal } from './run-plan';
 import { random } from '../core/rng';
@@ -16,25 +18,13 @@ import { burst, label } from '../render/fx';
 import { D, column } from './combat';
 import { syncHUD } from '../ui/hud';
 
-export function hasSkill(id) {
-  return !!G.state?.skills?.some(s => s.id === id);
-}
+export { hasSkill } from './skill-state';
 export function trig(type, data = {}) {
   if (!G.state) return;
   for (const s of [...G.state.skills]) {
     const d = SKILLS[s.id];
     if (d.trig !== type || G.time < (s.ready || 0)) continue;
-    s.ready = G.time + (d.cd || 0);
-    s.flash = G.time;
-    performSkill(s, () => d.fx?.(data, s));
-    if (s.mod && G.time >= (s.modReady || 0)) {
-      s.modReady = G.time + 0.5;
-      withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
-      if (+s.mod === 6) {
-        skillCue('art_cheolgap', G.player.x, G.player.y, 190, true);
-        skillAura('art_cheolgap', 0.5);
-      }
-    }
+    executeSkill(s, d.cd || 0, () => d.fx?.(data, s));
   }
 }
 export function updateSkills(dt, oldX) {
@@ -45,17 +35,7 @@ export function updateSkills(dt, oldX) {
     const d = SKILLS[s.id];
     if (d.trig !== 'tick' || !active || G.time < (s.ready || 0)) continue;
     if (d.when && !d.when()) continue;
-    s.ready = G.time + d.cd;
-    s.flash = G.time;
-    performSkill(s, () => d.fx(null, s));
-    if (s.mod && G.time >= (s.modReady || 0)) {
-      s.modReady = G.time + 0.5;
-      withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
-      if (+s.mod === 6) {
-        skillCue('art_cheolgap', G.player.x, G.player.y, 190, true);
-        skillAura('art_cheolgap', 0.5);
-      }
-    }
+    executeSkill(s, d.cd, () => d.fx(null, s));
   }
   if (hasSkill('hoeseon')) {
     G.state.moveAcc += Math.abs(G.player.x - oldX);
@@ -176,4 +156,18 @@ function performSkill(s, fn) {
   if (id === 'muyoung') skillAura(id, 0.3);
   if (id === 'geumgang') skillAura(id, geumgangSeconds());
   if (id === 'hyeolma') skillAura(id, G.state.hyper, 160);
+}
+
+/** Called only after each trigger's own eligibility checks; keep execution order identical. */
+function executeSkill(s, cooldown: number, effect: () => void) {
+  s.ready = G.time + cooldown;
+  s.flash = G.time;
+  performSkill(s, effect);
+  if (!s.mod || G.time < (s.modReady || 0)) return;
+  s.modReady = G.time + 0.5;
+  withSkill(ARTS[s.mod].solo, () => ARTS[s.mod].fx());
+  if (+s.mod === 6) {
+    skillCue('art_cheolgap', G.player.x, G.player.y, 190, true);
+    skillAura('art_cheolgap', 0.5);
+  }
 }

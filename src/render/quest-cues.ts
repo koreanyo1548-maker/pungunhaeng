@@ -3,7 +3,7 @@ import { W, ctx } from '../core/dom';
 import { clamp } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { TUNE } from '../data/tune';
-import { hasSkill } from '../systems/abilities';
+import { hasSkill } from '../systems/skill-state';
 import { traitGraze } from '../systems/formation';
 
 export function drawQuestCue() {

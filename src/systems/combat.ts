@@ -1,4 +1,5 @@
-import { visualSkill, skillCue, skillBurst } from '../render/skill-animation';
+import { skillCue, skillBurst } from '../render/skill-animation';
+import { visualSkill } from '../core/skill-context';
 import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
@@ -7,7 +8,7 @@ import { TUNE } from '../data/tune';
 import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
-import { hasSkill } from './abilities';
+import { hasSkill } from './skill-state';
 import { difficulty, region } from './flow';
 import { traitCharge, traitPower } from './formation';
 import { notify, syncHUD } from '../ui/hud';

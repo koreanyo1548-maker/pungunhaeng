@@ -10,7 +10,8 @@ import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { draw } from '../render/renderer';
-import { hasSkill, updateSkills } from './abilities';
+import { updateSkills } from './abilities';
+import { hasSkill } from './skill-state';
 import { graze, grazeEnemy } from './combat';
 import { difficulty } from './flow';
 import { donoBeat, updatePhase } from './stage-phases';
@@ -39,6 +40,26 @@ export function update(dt) {
   G.flash = Math.max(0, G.flash - realDt * 1.8);
   G.state.comboTimer -= dt;
   if (G.state.comboTimer <= 0) G.state.combo = 0;
+  const old = updatePlayer(dt);
+
+  if (!updatePhase(dt)) return;
+  updateSkills(dt, old);
+  if (G.mode !== 'play') return;
+  updateShots(dt);
+  if (!updateEnemies(dt)) return;
+  if (!updateHazards(dt)) return;
+  updatePickups(dt);
+  G.shots = G.shots.filter(s => !s.dead && s.y > -40 && s.x > -20 && s.x < W + 20);
+  G.enemies = G.enemies.filter(e => !e.dead);
+  G.hazards = G.hazards.filter(h => !h.dead && h.y < H + 80 && h.x > -90 && h.x < W + 90);
+  G.pickups = G.pickups.filter(p => !p.dead && p.y < H + 30 && p.life > 0);
+  G.hudClock -= realDt;
+  if (G.hudClock <= 0) {
+    syncHUD();
+    G.hudClock = 0.08;
+  }
+}
+function updatePlayer(dt: number): number {
   if (G.keys.has('ArrowLeft') || G.keys.has('a')) G.player.target -= dt * 510;
   if (G.keys.has('ArrowRight') || G.keys.has('d')) G.player.target += dt * 510;
   G.player.target = clamp(G.player.target, 24, W - 24);
@@ -58,9 +79,10 @@ export function update(dt) {
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
-  if (!updatePhase(dt)) return;
-  updateSkills(dt, old);
-  if (G.mode !== 'play') return;
+  return old;
+}
+
+function updateShots(dt: number): void {
   for (const s of G.shots) {
     s.prevY = s.y;
     if (s.homing) {
@@ -88,13 +110,16 @@ export function update(dt) {
       }
     }
   }
+}
+
+function updateEnemies(dt: number): boolean {
   for (const e of G.enemies) {
     if (e.dead) continue;
     e.hit = Math.max(0, e.hit - dt);
     e.recoil = Math.max(0, (e.recoil || 0) - dt);
     if (e.boss) {
       updateBoss(e, dt);
-      if (G.mode !== 'play') return;
+      if (G.mode !== 'play') return false;
       continue;
     }
     e.y += dt * (G.state.hyper > 0 ? 670 : 190 + Math.min(difficulty() * 22 + G.state.stageTime, 130));
@@ -123,12 +148,12 @@ export function update(dt) {
       if (mate) {
         e.grazed = mate.grazed = true;
         grazeEnemy(e);
-        if (G.mode !== 'play') return;
+        if (G.mode !== 'play') return false;
       }
     }
     if (Math.abs(e.x - G.player.x) < e.r + 10 && Math.abs(e.y - G.player.y) < e.r + 12) {
       damagePlayer();
-      if (G.mode !== 'play') return;
+      if (G.mode !== 'play') return false;
       e.dead = true;
       resolveRow(e, true);
     } else if (e.y > H + 60) {
@@ -136,6 +161,10 @@ export function update(dt) {
       resolveRow(e, true);
     }
   }
+  return true;
+}
+
+function updateHazards(dt: number): boolean {
   const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze();
   for (const h of G.hazards) {
     if (h.warn > 0) {
@@ -147,11 +176,11 @@ export function update(dt) {
     const d = Math.hypot(h.x - G.player.x, h.y - G.player.y);
     if (!h.grazed && !h.dead && d >= h.r + 10 && d < h.r + 10 + grazeR && G.player.hp > 0) {
       graze(h);
-      if (G.mode !== 'play') return;
+      if (G.mode !== 'play') return false;
     }
     if (!h.dead && d < h.r + 10) {
       damagePlayer();
-      if (G.mode !== 'play') return;
+      if (G.mode !== 'play') return false;
       h.dead = true;
       if (!pfx('hurt', h.x, h.y)) {
         impact(h.x, h.y, '#ffbc7a', 40);
@@ -159,6 +188,10 @@ export function update(dt) {
       }
     }
   }
+  return true;
+}
+
+function updatePickups(dt: number): void {
   for (const p of G.pickups) {
     p.life -= dt;
     const dx = G.player.x - p.x,
@@ -176,16 +209,8 @@ export function update(dt) {
     }
     if (dist < (p.kind === 'coin' ? 25 : 35) || Math.hypot(G.player.x - p.x, G.player.y - p.y) < 23) collect(p);
   }
-  G.shots = G.shots.filter(s => !s.dead && s.y > -40 && s.x > -20 && s.x < W + 20);
-  G.enemies = G.enemies.filter(e => !e.dead);
-  G.hazards = G.hazards.filter(h => !h.dead && h.y < H + 80 && h.x > -90 && h.x < W + 90);
-  G.pickups = G.pickups.filter(p => !p.dead && p.y < H + 30 && p.life > 0);
-  G.hudClock -= realDt;
-  if (G.hudClock <= 0) {
-    syncHUD();
-    G.hudClock = 0.08;
-  }
 }
+
 // Fixed timestep: the simulation always advances in 1/60 s steps, whatever the display refresh rate
 // (60/90/120 Hz) or frame drops, so collisions, timers and balance behave the same on every device and a
 // seeded run is reproducible. Rendering happens once per display frame.

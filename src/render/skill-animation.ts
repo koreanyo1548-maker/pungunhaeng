@@ -3,52 +3,7 @@ import { HEROES } from '../data/heroes';
 import { G } from '../core/context';
 import { combatProjectileArt } from '../core/assets';
 import { H, W, ctx, reduced } from '../core/dom';
-import signature from '../assets/images/skills/signature.png';
-import movement from '../assets/images/skills/movement.png';
-import attack from '../assets/images/skills/attack.png';
-import passive from '../assets/images/skills/passive.png';
-import energy from '../assets/images/skills/energy.png';
-import secret from '../assets/images/skills/secret.png';
-import flight from '../assets/images/skills/flight.png';
-import swapPoses from '../assets/images/skills/swap-poses.png';
-
-const sheets = [signature, movement, attack, passive, energy, secret, flight, swapPoses];
-// [columns, rows] of each sheet, in the order above
-const grids = [
-  [6, 4],
-  [6, 4],
-  [6, 4],
-  [6, 4],
-  [6, 4],
-  [6, 4],
-  [6, 6],
-  [4, 6],
-];
-// The generated flight sheet is not on an exact grid: its columns sit this many source pixels right of their
-// cell centres (measured; the same in every row). Cropping with it keeps a looping projectile from wobbling.
-const FLIGHT = 6,
-  FLIGHT_DX = [20, 13, 5, 1, -7, -10];
-/**
- * frames[sheet][row][column]: every frame cut into its own small canvas when the art loads. Drawing straight
- * from the 1536x1024 sheets made each call hold the whole decoded sheet until the frame was flushed, which
- * forced several mid-frame flushes once a few skills were active.
- */
-const frames: HTMLCanvasElement[][][] = [];
-function slice(im: HTMLImageElement, sheet: number) {
-  const [cols, rows] = grids[sheet],
-    w = im.width / cols,
-    h = im.height / rows;
-  return Array.from({ length: rows }, (_, row) =>
-    Array.from({ length: cols }, (_, col) => {
-      const c = document.createElement('canvas');
-      c.width = Math.round(w - 4);
-      c.height = Math.round(h - 4);
-      const dx = sheet === FLIGHT ? FLIGHT_DX[col] : 0;
-      c.getContext('2d').drawImage(im, col * w + 2 + dx, row * h + 2, w - 4, h - 4, 0, 0, c.width, c.height);
-      return c;
-    }),
-  );
-}
+import { frames, FLIGHT } from '../assets/skill-art';
 const groups = [
   ['mancheon', 'yusu', 'art_cheolgap', 'art_cheonma'],
   ['janyoung', 'biyeon', 'muyoung', 'hoeseon'],
@@ -82,32 +37,7 @@ const flightRows: Record<string, number> = {
   pungun: 2,
   hongryeon: 0,
 };
-export let visualSkill: string | undefined;
-export function withSkill<T>(id: string | undefined, fn: () => T): T {
-  const previous = visualSkill;
-  visualSkill = id;
-  try {
-    return fn();
-  } finally {
-    visualSkill = previous;
-  }
-}
-export async function loadSkillArt() {
-  await Promise.all(
-    sheets.map(
-      (src, i) =>
-        new Promise<void>((resolve, reject) => {
-          const im = new Image();
-          im.onload = () => {
-            frames[i] = slice(im, i);
-            resolve();
-          };
-          im.onerror = reject;
-          im.src = src;
-        }),
-    ),
-  );
-}
+
 export function drawSkillFrame(
   id: string,
   frame: number,
@@ -204,7 +134,6 @@ export function clearSkillAnimations() {
   swapPose = null;
   auras.clear();
   shield = negate = false;
-  visualSkill = undefined;
 }
 /**
  * `area` marks the one cue that shows a whole attack (an area blast). It is never throttled away by the small

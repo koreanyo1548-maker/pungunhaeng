@@ -1,5 +1,7 @@
+import { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
+export { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
 import { loadAmbientArt } from './ambient-art';
-import { loadSkillArt } from '../render/skill-animation';
+import { loadSkillArt } from '../assets/skill-art';
 import { IMG } from '../assets/manifest';
 import { G } from './context';
 import { $ } from './dom';
@@ -10,48 +12,14 @@ import { HERO_IDS, NPC_IDS } from '../data/roster';
 import type { Cell } from '../data/roster';
 import { showBank, showBest } from '../ui/hud';
 
-export function atlasCell(atlas, cols, rows, col, row) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const cc = c.getContext('2d'),
-    w = atlas.width / cols,
-    h = atlas.height / rows,
-    k = 248 / Math.max(w, h);
-  cc.drawImage(atlas, col * w + 1, row * h + 1, w - 2, h - 2, 128 - (w * k) / 2, 128 - (h * k) / 2, w * k, h * k);
-  return c;
-}
-export function makeWhite(im) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const cc = c.getContext('2d');
-  cc.drawImage(im, 0, 0);
-  cc.globalCompositeOperation = 'source-in';
-  cc.fillStyle = '#fff';
-  cc.fillRect(0, 0, 256, 256);
-  return c;
-}
 export function coinImage() {
   return (G.coinPic ||= propArt[3]?.toDataURL() || '');
 }
-export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const im = new Image();
-    im.onload = () => resolve(im);
-    im.onerror = reject;
-    im.src = src;
-  });
-}
+
 export const PORTRAIT_PROPS = { props: IMG['props'] };
 export const propArt = [],
   rockHitArt = [];
-export function cropProp(im, rect) {
-  const [x, y, w, h] = rect,
-    c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  c.getContext('2d').drawImage(im, x, y, w, h, 0, 0, w, h);
-  return c;
-}
+
 export async function loadPortraitProps() {
   const [props] = await Promise.all(Object.values(PORTRAIT_PROPS).map(loadImage));
   const rects = [
@@ -164,23 +132,7 @@ export function skillImage(id) {
 export function artImage(src, cls = 'ability-icon') {
   return src ? `<img class="${cls}" src="${src}" alt="" draggable="false">` : '';
 }
-export function cropArt(im, cols, rows, col, row) {
-  const c = document.createElement('canvas');
-  c.width = Math.round(im.width / cols);
-  c.height = Math.round(im.height / rows);
-  c.getContext('2d').drawImage(
-    im,
-    (col * im.width) / cols,
-    (row * im.height) / rows,
-    im.width / cols,
-    im.height / rows,
-    0,
-    0,
-    c.width,
-    c.height,
-  );
-  return c;
-}
+
 export async function loadNewArt() {
   const [[icons]] = await Promise.all([Promise.all(Object.values(NEW_ART).map(loadImage)), loadCharacterArt()]);
   for (let i = 0; i < 16; i++) skillPictures.push(cropArt(icons, 4, 4, i % 4, Math.floor(i / 4)).toDataURL());
@@ -189,12 +141,11 @@ export async function loadNewArt() {
 }
 export async function load() {
   try {
-    const [art, world, mobs, bosses, fx, skyEnemies, skyMotion, simma] = await Promise.all([
+    const [art, world, mobs, bosses, skyEnemies, skyMotion, simma] = await Promise.all([
       loadImage(IMG['title-art']),
       loadImage(IMG['world']),
       loadImage(IMG['mobs']),
       loadImage(IMG['bosses']),
-      loadImage(IMG['fx']),
       loadImage(IMG['sky-enemies']),
       loadImage(IMG['sky-enemies-motion']),
       loadImage(IMG['simma']),
@@ -242,7 +193,6 @@ export async function load() {
     G.enemyFrames[8] = [0, 1, 2].map(pose => atlasCell(simma, 3, 1, pose, 0));
     G.sprite = G.enemyFrames.map(frames => frames?.[0]);
     G.enemyWhites = G.enemyFrames.map(frames => frames.map(makeWhite));
-    G.fxFrames = [0, 1].map(row => [0, 1, 2, 3].map(col => atlasCell(fx, 4, 2, col, row)));
 
     G.whiteSprite = G.sprite.map(im => {
       const c = document.createElement('canvas');

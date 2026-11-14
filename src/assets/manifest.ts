@@ -16,7 +16,6 @@ import titleArt from './images/title-art.png';
 import world from './images/world.png';
 import mobs from './images/mobs.png';
 import bosses from './images/bosses.png';
-import fx from './images/fx.png';
 
 export const IMG: Record<string, string> = {
   'sky-enemies': skyEnemies,
@@ -36,7 +35,6 @@ export const IMG: Record<string, string> = {
   bosses: bosses,
   simma: simma,
   'combat-projectiles': combatProjectiles,
-  fx: fx,
 };
 
 // Pictures for one character each (see images/characters/README.md): every PNG in images/characters is registered

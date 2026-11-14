@@ -14,7 +14,7 @@ import { addPickup } from './pickups';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
-import { hasSkill } from '../systems/abilities';
+import { hasSkill } from '../systems/skill-state';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
 import { traitNearCharge, traitOn } from '../systems/formation';

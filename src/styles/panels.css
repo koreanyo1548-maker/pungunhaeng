@@ -583,3 +583,17 @@ button:disabled {
 .detail-panel #detailBack {
   width: 100%;
 }
+
+/* Inline resource icons keep result tile geometry and the portrait intact. */
+.piece-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.piece-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}

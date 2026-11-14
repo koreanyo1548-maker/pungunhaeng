@@ -1,3 +1,4 @@
+import { ambientPictures } from '../core/ambient-art';
 // 뽑기 screen: draw once or ten times with banked 엽전, and see what came out. Opened from the title and the
 // result screen. Also holds the save code (export / import), which lived in the old 수련 screen.
 import { heroPictures, npcPictures } from '../core/assets';
@@ -30,7 +31,7 @@ function result(d: Drawn) {
           : `${d.to}단계 달성`
         : '조각 +1';
   const grade = hero ? starText(d.to) : pipText(d.to);
-  return `<div class="tile draw-result${d.to > d.from ? ' up' : ''}" style="--c:${color}"><span class="tile-art"><img alt="" src="${image}" draggable="false"></span><b>${name}</b><span class="tile-grade">${grade}</span><small class="draw-what">${what}</small><small>${hero ? '영웅' : '인연'} 조각 ${d.pieces}${next ? ' / ' + next : ''}</small></div>`;
+  return `<div class="tile draw-result${d.to > d.from ? ' up' : ''}" style="--c:${color}"><span class="tile-art"><img alt="" src="${image}" draggable="false"></span><b>${name}</b><span class="tile-grade">${grade}</span><small class="draw-what">${what}</small><small class="piece-count"><img class="piece-icon" src="${ambientPictures[hero ? 'hero-piece' : 'bond-piece']}" alt="" draggable="false">${hero ? '영웅' : '인연'} 조각 ${d.pieces}${next ? ' / ' + next : ''}</small></div>`;
 }
 
 function render() {

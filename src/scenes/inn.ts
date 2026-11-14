@@ -1,7 +1,8 @@
+import { ambientPictures } from '../core/ambient-art';
 import { isFinal } from '../systems/run-plan';
 import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
-import { npcPictures, skillPictures } from '../core/assets';
+import { npcPictures } from '../core/assets';
 import { chime } from '../core/audio';
 import { josa, josaRo } from '../core/math';
 import { NPCS, NPC_LINK } from '../data/npcs';
@@ -25,7 +26,7 @@ export function openInn() {
     {
       title: '약주와 휴식',
       desc: '체력 +1',
-      image: skillPictures[11],
+      image: ambientPictures['inn-rest'],
       cost: TUNE.innHeal,
       ok: G.player.hp < G.player.maxHp,
       buy: () => {
@@ -35,7 +36,7 @@ export function openInn() {
     {
       title: '필살 단약',
       desc: '필살기 +1회',
-      image: skillPictures[8],
+      image: ambientPictures['inn-pill'],
       cost: TUNE.innQi,
       ok: G.state.bombs < G.state.maxBombs,
       buy: () => {
@@ -46,7 +47,7 @@ export function openInn() {
     {
       title: '명상',
       desc: '다음 기술 선택지가 3개로 늘어난다',
-      image: skillPictures[15],
+      image: ambientPictures['inn-meditation'],
       cost: TUNE.innMeditate,
       done: G.state.meditate,
       ok: !G.state.meditate && !isFinal(),

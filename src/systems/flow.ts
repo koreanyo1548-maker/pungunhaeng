@@ -1,3 +1,4 @@
+import { createRunState, createPlayer, createRunTransient } from '../core/run-state';
 import { clearSkillAnimations } from '../render/skill-animation';
 import { clearCallouts } from '../render/callout';
 import { currentGate, isFinal } from './run-plan';
@@ -15,7 +16,7 @@ import { VIRTUE_CAP, settle } from '../data/meta';
 import { hoechunBlocks } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { dominantTitle, runSummary } from '../scenes/result';
-import { hasSkill } from './abilities';
+import { hasSkill } from './skill-state';
 import { closeQuest } from './quest';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
@@ -43,119 +44,16 @@ export function start() {
   for (const id of ['intro', 'result', 'pausePanel']) $(id).classList.add('hidden');
   $('hud').classList.remove('hidden');
   G.mode = 'play';
-  G.time = 0;
-  G.lastHitSound = 0;
-  G.lastBoom = -1;
-  G.shake = 0;
-  G.flash = 0;
-  G.hitstop = 0;
-  G.toastTimer = 0;
   G.pointer = null;
   G.keys.clear();
-  G.enemies = [];
-  G.shots = [];
-  G.hazards = [];
-  G.particles = [];
-  G.pickups = [];
-  G.labels = [];
-  G.rings = [];
-  G.wrecks = [];
-  G.impacts = [];
-  G.contactFX = [];
+  Object.assign(G, createRunTransient());
   clearPfx();
   clearSkillAnimations();
   clearCallouts();
-  G.paintedFX = [];
-  G.bossTrails = [];
-  G.bossIntro = null;
-  G.finisher = null;
-  G.rows = new Map();
-  G.afterimages = [];
-  G.footprints = [];
-  G.rowId = 0;
-  G.heartCache = -1;
-  G.hudClock = 0;
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();
-  G.state = {
-    score: 0,
-    distance: 0,
-    coins: 0,
-    kills: 0,
-    charge: 0,
-    bombs: 2,
-    hyper: 0,
-    hyperCooldown: rnd(48, 62),
-    hyperDrops: 0,
-    combo: 0,
-    comboTimer: 0,
-    stage: 1,
-    stageTime: 0,
-    phase: 'flight',
-    phaseTimer: 0,
-    rowTimer: 0.8,
-    meteorTimer: 8,
-    powerTimer: 8,
-    elapsed: 0,
-    cleared: 0,
-    trailTimer: 0,
-    stepTimer: 0,
-    ghostTimer: 0,
-    runPhase: 0,
-    jumpPhase: 0,
-    ascend: 0,
-    previousTier: 0,
-    maxBombs: 3,
-    skills: [],
-    rel: {},
-    met: {},
-    quest: null,
-    path: [],
-    grazes: 0,
-    moveAcc: 0,
-    orbs: 0,
-    orbAngle: 0,
-    rain: 0,
-    rainTimer: 0,
-    negate: false,
-    donoDelay: 0,
-    allyTimer: 3,
-    foeTimer: 4.5,
-    blasting: false,
-    spearTimer: 1.5,
-    victory: false,
-    course: 'ground',
-    formation: ['pungun', 'cheolhyeol'],
-    active: 0,
-    swapReady: 0,
-    lastHurt: -9,
-    meditate: false,
-    forceNpc: null,
-    spent: 0,
-    /** 덕: 엽전 given to passers-by; raises the 엽전 banked at the end (data/meta.ts settle) */
-    virtue: 0,
-    meta,
-  };
-  G.strikes = [];
-  G.skillsKey = '';
-  G.player = {
-    x: W / 2,
-    target: W / 2,
-    y: PLAYER_Y,
-    targetY: PLAYER_Y,
-    hp: 3,
-    maxHp: 3,
-    shield: 0,
-    inv: 2,
-    fire: 0,
-    weapon: 1,
-    tilt: 0,
-    muzzle: 0,
-    step: 0,
-    stepDir: 1,
-    swing: 0,
-    swingCount: 0,
-  };
+  G.state = createRunState(meta, rnd(48, 62));
+  G.player = createPlayer(W, PLAYER_Y);
   $('toast').classList.remove('show');
   showBest();
   syncHUD();

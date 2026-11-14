@@ -187,8 +187,8 @@ export function end(victory = false) {
   G.state.victory = victory;
   if (victory) G.state.score += 20000;
   closeQuest();
-  const record = G.state.score > G.best;
-  if (record) G.best = profile.best = Math.floor(G.state.score);
+  const record = G.state.score > profile.best;
+  if (record) profile.best = Math.floor(G.state.score);
   // 정산: what is left of this run's 엽전 goes to the bank.
   const banked = settle(G.state.coins, victory, G.state.virtue),
     base = settle(G.state.coins, victory);

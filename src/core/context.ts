@@ -1,6 +1,4 @@
-import { profile } from './profile';
 export const G: any = {
-  best: 0,
   mode: 'loading',
   last: 0,
   /** current scene of the run flow (systems/scene-flow.ts) */
@@ -53,4 +51,3 @@ export const G: any = {
   skillsKey: '',
   coinPic: '',
 };
-G.best = profile.best;

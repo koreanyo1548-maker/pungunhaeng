@@ -26,8 +26,8 @@ export function notify(text, duration = 1.5, portrait?: string) {
   G.toastTimer = duration;
 }
 export function showBest() {
-  $('best').textContent = '최고 ' + fmt(G.best);
-  $('introBest').textContent = '최고 기록 ' + fmt(G.best);
+  $('best').textContent = '최고 ' + fmt(profile.best);
+  $('introBest').textContent = '최고 기록 ' + fmt(profile.best);
 }
 /** The bank of 엽전 on the title screen. */
 export function showBank() {

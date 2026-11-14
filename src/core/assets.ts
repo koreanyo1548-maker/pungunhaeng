@@ -1,3 +1,4 @@
+import { loadAmbientArt } from './ambient-art';
 import { loadSkillArt } from '../render/skill-animation';
 import { IMG } from '../assets/manifest';
 import { G } from './context';
@@ -273,7 +274,7 @@ export async function load() {
     await loadNewArt();
     await loadCombatArt();
     await loadPortraitProps();
-    await loadSkillArt();
+    await Promise.all([loadSkillArt(), loadAmbientArt()]);
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

@@ -1,6 +1,6 @@
 // 행인 (passers-by): when the 인연 a gate would bring has no 인연 card, an ordinary passer-by comes instead.
 // There is no 의뢰. The player may give them 엽전, which builds 덕; 덕 raises the 엽전 banked at the end of the run
-// (data/meta.ts settle). Passers-by have no pictures yet.
+// (data/meta.ts settle). Portraits are keyed by art in core/ambient-art.ts.
 import { G } from '../core/context';
 import { chime } from '../core/audio';
 import { ALMS, ALMS_VIRTUE, VIRTUE_CAP, VIRTUE_RATE } from '../data/meta';
@@ -9,10 +9,10 @@ import { done } from './scene-flow';
 
 /** who stands at the roadside, by gate (no randomness, so the run's rolls are untouched) */
 export const PASSERS = [
-  { name: '아낙네', title: '장에 다녀오는 길', say: '흉년이라 끼니가 걱정이라오.' },
-  { name: '떠돌이 행인', title: '봇짐 하나 멘 나그네', say: '노잣돈이 다 떨어졌소.' },
-  { name: '늙은 나무꾼', title: '산길의 나무꾼', say: '허리가 예전 같지 않구먼.' },
-  { name: '길 잃은 아이', title: '엄마를 찾는 아이', say: '배고파요…' },
+  { art: 'market-woman', name: '아낙네', title: '장에 다녀오는 길', say: '흉년이라 끼니가 걱정이라오.' },
+  { art: 'wanderer', name: '떠돌이 행인', title: '봇짐 하나 멘 나그네', say: '노잣돈이 다 떨어졌소.' },
+  { art: 'woodcutter', name: '늙은 나무꾼', title: '산길의 나무꾼', say: '허리가 예전 같지 않구먼.' },
+  { art: 'lost-child', name: '길 잃은 아이', title: '엄마를 찾는 아이', say: '배고파요…' },
 ];
 export const passerOf = (stage: number) => PASSERS[(stage - 1) % PASSERS.length];
 

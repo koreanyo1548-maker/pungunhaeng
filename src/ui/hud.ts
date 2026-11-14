@@ -12,8 +12,16 @@ import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
 import { swapCooldown } from '../systems/formation';
 
-export function notify(text, duration = 1.5) {
+export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
+  $('toast').classList.toggle('portrait-toast', !!portrait);
+  if (portrait) {
+    const im = document.createElement('img');
+    im.src = portrait;
+    im.alt = '';
+    im.draggable = false;
+    $('toast').prepend(im);
+  }
   $('toast').classList.add('show');
   G.toastTimer = duration;
 }

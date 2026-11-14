@@ -371,3 +371,19 @@
 .hud.boss .combo {
   top: 182px;
 }
+
+.toast.portrait-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #102b25ed;
+  border: 1px solid #b39c65;
+}
+.portrait-toast img {
+  width: 42px;
+  height: 48px;
+  object-fit: contain;
+}

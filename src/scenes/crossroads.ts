@@ -1,3 +1,5 @@
+import { ambientPictures } from '../core/ambient-art';
+import { notify } from '../ui/hud';
 import { G } from '../core/context';
 import { npcPictures } from '../core/assets';
 import { relText } from '../core/math';
@@ -69,6 +71,8 @@ function openPasser(why: string) {
     sub: why + '<br>인연 카드가 있는 인연만 길에서 만난다. 행인에게 베푼 덕은 판이 끝날 때 보관하는 엽전을 늘린다.',
     cards: [
       {
+        image: ambientPictures[who.art + '-neutral'],
+        artClass: 'npc-choice-art',
         color: '#d9c58f',
         tag: who.title + ` · 지금 덕 ${v} (보관 엽전 +${percent}%)`,
         title: who.name,
@@ -78,7 +82,10 @@ function openPasser(why: string) {
             color: '#ffd77a',
             html: `<b>베푼다</b> · ${ALMS}냥<small>덕 +${ALMS_VIRTUE} → 보관 엽전 +${after}%</small><small>${poor ? `엽전 부족 (지닌 엽전 ${G.state.coins}냥)` : `지닌 엽전 ${G.state.coins}냥`}</small>`,
             disabled: poor,
-            onPick: () => meetPasser(true),
+            onPick: () => {
+              meetPasser(true);
+              notify(who.name + ' · 덕 +' + ALMS_VIRTUE, 1.6, ambientPictures[who.art + '-grateful']);
+            },
           },
           {
             color: '#a6c8bf',

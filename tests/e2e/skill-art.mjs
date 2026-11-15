@@ -102,7 +102,7 @@ try {
     });
     const ids = await page.evaluate(() => Object.keys(M.SKILLS));
     assert.equal(ids.length, 24);
-    assert.equal(await page.evaluate(() => M.skillAnimationSnapshot().loaded), 8);
+    assert.equal(await page.evaluate(() => M.skillAnimationSnapshot().loaded), 14);
     for (const id of ids) {
       const result = await page.evaluate(id => {
         resetArtCase();
@@ -250,7 +250,7 @@ try {
       }, hero);
       if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/swap-${hero}.png` });
     }
-    console.log(`PASS ${reducedMotion}: 24 skills, 3 modifiers, 6 swaps, no-op guards, consumption and reset`);
+    console.log(`PASS ${reducedMotion}: 24 skills, 3 modifiers, 12 swaps, no-op guards, consumption and reset`);
     await context.close();
   }
   assert.deepEqual(failures, []);

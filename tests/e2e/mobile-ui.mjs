@@ -39,7 +39,7 @@ try {
     await g.page.locator('#formationConfirm').tap();
     await g.step(2);
     assert.equal(await g.choiceTitle(), '대기');
-    assert.equal(await roster.count(), 5, 'front hero excluded from rear roster');
+    assert.equal(await roster.count(), 11, 'front hero excluded from rear roster');
     await g.pick(0);
     await g.step(2);
     await g.act(0);

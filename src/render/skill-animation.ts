@@ -1,9 +1,9 @@
 /** Painted six-frame sequences. Black atlases are intentional additive light passes, not masks. */
 import { HEROES } from '../data/heroes';
 import { G } from '../core/context';
-import { combatProjectileArt } from '../core/assets';
+import { combatProjectileArt, heroCastAnimations } from '../core/assets';
 import { H, W, ctx, reduced } from '../core/dom';
-import { frames, FLIGHT } from '../assets/skill-art';
+import { frames, FLIGHT, heroineSkillSheets } from '../assets/skill-art';
 const groups = [
   ['mancheon', 'yusu', 'art_cheolgap', 'art_cheonma'],
   ['janyoung', 'biyeon', 'muyoung', 'hoeseon'],
@@ -25,6 +25,7 @@ const aliases = {
   blast: 'manryu',
 };
 for (const [id, source] of Object.entries(aliases)) rows[id] = rows[source];
+for (const [id, sheet] of Object.entries(heroineSkillSheets)) rows[id] = [sheet, 0];
 const flightRows: Record<string, number> = {
   mancheon: 0,
   janyoung: 1,
@@ -47,10 +48,16 @@ export function drawSkillFrame(
   alpha = 1,
   angle = 0,
   projectile = false,
+  effectRow = 0,
 ) {
   const entry = rows[id];
   if (!entry) return false;
-  const [sheet, row] = projectile ? [FLIGHT, flightRows[id] ?? 1] : entry;
+  const [sheet, row] =
+    heroineSkillSheets[id] !== undefined
+      ? [heroineSkillSheets[id], projectile ? 1 : effectRow]
+      : projectile
+        ? [FLIGHT, flightRows[id] ?? 1]
+        : entry;
   const im = frames[sheet]?.[row][Math.max(0, Math.min(5, frame))];
   if (!im) return false;
   ctx.save();
@@ -70,6 +77,7 @@ type Cue = {
   age: number;
   duration: number;
   impact: boolean;
+  effectRow?: number;
   follow: boolean;
   owner: number;
   stage: number;
@@ -117,7 +125,8 @@ export function startSwapPose(id: string) {
 export function drawSwapPose(id: string, x: number, y: number, angle: number, alpha: number) {
   if (reduced || !swapPose || swapPose.id !== id || G.time - swapPose.start >= 0.32 || !frames[7]) return false;
   const row: number | undefined = HEROES[id]?.art.swapPose;
-  const im = row === undefined ? null : frames[7][row]?.[Math.min(3, Math.floor((G.time - swapPose.start) / 0.08))];
+  const index = Math.min(3, Math.floor((G.time - swapPose.start) / 0.08));
+  const im = heroCastAnimations[id]?.[index] ?? (row === undefined ? null : frames[7][row]?.[index]);
   if (!im) return false;
   ctx.save();
   ctx.translate(x, y);
@@ -139,7 +148,16 @@ export function clearSkillAnimations() {
  * `area` marks the one cue that shows a whole attack (an area blast). It is never throttled away by the small
  * per-target cues of the same skill: past the per-skill limit it replaces the oldest of them instead.
  */
-export function skillCue(id: string, x: number, y: number, size = 110, impact = false, follow = false, area = false) {
+export function skillCue(
+  id: string,
+  x: number,
+  y: number,
+  size = 110,
+  impact = false,
+  follow = false,
+  area = false,
+  effectRow?: number,
+) {
   if (!rows[id] || !G.state || !frames[0]) return false;
   // Throttle presentation only; no combat timer or game RNG is touched.
   if (!area && cues.some(c => c.id === id && c.impact === impact && c.age < 0.085 && Math.hypot(c.x - x, c.y - y) < 36))
@@ -158,7 +176,8 @@ export function skillCue(id: string, x: number, y: number, size = 110, impact = 
     y,
     size,
     age: 0,
-    duration: impact ? 0.24 : 0.42,
+    duration: impact ? (heroineSkillSheets[id] !== undefined ? 0.3 : 0.24) : 0.42,
+    effectRow,
     impact,
     follow,
     owner: G.state.active,
@@ -209,16 +228,31 @@ export function drawSkillAnimations() {
   drawWashes();
   for (const c of cues) {
     const t = c.age / c.duration;
-    const frame = reduced
-      ? c.impact
-        ? 4
-        : 2
-      : c.impact
-        ? 3 + Math.min(2, Math.floor(t * 3))
-        : Math.min(5, Math.floor(t * 6));
+    const frame =
+      heroineSkillSheets[c.id] !== undefined
+        ? reduced
+          ? 2
+          : Math.min(5, Math.floor(t * 6))
+        : reduced
+          ? c.impact
+            ? 4
+            : 2
+          : c.impact
+            ? 3 + Math.min(2, Math.floor(t * 3))
+            : Math.min(5, Math.floor(t * 6));
     const x = c.follow ? G.player.x : c.x,
       y = c.follow ? G.player.y - 25 : c.y;
-    drawSkillFrame(c.id, frame, x, y, c.size, (reduced ? 0.5 : 0.88) * Math.min(1, (1 - t) * 4));
+    drawSkillFrame(
+      c.id,
+      frame,
+      x,
+      y,
+      c.size,
+      (reduced ? 0.5 : 0.88) * Math.min(1, (1 - t) * 4),
+      0,
+      false,
+      c.effectRow ?? (c.impact ? 2 : 0),
+    );
   }
   if (G.player?.hp <= 0 || !G.state || !['flight', 'boss'].includes(G.state.phase)) return;
   const f = reduced ? 2 : [1, 2, 3, 2][Math.floor(G.time * 6) % 4];
@@ -231,12 +265,12 @@ export function drawSkillAnimations() {
  * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.
  */
 export function drawSkillShot(s: any) {
-  if (flightRows[s.skill] === undefined) return false;
-  const size = s.kind === 'gang' ? Math.max(66, (s.w || 8) * 5) : s.kind === 'orb' ? 54 : 58,
-    frame = reduced ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
+  if (flightRows[s.skill] === undefined && heroineSkillSheets[s.skill] === undefined) return false;
+  const size = s.basic ? 40 : s.kind === 'gang' ? Math.max(66, (s.w || 8) * 5) : s.kind === 'orb' ? 54 : 58,
+    frame = reduced || ['soun', 'seolyeong'].includes(s.skill) ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
     vy = s.vy ?? 900,
     angle = Math.atan2(s.vx, vy);
-  if (!reduced)
+  if (!reduced && !s.basic)
     for (const [back, alpha] of [
       [0.05, 0.22],
       [0.025, 0.42],

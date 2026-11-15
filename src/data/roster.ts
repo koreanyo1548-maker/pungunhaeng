@@ -3,7 +3,20 @@
 // characters join the 뽑기 pool on their own. See docs/adding-characters.md.
 // This file imports nothing, so any module can read the lists without import-order concerns.
 
-export const HERO_IDS = ['pungun', 'cheolhyeol', 'mukyoung', 'bicheon', 'unhak', 'hongryeon'] as const;
+export const HERO_IDS = [
+  'pungun',
+  'cheolhyeol',
+  'mukyoung',
+  'bicheon',
+  'unhak',
+  'hongryeon',
+  'yeoncheong',
+  'cheongwan',
+  'seolyeong',
+  'soun',
+  'yoran',
+  'ayeong',
+] as const;
 export type HeroId = (typeof HERO_IDS)[number];
 
 export const NPC_IDS = ['dosa', 'milsa', 'monk', 'yeonhyeop', 'yakseon', 'uijeok'] as const;
@@ -22,4 +35,7 @@ export type HeroArt = {
   portrait: Cell;
   /** row of skills/swap-poses.png drawn when the hero swaps in; none: no swap pose */
   swapPose?: number;
+  /** Optional dedicated four-frame cast atlas. */
+  cast?: Cell;
+  castScale?: number;
 };

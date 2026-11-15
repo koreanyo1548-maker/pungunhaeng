@@ -365,7 +365,7 @@ async function scenarioE(browser, seed) {
     document.getElementById('hubHeroes').textContent,
     document.getElementById('hubCards').textContent,
   ]);
-  check(f, /\/ 6/.test(hub[0]) && /카드 \d+ \/ 6/.test(hub[1]), `the title shows the new counts (${hub})`);
+  check(f, /\/ 12/.test(hub[0]) && /카드 \d+ \/ 6/.test(hub[1]), `the title shows the new counts (${hub})`);
   // save code: export, wipe, import
   await g.eval(() => document.getElementById('openGacha').click());
   const code = await g.eval(() => document.getElementById('saveCode').value);
@@ -425,8 +425,8 @@ async function scenarioF(browser, seed) {
   );
   check(
     f,
-    tiles.length === 6 && tiles.filter(t => t.locked).length === 4 && !tiles[0].locked && !tiles[1].locked,
-    `영웅 grid: 2 joined, then 4 locked (${tiles.map(t => t.locked)})`,
+    tiles.length === 12 && tiles.filter(t => t.locked).length === 10 && !tiles[0].locked && !tiles[1].locked,
+    `영웅 grid: 2 joined, then 10 locked (${tiles.map(t => t.locked)})`,
   );
   check(
     f,
@@ -451,8 +451,8 @@ async function scenarioF(browser, seed) {
   let cards = await formation();
   check(
     f,
-    cards.length === 6 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
-    `출전: 2 owned first, 4 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
+    cards.length === 12 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
+    `출전: 2 owned first, 10 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
   );
   await g.pick(-1);
   await g.step(2);

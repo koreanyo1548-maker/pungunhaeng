@@ -1,3 +1,4 @@
+import { updateHeroActions } from './hero-actions';
 import { G } from '../core/context';
 import { tone } from '../core/audio';
 import { H, W } from '../core/dom';
@@ -43,6 +44,7 @@ export function update(dt) {
   const old = updatePlayer(dt);
 
   if (!updatePhase(dt)) return;
+  updateHeroActions();
   updateSkills(dt, old);
   if (G.mode !== 'play') return;
   updateShots(dt);

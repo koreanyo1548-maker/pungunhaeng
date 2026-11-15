@@ -192,6 +192,80 @@ try {
     assert.ok(death.fallen && death.noLate);
     console.log('PASS', id, 'art, traits, cast timing, basic shots, lethal auto-swap');
   }
+  // Aim from the actual muzzle: close lateral targets must not have their direction clamped.
+  const aim = await page.evaluate(() => {
+    fixture('ayeong');
+    const { G } = M;
+    G.state.active = 1;
+    const enemy = {
+      x: G.player.x + 100,
+      baseX: G.player.x + 100,
+      y: G.player.y - 40,
+      type: 0,
+      rank: 0,
+      size: 44,
+      phase: 0,
+      hit: 0,
+      row: 1,
+      hp: 999,
+      maxHp: 999,
+      r: 20,
+      dead: false,
+    };
+    G.enemies = [enemy];
+    M.HEROES.ayeong.fx(1, 0);
+    const shot = G.shots[0],
+      cross = (enemy.x - shot.x) * shot.vy - (shot.y - enemy.y) * shot.vx;
+    G.player.fire = 999;
+    G.player.inv = 999;
+    for (let i = 0; i < 30; i++) M.update(0.016);
+    const hp = enemy.hp;
+    fixture('ayeong');
+    G.state.active = 1;
+    G.enemies = [{ ...enemy, x: G.player.x + 100, y: G.player.y - 10, dead: false }];
+    M.HEROES.ayeong.fx(1, 0);
+    return { cross, hp, fallback: { vx: G.shots[0].vx, vy: G.shots[0].vy } };
+  });
+  assert.ok(Math.abs(aim.cross) < 1e-6, 'arrow points at close lateral target from its muzzle');
+  assert.ok(aim.hp < 999, 'close lateral target takes damage in the actual simulation');
+  assert.deepEqual(aim.fallback, { vx: 0, vy: 1050 }, 'target behind muzzle is ignored');
+  for (const id of ['seolyeong', 'soun']) {
+    const effects = await page.evaluate(id => {
+      fixture(id);
+      const { G } = M;
+      G.enemies = [];
+      M.swapHero();
+      G.time += 0.161;
+      M.updateHeroActions();
+      const empty = M.skillAnimationSnapshot().cues;
+      fixture(id);
+      M.swapHero();
+      G.time += 0.161;
+      M.updateHeroActions();
+      const hit = M.skillAnimationSnapshot().cues;
+      return { empty, hit, hp: G.enemies[0].hp, target: { x: G.enemies[0].x, y: G.enemies[0].y } };
+    }, id);
+    assert.ok(
+      effects.empty.some(c => c.effectRow === 1),
+      id + ' retains swing on miss',
+    );
+    assert.ok(
+      effects.empty.every(c => !c.impact),
+      id + ' has no impact without a target',
+    );
+    assert.ok(effects.hp < 10000, id + ' retains area damage');
+    assert.ok(
+      effects.hit.some(c => c.impact),
+      id + ' retains real hit impact',
+    );
+    assert.ok(
+      effects.hit
+        .filter(c => c.impact)
+        .every(c => c.x === effects.target.x && c.y === effects.target.y && c.size === 62),
+      id + ' impacts only at the struck enemy',
+    );
+  }
+  console.log('PASS close lateral aim, forward muzzle targeting, no impact on miss, real hit impacts retained');
   const canceled = await page.evaluate(() => {
     fixture('ayeong');
     const { G } = M;

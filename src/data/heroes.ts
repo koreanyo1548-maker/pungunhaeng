@@ -147,7 +147,7 @@ export const HEROES = {
     fx: (m, L = 0) => {
       const y = G.player.y - 90,
         radius = 145;
-      aoe(G.player.x, y, radius, D() * 7 * m * (1 + 0.1 * L), '#e889a0');
+      aoe(G.player.x, y, radius, D() * 7 * m * (1 + 0.1 * L), '#e889a0', false);
       skillCue('seolyeong', G.player.x, y, radius * 2, false, false, true, 1);
     },
   },
@@ -163,7 +163,7 @@ export const HEROES = {
     tagDesc: '전방을 시간차로 두 번 베어낸다',
     fx: (m, L = 0) => {
       const strike = () => {
-        aoe(G.player.x, G.player.y - 105, 115, D() * 3.5 * m * (1 + 0.1 * L), '#91baff');
+        aoe(G.player.x, G.player.y - 105, 115, D() * 3.5 * m * (1 + 0.1 * L), '#91baff', false);
         skillCue('soun', G.player.x, G.player.y - 105, 230, false, false, true, 1);
       };
       strike();
@@ -202,15 +202,15 @@ export const HEROES = {
     tagDesc: '전방 적을 향해 화살을 세 번 연속 발사한다',
     fx: (m, L = 0) => {
       const arrow = () => {
+        const originX = G.player.x,
+          originY = G.player.y - 34;
         const target = G.enemies
-          .filter(e => targetable(e) && e.y < G.player.y)
-          .sort(
-            (a, b) => Math.hypot(a.x - G.player.x, a.y - G.player.y) - Math.hypot(b.x - G.player.x, b.y - G.player.y),
-          )[0];
-        const dx = target ? target.x - G.player.x : 0,
-          dy = target ? Math.max(40, G.player.y - 34 - target.y) : 900;
+          .filter(e => targetable(e) && e.y < originY)
+          .sort((a, b) => Math.hypot(a.x - originX, a.y - originY) - Math.hypot(b.x - originX, b.y - originY))[0];
+        const dx = target ? target.x - originX : 0,
+          dy = target ? originY - target.y : 900;
         const length = Math.hypot(dx, dy);
-        fireShot(G.player.x, G.player.y - 34, (dx / length) * 1050, D() * 4 * m * (1 + 0.1 * L), {
+        fireShot(originX, originY, (dx / length) * 1050, D() * 4 * m * (1 + 0.1 * L), {
           vy: (dy / length) * 1050,
           color: '#8ed6cc',
         });

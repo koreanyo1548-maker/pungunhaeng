@@ -105,12 +105,13 @@ export function fan(n, spread, dmg, color, kind = 'knife', art?: string) {
     fireShot(G.player.x, G.player.y - 30, Math.sin(a) * 820, dmg, { kind, art, color, vy: Math.cos(a) * 820 });
   }
 }
-export function aoe(x, y, r, dmg, color) {
+/** Area burst is optional when the caller paints a separate swing; real hits always keep their impact cue. */
+export function aoe(x, y, r, dmg, color, areaBurst = true) {
   for (const e of [...G.enemies]) {
     if (e.dead) continue;
     if (Math.hypot(e.x - x, e.y - y) < r + (e.boss ? 40 : e.r * 0.5)) hitEnemy(e, dmg, visualSkill);
   }
-  if (!visualSkill || !skillCue(visualSkill, x, y, r * 2, true, false, true)) {
+  if (areaBurst && (!visualSkill || !skillCue(visualSkill, x, y, r * 2, true, false, true))) {
     paintFX(color === BR.yu.color ? 4 : 2, x, y, r * 2, 0.38, 0, 0, 0.72);
     ring(x, y, color, 10, r, 0.35);
   }

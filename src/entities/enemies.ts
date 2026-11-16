@@ -106,7 +106,7 @@ export function kill(e, byHyper = false) {
   G.state.combo++;
   G.state.comboTimer = 2;
   const dy = G.player.y - e.y,
-    near = e.boss ? 1 : dy < 154 ? 3 : dy < 304 ? 2 : 1,
+    near = e.boss ? 1 : dy < TUNE.nearDy ? 3 : dy < 304 ? 2 : 1,
     mult = Math.min(5, 1 + Math.floor(G.state.combo / 10));
   G.state.score += (e.boss ? 5000 + G.state.stage * 1000 : 100 + e.rank * 65) * near * mult;
   const color = e.boss ? region().color : e.color;

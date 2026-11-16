@@ -10,7 +10,7 @@ export const BR = {
 export const COND = {
   graze: { br: 'yu', label: '스침 (탄·적 곁)' },
   step: { br: 'yu', label: '좌우 전환 (빠르게)' },
-  nearKill: { br: 'gang', label: '근접 처치 (코앞에서)' },
+  nearKill: { br: 'gang', label: '근접 처치 (근접 ×3 거리)' },
   rowClear: { br: 'gang', label: '한 줄 전멸' },
   combo: { br: 'gang', label: '연속 처치' },
 };

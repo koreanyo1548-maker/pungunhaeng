@@ -509,6 +509,40 @@ async function scenarioD(browser, seed) {
     return out;
   });
   check(f, grazes.join() === '1,2', `스침: one enemy beside 1, between two 2 (${grazes})`);
+  // 근접 처치: a kill within the 근접 ×3 line (154px above the player) counts, one further up does not
+  const near = await g.eval(() => {
+    const G = window.__g,
+      st = G.state,
+      out = [];
+    for (const dy of [120, 260]) {
+      G.enemies.length = 0;
+      G.hazards.length = 0;
+      G.player.x = G.player.target = 240;
+      const e = {
+        x: 240,
+        baseX: 240,
+        y: G.player.y - dy,
+        hp: 999,
+        maxHp: 999,
+        type: 1,
+        rank: 0,
+        size: 80,
+        r: 22,
+        phase: 0,
+        hit: 0,
+        dead: false,
+        row: -1,
+      };
+      G.enemies.push(e);
+      const before = st.stats?.nearKill || 0;
+      e.hp = 0.01;
+      G.player.fire = 0;
+      for (let i = 0; i < 30 && !e.dead; i++) window.__step(1);
+      out.push([e.dead, (st.stats?.nearKill || 0) - before]);
+    }
+    return out;
+  });
+  check(f, JSON.stringify(near) === '[[true,1],[true,0]]', `근접 처치 within 154px only (${JSON.stringify(near)})`);
   // a combo 의뢰 counts only the chain after it was accepted (the combo does not run down during a 만남)
   await g.eval(() => {
     const st = window.__g.state;

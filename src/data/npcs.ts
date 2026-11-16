@@ -20,7 +20,7 @@ export const NPCS = {
       {
         say: '바람을 거스르지 말게.',
         follow: { t: 'graze', n: 24 },
-        defy: { t: 'nearKill', n: 22, say: '바람째 베어 버리겠소.' },
+        defy: { t: 'nearKill', n: 12, say: '바람째 베어 버리겠소.' },
       },
       {
         say: '물처럼 흐르게. 막히면 돌아가면 그만이네.',
@@ -61,7 +61,7 @@ export const NPCS = {
     quests: [
       {
         say: '한 걸음도 물러서지 마시게.',
-        follow: { t: 'nearKill', n: 24 },
+        follow: { t: 'nearKill', n: 12 },
         defy: { t: 'step', n: 90, say: '물러서는 것도 보법이오.' },
       },
       {
@@ -104,7 +104,7 @@ export const NPCS = {
       {
         say: '독은 피하는 것이 약이네.',
         follow: { t: 'graze', n: 24 },
-        defy: { t: 'nearKill', n: 22, say: '독은 맞서 베겠소.' },
+        defy: { t: 'nearKill', n: 12, say: '독은 맞서 베겠소.' },
       },
       {
         say: '발을 가볍게 놀려 기혈을 돌려 보게.',
@@ -129,7 +129,7 @@ export const NPCS = {
       },
       {
         say: '붙어서 베어라. 멀리서 쏘는 건 겁쟁이다.',
-        follow: { t: 'nearKill', n: 24 },
+        follow: { t: 'nearKill', n: 12 },
         defy: { t: 'combo', n: 40, say: '끊김 없이 베어 증명하겠소.' },
       },
     ],

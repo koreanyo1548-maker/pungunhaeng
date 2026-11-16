@@ -4,7 +4,8 @@ export const TUNE = {
   earlyRock: 0.12,
   earlyRockHp: 14,
   openingGap: 0.35,
-  nearDy: 90,
+  /** 근접 처치: a kill this close above the player (px). The same line gives the ×3 score (`근접 ×3`). */
+  nearDy: 154,
   /** 운해 stages: free up-down flight. Off: every stage moves left-right only (kept for later). */
   freeFlight: false,
   skyMinY: 330,

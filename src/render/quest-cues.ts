@@ -63,7 +63,7 @@ export function drawQuestCue() {
     ctx.fillStyle = c;
     ctx.font = 'bold 11px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText('코앞', 8, y - 5);
+    ctx.fillText('근접 ×3', 8, y - 5);
   } else if (q.t === 'rowClear') {
     let low = null;
     for (const e of G.enemies) {

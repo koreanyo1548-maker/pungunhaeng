@@ -1,3 +1,5 @@
+import { queueHeroAction } from '../systems/hero-actions';
+import { skillCue } from '../render/skill-animation';
 import { G } from '../core/context';
 import { targetable } from '../entities/enemies';
 import { ring } from '../render/fx';
@@ -101,4 +103,131 @@ export const HEROES = {
     tagDesc: '부채꼴로 비도를 흩뿌린다',
     fx: (m, L = 0) => fan(5 + 4 * m + L, 0.15, D() * 1.8, '#ff8fb0'),
   },
+  yeoncheong: {
+    art: heroineArt(0),
+    name: '황연청',
+    terrain: 'ground',
+    tint: null,
+    color: '#9ddca8',
+    trait: '영민',
+    traitDesc: (L = 0) => `기본 공격 속도 +${12 + 2 * L}%, 필살기 충전 +${15 + 3 * L}%`,
+    tag: '탄지비침',
+    tagDesc: '부채꼴로 은침 7줄기를 발사한다',
+    fx: (m, L = 0) => fan(7, 0.12, D() * 2 * m * (1 + 0.1 * L), '#9ddca8'),
+  },
+  cheongwan: {
+    art: heroineArt(1),
+    name: '목청완',
+    terrain: 'ground',
+    tint: null,
+    color: '#e8ae88',
+    trait: '일점관통',
+    traitDesc: (L = 0) => `공격력 +${20 + 4 * L}%`,
+    tag: '회마관창',
+    tagDesc: '전방 한 줄을 강하게 관통하는 창격',
+    fx: (m, L = 0) =>
+      fireShot(G.player.x, G.player.y - 42, 0, D() * 10 * m * (1 + 0.1 * L), {
+        kind: 'gang',
+        pierce: true,
+        w: 16,
+        vy: 1100,
+        color: '#e8ae88',
+      }),
+  },
+  seolyeong: {
+    art: heroineArt(2),
+    name: '매설영',
+    terrain: 'ground',
+    tint: null,
+    color: '#e889a0',
+    trait: '음풍보',
+    traitDesc: (L = 0) => `스침 판정 +${25 + 4 * L}%, 공격력 +${10 + 2 * L}%`,
+    tag: '음풍편',
+    tagDesc: '전방 가까운 적들을 채찍으로 휩쓴다',
+    fx: (m, L = 0) => {
+      const y = G.player.y - 90,
+        radius = 145;
+      aoe(G.player.x, y, radius, D() * 7 * m * (1 + 0.1 * L), '#e889a0', false);
+      skillCue('seolyeong', G.player.x, y, radius * 2, false, false, true, 1);
+    },
+  },
+  soun: {
+    art: heroineArt(3),
+    name: '한소운',
+    terrain: 'ground',
+    tint: null,
+    color: '#91baff',
+    trait: '쾌검',
+    traitDesc: (L = 0) => `기본 공격 속도 +${20 + 3 * L}%`,
+    tag: '쌍연참',
+    tagDesc: '전방을 시간차로 두 번 베어낸다',
+    fx: (m, L = 0) => {
+      const strike = () => {
+        aoe(G.player.x, G.player.y - 105, 115, D() * 3.5 * m * (1 + 0.1 * L), '#91baff', false);
+        skillCue('soun', G.player.x, G.player.y - 105, 230, false, false, true, 1);
+      };
+      strike();
+      queueHeroAction('soun', 0.18, strike);
+    },
+  },
+  yoran: {
+    art: heroineArt(4),
+    name: '정요란',
+    terrain: 'ground',
+    tint: null,
+    color: '#eee5c7',
+    trait: '정심',
+    traitDesc: (L = 0) => `필살기 충전 +${30 + 5 * L}%`,
+    tag: '정심반격',
+    tagDesc: '근처 탄을 지우고 곧은 검기로 반격한다',
+    fx: (m, L = 0) => {
+      clearBullets(G.player.x, G.player.y, 110 + 20 * m);
+      fireShot(G.player.x, G.player.y - 40, 0, D() * 5 * m * (1 + 0.1 * L), {
+        kind: 'gang',
+        pierce: true,
+        w: 12,
+        color: '#eee5c7',
+      });
+    },
+  },
+  ayeong: {
+    art: heroineArt(5),
+    name: '아영',
+    terrain: 'ground',
+    tint: null,
+    color: '#8ed6cc',
+    trait: '명궁',
+    traitDesc: (L = 0) => `공격력 +${15 + 3 * L}%, 기본 공격 속도 +${8 + L}%`,
+    tag: '삼연시',
+    tagDesc: '전방 적을 향해 화살을 세 번 연속 발사한다',
+    fx: (m, L = 0) => {
+      const arrow = () => {
+        const originX = G.player.x,
+          originY = G.player.y - 34;
+        const target = G.enemies
+          .filter(e => targetable(e) && e.y < originY)
+          .sort((a, b) => Math.hypot(a.x - originX, a.y - originY) - Math.hypot(b.x - originX, b.y - originY))[0];
+        const dx = target ? target.x - originX : 0,
+          dy = target ? originY - target.y : 900;
+        const length = Math.hypot(dx, dy);
+        fireShot(originX, originY, (dx / length) * 1050, D() * 4 * m * (1 + 0.1 * L), {
+          vy: (dy / length) * 1050,
+          color: '#8ed6cc',
+        });
+      };
+      arrow();
+      queueHeroAction('ayeong', 0.12, arrow);
+      queueHeroAction('ayeong', 0.24, arrow);
+    },
+  },
 } satisfies Record<HeroId, { name: string; art: HeroArt; [key: string]: unknown }>;
+
+function heroineArt(index: number): HeroArt {
+  const group = index < 3 ? 'a' : 'b';
+  return {
+    frames: { sheet: `heroines/run-${group}`, row: index % 3 },
+    portrait: { sheet: 'heroines/portraits', col: index % 3, row: Math.floor(index / 3) },
+    cast: { sheet: `heroines/cast-${group}`, row: index % 3 },
+    castScale: 1,
+  };
+}

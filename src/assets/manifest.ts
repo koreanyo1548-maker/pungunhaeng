@@ -45,3 +45,10 @@ const characterArt = import.meta.glob('./images/characters/*.png', { eager: true
 >;
 for (const [path, url] of Object.entries(characterArt))
   IMG['characters/' + path.slice(path.lastIndexOf('/') + 1, -'.png'.length)] = url;
+
+const heroineArt = import.meta.glob('./images/heroines/*.png', { eager: true, import: 'default' }) as Record<
+  string,
+  string
+>;
+for (const [path, url] of Object.entries(heroineArt))
+  IMG['heroines/' + path.slice(path.lastIndexOf('/') + 1, -4)] = url;

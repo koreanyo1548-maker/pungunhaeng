@@ -130,6 +130,7 @@ export interface Shot {
   phase: number;
   art?: string;
   skill?: string;
+  basic?: boolean;
   color?: string;
   pierce?: boolean;
   w?: number;

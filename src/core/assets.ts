@@ -70,6 +70,11 @@ export const SHEET_GRIDS: Record<string, [number, number]> = {
   'hero-fly': [4, 3],
   portraits: [3, 2],
   'npc-portraits': [3, 2],
+  'heroines/portraits': [3, 2],
+  'heroines/run-a': [4, 3],
+  'heroines/run-b': [4, 3],
+  'heroines/cast-a': [4, 3],
+  'heroines/cast-b': [4, 3],
 };
 const gridOf = (sheet: string, frames: boolean) => SHEET_GRIDS[sheet] ?? (frames ? [4, 1] : [1, 1]);
 function cut(sheets: Map<string, HTMLImageElement>, cell: Cell, frames: boolean, col = cell.col ?? 0) {
@@ -79,7 +84,11 @@ function cut(sheets: Map<string, HTMLImageElement>, cell: Cell, frames: boolean,
 /** Every character's pictures, from the cells their data names (data/heroes.ts, data/npcs.ts). */
 async function loadCharacterArt() {
   const cells: Cell[] = [
-    ...HERO_IDS.flatMap(id => [HEROES[id].art.frames, HEROES[id].art.portrait]),
+    ...HERO_IDS.flatMap(id => [
+      HEROES[id].art.frames,
+      HEROES[id].art.portrait,
+      ...('cast' in HEROES[id].art ? [HEROES[id].art.cast] : []),
+    ]),
     ...NPC_IDS.map(id => NPCS[id].art),
   ];
   const sheets = new Map<string, HTMLImageElement>();
@@ -90,12 +99,14 @@ async function loadCharacterArt() {
     }),
   );
   for (const id of HERO_IDS) {
-    const art = HEROES[id].art;
+    const art: import('../data/roster').HeroArt = HEROES[id].art;
+    if (art.cast) heroCastAnimations[id] = [0, 1, 2, 3].map(col => cut(sheets, art.cast, true, col));
     heroAnimations[id] = [0, 1, 2, 3].map(col => cut(sheets, art.frames, true, col));
     heroPictures[id] = cut(sheets, art.portrait, false).toDataURL();
   }
   for (const id of NPC_IDS) npcPictures[id] = cut(sheets, NPCS[id].art, false).toDataURL();
 }
+export const heroCastAnimations: Record<string, HTMLCanvasElement[]> = {};
 export const heroAnimations: Record<string, any> = {},
   heroPictures: Record<string, string> = {},
   npcPictures: Record<string, string> = {},

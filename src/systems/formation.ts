@@ -1,3 +1,4 @@
+import { queueHeroAction, clearHeroActions } from './hero-actions';
 import { heroCanFight } from '../core/hero-health';
 import { skillCue, skillAura, startSwapPose } from '../render/skill-animation';
 import { withSkill } from '../core/skill-context';
@@ -28,10 +29,12 @@ export function heroLevel(id = activeHeroId()) {
 // A trait's strength at the active hero's 성급, or its neutral value when the trait is off.
 // The per-level steps match the text in data/heroes.ts.
 export const traitPower = () =>
-  traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower + 0.04 * heroLevel() : 1;
-export const traitCharge = () => (traitOn('unhak') ? TUNE.traitCharge + 0.05 * heroLevel() : 1);
-export const traitGraze = () => (traitOn('mukyoung') ? TUNE.traitGraze + 0.05 * heroLevel() : 1);
-export const traitFire = () => (traitOn('hongryeon') ? TUNE.traitFire + 0.03 * heroLevel() : 1);
+  traitOn('cheolhyeol') || traitOn('bicheon') ? TUNE.traitPower + 0.04 * heroLevel() : 1 + heroineTrait('power');
+export const traitCharge = () =>
+  traitOn('unhak') ? TUNE.traitCharge + 0.05 * heroLevel() : 1 + heroineTrait('charge');
+export const traitGraze = () =>
+  traitOn('mukyoung') ? TUNE.traitGraze + 0.05 * heroLevel() : 1 + heroineTrait('graze');
+export const traitFire = () => (traitOn('hongryeon') ? TUNE.traitFire + 0.03 * heroLevel() : 1 + heroineTrait('fire'));
 /** 풍운객: 필살기 충전 for a close kill, or 0 when the trait is off. */
 export const traitNearCharge = () => (traitOn('pungun') ? 5 + heroLevel() : 0);
 export function traitOn(id) {
@@ -63,6 +66,7 @@ function enterReserve(automatic: boolean) {
     rescue = G.time - G.state.lastHurt < 1.5,
     opening = !!boss && boss.action === 'recover',
     m = !automatic && (rescue || opening) ? 2 : 1;
+  clearHeroActions();
   G.afterimages = [];
   G.state.active = 1 - G.state.active;
   G.state.swapReady = G.time + swapCooldown();
@@ -73,7 +77,10 @@ function enterReserve(automatic: boolean) {
     burst(G.player.x, G.player.y, h.color, m > 1 ? 30 : 16, 220);
   }
   startSwapPose(activeHeroId());
-  withSkill(activeHeroId(), () => h.fx(m, heroLevel()));
+  const id = activeHeroId(),
+    level = heroLevel();
+  if ('cast' in h.art && h.art.cast) queueHeroAction(id, 0.16, () => h.fx(m, level));
+  else withSkill(id, () => h.fx(m, level));
   skillCue(activeHeroId(), G.player.x, G.player.y - 30, m > 1 ? 170 : 125);
   if (activeHeroId() === 'mukyoung') skillAura('mukyoung', 0.6 * m + 0.2);
 
@@ -96,4 +103,18 @@ function enterReserve(automatic: boolean) {
   G.state.swaps = (G.state.swaps || 0) + 1;
   if (m > 1) G.state.combos2 = (G.state.combos2 || 0) + 1;
   syncHUD();
+}
+
+const heroineTraits: Record<string, Partial<Record<'power' | 'charge' | 'graze' | 'fire', [number, number]>>> = {
+  yeoncheong: { fire: [0.12, 0.02], charge: [0.15, 0.03] },
+  cheongwan: { power: [0.2, 0.04] },
+  seolyeong: { graze: [0.25, 0.04], power: [0.1, 0.02] },
+  soun: { fire: [0.2, 0.03] },
+  yoran: { charge: [0.3, 0.05] },
+  ayeong: { power: [0.15, 0.03], fire: [0.08, 0.01] },
+};
+function heroineTrait(kind: 'power' | 'charge' | 'graze' | 'fire') {
+  const id = activeHeroId(),
+    value = heroineTraits[id]?.[kind];
+  return value && traitOn(id) ? value[0] + value[1] * heroLevel() : 0;
 }

@@ -1,3 +1,4 @@
+import { IMG } from './manifest';
 import { loadImage } from '../core/image';
 import signature from './images/skills/signature.png';
 import movement from './images/skills/movement.png';
@@ -8,7 +9,20 @@ import secret from './images/skills/secret.png';
 import flight from './images/skills/flight.png';
 import swapPoses from './images/skills/swap-poses.png';
 
-const sheets = [signature, movement, attack, passive, energy, secret, flight, swapPoses];
+export const heroineSkillSheets: Record<string, number> = Object.fromEntries(
+  ['yeoncheong', 'cheongwan', 'seolyeong', 'soun', 'yoran', 'ayeong'].map((id, i) => [id, 8 + i]),
+);
+const sheets = [
+  signature,
+  movement,
+  attack,
+  passive,
+  energy,
+  secret,
+  flight,
+  swapPoses,
+  ...Object.keys(heroineSkillSheets).map(id => IMG[`heroines/skill-${id}`]),
+];
 // [columns, rows] of each sheet, in the order above
 const grids = [
   [6, 4],
@@ -19,6 +33,7 @@ const grids = [
   [6, 4],
   [6, 6],
   [4, 6],
+  ...Object.keys(heroineSkillSheets).map(() => [6, 3]),
 ];
 // The generated flight sheet is not on an exact grid: its columns sit this many source pixels right of their
 // cell centres (measured; the same in every row). Cropping with it keeps a looping projectile from wobbling.
@@ -39,6 +54,14 @@ function slice(im: HTMLImageElement, sheet: number) {
       const c = document.createElement('canvas');
       c.width = Math.round(w - 4);
       c.height = Math.round(h - 4);
+      if (sheet >= 8) {
+        const x = Math.round(col * w),
+          y = Math.round(row * h);
+        c.width = Math.round((col + 1) * w) - x;
+        c.height = Math.round((row + 1) * h) - y;
+        c.getContext('2d').drawImage(im, x, y, c.width, c.height, 0, 0, c.width, c.height);
+        return c;
+      }
       const dx = sheet === FLIGHT ? FLIGHT_DX[col] : 0;
       c.getContext('2d').drawImage(im, col * w + 2 + dx, row * h + 2, w - 4, h - 4, 0, 0, c.width, c.height);
       return c;

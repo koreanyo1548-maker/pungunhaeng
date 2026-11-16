@@ -1,3 +1,4 @@
+import { clearHeroActions } from './hero-actions';
 import { createRunState, createPlayer, createRunTransient } from '../core/run-state';
 import { clearSkillAnimations } from '../render/skill-animation';
 import { clearCallouts } from '../render/callout';
@@ -49,6 +50,7 @@ export function start() {
   Object.assign(G, createRunTransient());
   clearPfx();
   clearSkillAnimations();
+  clearHeroActions();
   clearCallouts();
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();

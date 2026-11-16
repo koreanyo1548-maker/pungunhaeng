@@ -79,6 +79,8 @@ export function shoot() {
       r: 5,
       kind: G.player.weapon === 2 && x !== 0 ? 'knife' : G.player.weapon === 3 ? 'sword' : 'qi',
       phase: G.time,
+      skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
+      basic: true,
     });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);
 }

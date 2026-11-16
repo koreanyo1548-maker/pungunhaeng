@@ -4,7 +4,7 @@ import { G } from '../core/context';
 import { hitEnemy } from '../entities/enemies';
 import { loadProfile, profile } from '../core/profile';
 import { learn, trig } from '../systems/abilities';
-import { swapHero } from '../systems/formation';
+import { damagePlayer } from '../entities/player';
 import { questEvent } from '../systems/quest';
 
 if (location.hash.includes('debug'))
@@ -62,9 +62,18 @@ if (location.hash.includes('debug'))
         health.maxHp = health.hp = 99;
       }
     },
-    swapHero,
-    setSwap() {
-      G.state.swapReady = 0;
-      syncHUD();
+    /** the running entry skill (systems/hero-effects.ts), for tests */
+    get effect() {
+      return G.state?.effect ?? null;
+    },
+    /** fell the hero who is fighting, as a lethal hit would (the second hero enters) */
+    fell() {
+      G.player.inv = 0;
+      G.state.hyper = 0;
+      G.state.effect = null;
+      G.player.shield = 0;
+      G.state.negate = false;
+      G.player.hp = 1;
+      damagePlayer();
     },
   };

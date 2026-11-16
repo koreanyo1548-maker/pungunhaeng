@@ -36,7 +36,7 @@
 ## 검토 산출물과 검사
 
 - `node tools/build-skill-gallery.mjs`: 원화 8시트를 포함한 오프라인 검토 HTML. 재생/정지, 프레임 선택, 배경 밝기, 재생 속도 조절. 파일 기본 경로 `/workspace/artifacts/skill-animation-gallery.html`.
-- `node tests/e2e/skill-art.mjs`: Vite를 직접 실행하여 일반/동작 줄이기에서 24개 기술, 3개 조합, 6명 교체를 검사한다. 무효 발동·보호막 소진·문맥 복귀·재시작을 확인한다. `SCREENSHOT_DIR`로 캡처 경로 지정 가능.
+- `node tests/e2e/skill-art.mjs`: Vite를 직접 실행하여 일반/동작 줄이기에서 24개 기술, 3개 조합, 12명 등장을 검사한다(수동 교체는 없어졌고 교체 자세는 등장 때 쓴다). 무효 발동·보호막 소진·문맥 복귀·재시작을 확인한다. `SCREENSHOT_DIR`로 캡처 경로 지정 가능.
 - `npm test`, `npm run test:ui`, 일반 빌드, 이전 HTML과 동일 입력 비교를 수행한다.
 - 기술별 정지 화면과 실제 전투 재생 영상은 첫 검토 자료다. 게임 상태가 같다는 자동 검사가 연출의 미적 완성도를 보장하지는 않는다.
 

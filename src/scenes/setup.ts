@@ -36,9 +36,20 @@ export function starLine(id: HeroId) {
   return `<span class="mastery"><i class="stars">${starText(stars)}</i> 성급 ${stars} · ${next}</span>`;
 }
 export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
-export function heroCard(id, slot) {
+/** "특성 「질풍」 근접 처치 시 …" with its scope; a trait that waits for a later step says so. */
+export function traitText(id: HeroId, L: number) {
+  const t = HEROES[id].trait;
+  return `<b>특성 「${t.name}」</b> ${t.desc(L)}${t.pending ? ` <i>(${t.pending})</i>` : ''}`;
+}
+/** "등장 기술 「불굴」 15초 · …": what the hero does when entering as the second of the party. */
+export function entryText(id: HeroId, L: number) {
+  const e = HEROES[id].entry,
+    s = e.seconds(L);
+  return `<b>등장 기술 「${e.name}」</b> ${s ? s + '초 · ' : ''}${e.desc(L)}`;
+}
+const scopeLabel = (id: HeroId) => (HEROES[id].trait.scope === 'party' ? '지원 · 편대 전체' : '싸우는 동안');
+export function heroCard(id: HeroId, slot: number) {
   const h = HEROES[id],
-    ok = h.terrain === G.state.course,
     locked = !heroOwned(id),
     level = G.state.meta.heroes[id];
   if (locked)
@@ -47,21 +58,21 @@ export function heroCard(id, slot) {
       artClass: 'hero-choice-art',
       color: h.color,
       locked: true,
-      tag: '잠김 · ' + (h.terrain === 'ground' ? '땅' : '하늘') + '의 고수',
+      tag: '잠김 · ' + h.projectile,
       title: h.name,
       fullArt: heroAnimations[id][0].toDataURL(),
-      detail: `<b>합류</b> ${LOCKED_HOW}<br><b>특성 「${h.trait}」</b> ${h.traitDesc(0)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
+      detail: `<b>합류</b> ${LOCKED_HOW}<br>${traitText(id, 0)}<br>${entryText(id, 0)}`,
       onPick: () => {},
     };
   return {
     image: heroPictures[id],
     artClass: 'hero-choice-art',
     color: h.color,
-    tag: (h.terrain === 'ground' ? '땅' : '하늘') + '의 고수' + (ok ? ' · 이 길에 맞음' : ' · 이 길에서는 특성 미발동'),
+    tag: h.projectile + ' · 특성 ' + scopeLabel(id),
     title: h.name,
-    desc: `<span class="hero-role"><img alt="" src="${id === 'mukyoung' ? dodge : id === 'unhak' ? energy : strike}">${id === 'mukyoung' ? '회피' : id === 'unhak' ? '필살' : '공격'}</span>${h.traitDesc(level)}`,
+    desc: `<span class="hero-role"><img alt="" src="${h.trait.scope === 'party' ? energy : strike}">${h.trait.scope === 'party' ? '지원' : '특성'}</span>${h.trait.desc(level)}`,
     fullArt: heroAnimations[id][0].toDataURL(),
-    detail: `${starLine(id)}<b>특성 「${h.trait}」</b> ${h.traitDesc(level)}<br><b>교체 기술 「${h.tag}」</b> ${h.tagDesc}`,
+    detail: `${starLine(id)}${traitText(id, level)}<br>${entryText(id, level)}`,
     onPick: () => {
       G.state.formation[slot] = id;
       if (slot === 1) G.state.active = 0;
@@ -72,20 +83,16 @@ export function heroCard(id, slot) {
 export function openFormation(slot) {
   const ids = [...HERO_IDS]
     .filter(id => slot === 0 || id !== G.state.formation[0])
-    // owned heroes first, then the ones that fit this road (the sort is stable, so ties keep the roster order)
-    .sort(
-      (a, b) =>
-        Number(heroOwned(b)) - Number(heroOwned(a)) ||
-        Number(HEROES[b].terrain === G.state.course) - Number(HEROES[a].terrain === G.state.course),
-    );
+    // owned heroes first (the sort is stable, so ties keep the roster order)
+    .sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
   openChoice({
-    confirm: (slot === 0 ? '출전으로' : '대기로') + ' 선택',
+    confirm: (slot === 0 ? '선봉으로' : '후발로') + ' 선택',
     eyebrow: '편대 편성 · ' + (slot + 1) + ' / 2',
-    title: slot === 0 ? '출전' : '대기',
+    title: slot === 0 ? '선봉' : '후발',
     sub:
       slot === 0
-        ? '각 영웅은 체력 1로 시작한다. 쓰러지면 대기 영웅이 자동 출전한다. 얻은 기술은 편대가 함께 쓴다.'
-        : '교체로 들어올 고수를 고른다. 쓰러진 영웅은 이번 판에 다시 출전할 수 없다. 교체 버튼으로도 바꿀 수 있다. 맞은 직후나 보스의 빈틈에 바꾸면 교체 기술이 두 배로 강해진다.',
+        ? '먼저 싸울 고수를 고른다. 특성은 싸우는 동안 켜진다. 각 영웅은 체력 1로 시작하고, 얻은 기술은 편대가 함께 쓴다.'
+        : '선봉이 쓰러지면 나설 고수를 고른다. 나서는 순간 등장 기술이 펼쳐진다. 지원형의 특성은 대기 중에도 편대 전체에 켜진다.',
     cards: ids.map(id => heroCard(id, slot)),
   });
 }

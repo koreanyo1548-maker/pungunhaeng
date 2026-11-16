@@ -67,7 +67,6 @@ async function run(file, seed, steps, course, frameMs) {
       held = want;
     }
     if (k % 97 === 50) await page.keyboard.press(' ');
-    if (k % 151 === 80) await page.keyboard.press('q');
     if (k % 23 === 11 && course === 1) await page.keyboard.press('ArrowUp');
     await page.evaluate(n => window.__step(n), Math.round(100 / frameMs));
     if (k % 40 === 0)

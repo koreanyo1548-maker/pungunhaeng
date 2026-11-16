@@ -1,3 +1,4 @@
+import { applyStartTraits } from './hero-effects';
 import { buildStagePlan, isFinal } from './run-plan';
 // Run flow as a scene state machine. Every screen of a run is a scene. A scene only reports that it finished
 // (done), and this file alone decides what comes next, so changing the order of a run — e.g. an endless mode that
@@ -66,7 +67,9 @@ export function done(scene: Scene, outcome?: any): void {
       G.state.plan = buildStagePlan(G.state.course);
       return go('formation', 0);
     case 'formation': // outcome: the slot that was just filled
-      return outcome === 0 ? go('formation', 1) : go(gate());
+      if (outcome === 0) return go('formation', 1);
+      applyStartTraits();
+      return go(gate());
     case 'crossroads':
     case 'finalGate':
       return go('stage');

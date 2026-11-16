@@ -242,15 +242,24 @@ try {
     for (const hero of await page.evaluate(() => Object.keys(M.HEROES))) {
       await page.evaluate(hero => {
         resetArtCase();
-        M.G.state.formation = ['pungun', hero];
-        M.G.state.swapReady = 0;
-        M.swapHero();
+        // the vanguard falls and this hero enters: entry pose, entry skill and its look
+        const first = hero === 'pungun' ? 'hongryeon' : 'pungun';
+        for (const h of Object.values(M.G.state.heroHealth)) Object.assign(h, { hp: 1, maxHp: 1, fallen: false });
+        M.G.state.effect = null;
+        M.G.state.formation = [first, hero];
+        M.G.state.active = 0;
+        M.G.player.inv = 0;
+        M.G.state.hyper = 0;
+        M.G.player.hp = 1;
+        M.damagePlayer();
+        if (M.G.state.formation[M.G.state.active] !== hero || !M.G.state.effect)
+          throw new Error('no entry for ' + hero);
         M.updateSkillAnimations(0.12);
         M.draw();
       }, hero);
-      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/swap-${hero}.png` });
+      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/entry-${hero}.png` });
     }
-    console.log(`PASS ${reducedMotion}: 24 skills, 3 modifiers, 12 swaps, no-op guards, consumption and reset`);
+    console.log(`PASS ${reducedMotion}: 24 skills, 3 modifiers, 12 entries, no-op guards, consumption and reset`);
     await context.close();
   }
   assert.deepEqual(failures, []);

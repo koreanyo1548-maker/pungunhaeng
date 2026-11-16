@@ -1,4 +1,3 @@
-import { updateHeroActions } from './hero-actions';
 import { G } from '../core/context';
 import { tone } from '../core/audio';
 import { H, W } from '../core/dom';
@@ -16,7 +15,7 @@ import { hasSkill } from './skill-state';
 import { graze, grazeEnemy } from './combat';
 import { difficulty } from './flow';
 import { donoBeat, updatePhase } from './stage-phases';
-import { traitFire, traitGraze } from './formation';
+import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
 import { syncHUD } from '../ui/hud';
 
 export function update(dt) {
@@ -44,7 +43,8 @@ export function update(dt) {
   const old = updatePlayer(dt);
 
   if (!updatePhase(dt)) return;
-  updateHeroActions();
+  updateHeroEffect(dt);
+  if (G.mode !== 'play') return;
   updateSkills(dt, old);
   if (G.mode !== 'play') return;
   updateShots(dt);
@@ -77,7 +77,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += 0.148 / traitFire();
+    G.player.fire += 0.148;
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -93,12 +93,19 @@ function updateShots(dt: number): void {
     }
     s.y -= dt * (s.vy ?? 900);
     s.x += s.vx * dt;
+    if (s.erase && eraseHazard(s)) continue;
     for (const e of G.enemies) {
       if (e.dead || (e.boss && ['enter', 'return'].includes(e.action)) || s.hits?.has(e)) continue;
       const r = (e.boss ? 58 : e.r) + (s.w || 0);
       if (Math.abs(s.x - e.x) < r && s.prevY >= e.y - r && s.y <= e.y + r) {
         hitEnemy(e, s.damage, s.skill);
         if (s.pierce) {
+          (s.hits ??= new Set()).add(e);
+          continue;
+        }
+        if (s.pierceLeft > 0) {
+          // 목청완: the shot goes through this many enemies before it stops
+          s.pierceLeft--;
           (s.hits ??= new Set()).add(e);
           continue;
         }
@@ -114,6 +121,20 @@ function updateShots(dt: number): void {
   }
 }
 
+/** A shot that erases hazards (비천's basic shots, 은침 ★5) removes the first one it touches and is spent. */
+function eraseHazard(s): boolean {
+  for (const h of G.hazards) {
+    if (h.dead || h.warn > 0) continue;
+    if (Math.abs(h.x - s.x) < h.r + 8 && Math.abs(h.y - s.y) < h.r + 14) {
+      h.dead = true;
+      s.dead = true;
+      burst(h.x, h.y, s.color || '#7fe6cf', 5, 90);
+      return true;
+    }
+  }
+  return false;
+}
+
 function updateEnemies(dt: number): boolean {
   for (const e of G.enemies) {
     if (e.dead) continue;
@@ -124,7 +145,7 @@ function updateEnemies(dt: number): boolean {
       if (G.mode !== 'play') return false;
       continue;
     }
-    e.y += dt * (G.state.hyper > 0 ? 670 : 190 + Math.min(difficulty() * 22 + G.state.stageTime, 130));
+    e.y += dt * (G.state.hyper > 0 ? 670 : 190 + Math.min(difficulty() * 22 + G.state.stageTime, 130)) * enemySpeed();
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);
@@ -135,7 +156,7 @@ function updateEnemies(dt: number): boolean {
       G.player.hp > 0 &&
       Math.abs(e.y - G.player.y) < e.r + 12 &&
       Math.abs(e.x - G.player.x) >= e.r + 10 &&
-      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze() * 1.15
+      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach() * 1.15
     ) {
       const mate = G.enemies.find(
         o =>
@@ -145,7 +166,7 @@ function updateEnemies(dt: number): boolean {
           !o.grazed &&
           Math.sign(o.x - G.player.x) !== Math.sign(e.x - G.player.x) &&
           Math.abs(o.x - G.player.x) <
-            o.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze() * 1.15,
+            o.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach() * 1.15,
       );
       if (mate) {
         e.grazed = mate.grazed = true;
@@ -167,14 +188,15 @@ function updateEnemies(dt: number): boolean {
 }
 
 function updateHazards(dt: number): boolean {
-  const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * traitGraze();
+  const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach();
   for (const h of G.hazards) {
     if (h.warn > 0) {
       h.warn -= dt;
       continue;
     }
-    h.y += h.vy * dt;
-    h.x += (h.vx || 0) * dt;
+    const slow = hazardSpeed();
+    h.y += h.vy * dt * slow;
+    h.x += (h.vx || 0) * dt * slow;
     const d = Math.hypot(h.x - G.player.x, h.y - G.player.y);
     if (!h.grazed && !h.dead && d >= h.r + 10 && d < h.r + 10 + grazeR && G.player.hp > 0) {
       graze(h);
@@ -199,7 +221,8 @@ function updatePickups(dt: number): void {
     const dx = G.player.x - p.x,
       dy = G.player.y - p.y,
       dist = Math.hypot(dx, dy),
-      attract = p.kind === 'coin' ? dist < 150 || G.state.hyper > 0 : dist < 65;
+      reach = magnetReach(),
+      attract = p.kind === 'coin' ? dist < 150 * reach || G.state.hyper > 0 : dist < 65 * reach;
     if (attract) {
       const v = p.kind === 'coin' ? 600 : 260;
       p.x += (dx / Math.max(1, dist)) * Math.min(v * dt, dist);

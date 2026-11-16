@@ -10,9 +10,6 @@ import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
 import { LOCKED_HOW } from './setup';
 
-const ROLE = { mukyoung: '회피', unhak: '필살' };
-const road = (id: HeroId) => (HEROES[id].terrain === 'ground' ? '땅' : '하늘');
-
 /** [pieces held, pieces the next 성급 needs] (the last 성급 counts as full) */
 function toNext(id: HeroId): [number, number] {
   const pieces = profile.heroes[id],
@@ -39,16 +36,27 @@ function tile(id: HeroId): Tile {
 function detail(id: HeroId): Detail {
   const h = HEROES[id],
     stars = heroStars(id),
-    caption = `${road(id)}의 고수 · ${ROLE[id] ?? '공격'}`;
+    L = Math.max(0, stars - 1),
+    caption = `${h.projectile} · ${h.trait.scope === 'party' ? '지원형 (특성이 편대 전체에)' : '특성은 싸우는 동안'}`;
+  const seconds = h.entry.seconds(L);
   const sections = [
-    { title: `특성 「${h.trait}」`, body: h.traitDesc(Math.max(0, stars - 1)) },
-    { title: `교체 기술 「${h.tag}」`, body: h.tagDesc },
+    {
+      title: `특성 「${h.trait.name}」`,
+      body: h.trait.desc(L) + (h.trait.pending ? ` (${h.trait.pending})` : ''),
+    },
+    {
+      title: `등장 기술 「${h.entry.name}」 · 후발로 나설 때`,
+      body: (seconds ? seconds + '초 · ' : '') + h.entry.desc(L),
+    },
   ];
   const track = {
-    title: '성급 · 뽑기에서 같은 영웅의 조각을 모으면 오른다',
+    title: '성급 · 뽑기에서 같은 영웅의 조각을 모으면 오른다 (★3·★5에서 등장 기술 모양이 바뀜)',
     steps: PIECE_STEPS.map((need, i) => ({
       label: `★${i + 1}`,
-      text: `조각 ${need}개 · ${i ? h.traitDesc(i) : '합류 · ' + h.traitDesc(0)}`,
+      text:
+        `조각 ${need}개 · ${i ? '' : '합류 · '}${h.trait.desc(i)}` +
+        (h.entry.seconds(i) ? ` · 등장 ${h.entry.seconds(i)}초` : '') +
+        (i === 2 || i === 4 ? ` · ${h.entry.name} 강화` : ''),
       state: (i + 1 < stars ? 'done' : i + 1 === stars ? 'current' : 'next') as 'done' | 'current' | 'next',
     })),
   };

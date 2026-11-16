@@ -18,8 +18,8 @@
         <p>한 걸음, 하늘 끝까지</p>
         <div class="divider"></div>
         <p class="instructions">
-          마우스 드래그 또는 <kbd>←</kbd> <kbd>→</kbd><br /><kbd>SPACE</kbd> 필살기 · <kbd>Q</kbd> 교체<br />하늘 길:
-          <kbd>↑</kbd> <kbd>↓</kbd> · <kbd>ESC</kbd> 일시정지
+          마우스 드래그 또는 <kbd>←</kbd> <kbd>→</kbd><br /><kbd>SPACE</kbd> 필살기<br />하늘 길: <kbd>↑</kbd>
+          <kbd>↓</kbd> · <kbd>ESC</kbd> 일시정지
         </p>
         <span class="edition">무협 종스크롤 · 06 · 편대</span>
       </aside>
@@ -56,9 +56,10 @@
             <b id="comboNum">0</b><span>연속</span><small id="comboMult">점수 ×1</small>
           </div>
           <div class="actives" id="actives">
-            <button class="active-btn swap" id="swap" aria-label="편대 교체">
+            <!-- 수동 교체는 없어졌다. 자리는 남겨 두어 필살기 버튼이 움직이지 않게 한다 (docs/ability-redesign-plan.md). -->
+            <button class="active-btn swap slot-kept" id="swap" aria-hidden="true" tabindex="-1" disabled>
               <img class="swap-hero" id="swapImg" alt="" draggable="false" /><em id="swapCd"></em></button
-            ><small class="active-label" id="swapName">교체</small>
+            ><small class="active-label slot-kept" id="swapName" aria-hidden="true">교체</small>
             <button class="active-btn ult" id="blast" aria-label="필살기">
               <span class="blast-icon">✦</span><b id="bombcount">2</b><i class="ult-hint" id="ultHint"></i></button
             ><small class="active-label">필살기</small>

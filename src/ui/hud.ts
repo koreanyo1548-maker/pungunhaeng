@@ -10,7 +10,6 @@ import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
 import { ARTS, SKILLS, skillStars } from '../data/skills';
 import { TUNE } from '../data/tune';
 import { movementName, region, stageDuration } from '../systems/flow';
-import { swapCooldown, hasLivingReserve } from '../systems/formation';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -126,32 +125,9 @@ export function syncQuestHUD() {
   $('questCount').textContent = Math.floor(q.prog) + ' / ' + q.target;
   $('questFill').style.width = Math.min(100, (q.prog / q.target) * 100) + '%';
 }
+/** The action button column: only 필살기 now. The old swap button keeps its place hidden, so 필살기 does not move. */
 export function syncSwapHUD() {
-  const nxtId = G.state.formation[1 - G.state.active],
-    nxt = HEROES[nxtId],
-    cd = Math.max(0, G.state.swapReady - G.time),
-    sw = $('swap'),
-    ub = $('blast');
-  sw.style.setProperty('--c', nxt.color);
-  sw.style.setProperty('--p', String(Math.round(100 - (cd / swapCooldown()) * 100)));
-  const pic = heroPictures[nxtId] || '';
-  if ($('swapImg').dataset.src !== pic) {
-    $('swapImg').dataset.src = pic;
-    $('swapImg').src = pic;
-  }
-  const reserveAlive = hasLivingReserve();
-  sw.disabled = !reserveAlive || G.mode !== 'play' || !['flight', 'boss', 'warning'].includes(G.state.phase) || cd > 0;
-  sw.setAttribute('aria-label', reserveAlive ? '편대 교체' : '대기 영웅 전투불능');
-  $('swapCd').textContent = !reserveAlive ? '×' : cd > 0 ? String(Math.ceil(cd)) : '';
-  $('swapName').textContent = (reserveAlive ? '교체 · ' : '전투불능 · ') + nxt.name;
-  const boss = G.enemies.find(e => e.boss && !e.dead),
-    win =
-      reserveAlive &&
-      cd <= 0 &&
-      G.mode === 'play' &&
-      (G.time - G.state.lastHurt < 1.5 || (!!boss && boss.action === 'recover'));
-  sw.classList.toggle('cool', !reserveAlive || cd > 0);
-  sw.classList.toggle('burst', win);
+  const ub = $('blast');
   ub.style.setProperty('--c', '#ffd77a');
   ub.style.setProperty('--p', String(G.state.bombs >= G.state.maxBombs ? 100 : Math.round(G.state.charge)));
   ub.classList.toggle('cool', !G.state.bombs);
@@ -177,6 +153,5 @@ export function syncSwapHUD() {
   }
   // 오른쪽 줄의 적이 버튼 뒤를 지나가면 버튼을 흐리게 해서 적을 가리지 않는다.
   const veil = G.enemies.some(e => !e.dead && !e.boss && e.x > W - 120 && e.y > H * 0.42 && e.y < H * 0.7);
-  sw.classList.toggle('veil', veil && !sw.classList.contains('burst'));
   ub.classList.toggle('veil', veil && !ub.classList.contains('burst'));
 }

@@ -1,32 +1,67 @@
-import { queueHeroAction } from '../systems/hero-actions';
-import { skillCue } from '../render/skill-animation';
-import { G } from '../core/context';
-import { targetable } from '../entities/enemies';
-import { ring } from '../render/fx';
-import { D, aoe, clearBullets, column, fan, fireShot, gainCharge } from '../systems/combat';
 import type { HeroArt, HeroId } from './roster';
 
-// `L` is the hero's 성급 minus one, 0 (★1) to 4 (★5): it strengthens the trait (see systems/formation.ts for the
-// numbers the game uses) and the swap skill. `m` is 2 for a well-timed swap.
-export const HEROES = {
+// Each hero has a trait (on while that hero fights, or for the whole party for the two support heroes) and an
+// entry skill: a timed effect that starts when the hero enters as the second of the party, after the first falls.
+// `L` is the hero's 성급 minus one, 0 (★1) to 4 (★5). The numbers the game uses live here (`value`, `seconds`)
+// so the text and the effect cannot drift apart; systems/hero-effects.ts applies them.
+// See docs/ability-redesign-plan.md (3장, 7장).
+
+export type TraitScope = 'self' | 'party';
+export interface HeroTrait {
+  name: string;
+  scope: TraitScope;
+  desc: (L: number) => string;
+  /** the trait's number at this level (radius, chance, multiplier, count), when it has one */
+  value?: (L: number) => number;
+  /** shown when the trait has no effect yet (it needs a later step of the redesign) */
+  pending?: string;
+}
+export interface HeroEntry {
+  name: string;
+  desc: (L: number) => string;
+  /** seconds the effect lasts; 0 for 풍운객, whose 계승 takes the fallen hero's skill and time */
+  seconds: (L: number) => number;
+}
+export interface Hero {
+  name: string;
+  /** which body art the hero uses (running or flying frames); no longer a road affinity */
+  terrain: 'ground' | 'sky';
+  tint: string | null;
+  color: string;
+  art: HeroArt;
+  /** what the hero's basic shots look like (all heroes shoot the same) */
+  projectile: string;
+  trait: HeroTrait;
+  entry: HeroEntry;
+}
+
+/** ★3 and ★5 change an entry skill's shape; seconds grow by one per star level. */
+const time = (base: number) => (L: number) => base + L;
+const star3 = (L: number) => L >= 2,
+  star5 = (L: number) => L >= 4;
+const pct = (n: number) => Math.round(n * 100) + '%';
+
+export const HEROES: Record<HeroId, Hero> = {
   pungun: {
     art: { frames: { sheet: 'hero-run', row: 0 }, portrait: { sheet: 'portraits', col: 0, row: 0 }, swapPose: 0 },
     name: '풍운객',
     terrain: 'ground',
     tint: null,
     color: '#ff8f6e',
-    trait: '질풍',
-    traitDesc: (L = 0) => `근접 처치 시 필살기 충전 +${5 + L}`,
-    tag: '풍운검',
-    tagDesc: '전방으로 관통 검강 3줄기',
-    fx: (m, L = 0) => {
-      for (const vx of [-150, 0, 150])
-        fireShot(G.player.x, G.player.y - 40, vx, D() * 5 * m * (1 + 0.1 * L), {
-          kind: 'gang',
-          pierce: true,
-          w: 10 + 4 * m,
-          color: '#ff8f6e',
-        });
+    projectile: '검기',
+    trait: {
+      name: '질풍',
+      scope: 'self',
+      value: L => 80 + 10 * L,
+      desc: L => `근접 처치 시 주변 탄 제거 (반경 ${80 + 10 * L})`,
+    },
+    entry: {
+      name: '계승',
+      desc: L =>
+        '쓰러진 선봉의 등장 기술을 대신 펼친다' +
+        (star3(L) ? ' · 시간 +50%' : '') +
+        (star5(L) ? ' · 선봉의 특성도 이어받음' : ''),
+      seconds: () => 0,
     },
   },
   cheolhyeol: {
@@ -35,11 +70,21 @@ export const HEROES = {
     terrain: 'ground',
     tint: 'rgba(150,28,18,.42)',
     color: '#ff6b57',
-    trait: '철혈',
-    traitDesc: (L = 0) => `공격력 +${25 + 4 * L}%`,
-    tag: '붕천각',
-    tagDesc: '주변에 큰 충격파',
-    fx: (m, L = 0) => aoe(G.player.x, G.player.y - 40, 120 + 50 * m, D() * 6 * m * (1 + 0.1 * L), '#ff6b57'),
+    projectile: '권기',
+    trait: {
+      name: '철혈',
+      scope: 'self',
+      value: L => (star5(L) ? 2 : 1),
+      desc: L => `체력 +${star5(L) ? 2 : 1}`,
+    },
+    entry: {
+      name: '불굴',
+      desc: L =>
+        `맞아도 쓰러지지 않고, 맞을 때마다 주변 충격파` +
+        (star3(L) ? ' · 충격파 확대' : '') +
+        (star5(L) ? ' · 끝날 때 체력 +1' : ''),
+      seconds: time(15),
+    },
   },
   mukyoung: {
     art: { frames: { sheet: 'hero-run', row: 2 }, portrait: { sheet: 'portraits', col: 2, row: 0 }, swapPose: 2 },
@@ -47,13 +92,17 @@ export const HEROES = {
     terrain: 'ground',
     tint: 'rgba(8,12,30,.55)',
     color: '#a7b3d6',
-    trait: '묵영보',
-    traitDesc: (L = 0) => `스침 판정 +${40 + 5 * L}%`,
-    tag: '암영',
-    tagDesc: '잠깐 몸을 감추고 주변 탄을 지운다',
-    fx: (m, L = 0) => {
-      G.player.inv = Math.max(G.player.inv, 0.6 * m + 0.2 + 0.1 * L);
-      clearBullets(G.player.x, G.player.y, 130 * m + 20);
+    projectile: '암기',
+    trait: {
+      name: '묵영보',
+      scope: 'self',
+      value: L => 1.4 + 0.05 * L,
+      desc: L => `스침 범위 +${pct(0.4 + 0.05 * L)}`,
+    },
+    entry: {
+      name: '그림자 분신',
+      desc: L => `분신 ${star5(L) ? 3 : star3(L) ? 2 : 1}개가 같은 공격을 따라 쏜다`,
+      seconds: time(15),
     },
   },
   bicheon: {
@@ -62,18 +111,17 @@ export const HEROES = {
     terrain: 'sky',
     tint: 'rgba(30,190,180,.36)',
     color: '#7fe6cf',
-    trait: '비천',
-    traitDesc: (L = 0) => `공격력 +${25 + 4 * L}%`,
-    tag: '비천어검',
-    tagDesc: '검의 비가 강한 적들에게 꽂힌다',
-    fx: (m, L = 0) => {
-      const power = D() * 5 * (1 + 0.1 * L);
-      const l = G.enemies
-        .filter(targetable)
-        .sort((a, b) => b.hp - a.hp)
-        .slice(0, 4 * m);
-      for (const e of l) column(e.x, power, '#7fe6cf', 28);
-      if (!l.length) column(G.player.x, power, '#7fe6cf', 28);
+    projectile: '어검',
+    trait: {
+      name: '비천',
+      scope: 'self',
+      desc: () => '기본 공격이 적 탄에 닿으면 탄을 지운다 (그 공격도 사라짐)',
+    },
+    entry: {
+      name: '어검진',
+      desc: L =>
+        `비검 ${star3(L) ? 5 : 3}자루가 주위를 돌며 탄을 막고 적을 벤다` + (star5(L) ? ' · 비검 피해 2배' : ''),
+      seconds: time(20),
     },
   },
   unhak: {
@@ -82,13 +130,20 @@ export const HEROES = {
     terrain: 'sky',
     tint: 'rgba(245,238,214,.5)',
     color: '#ffd77a',
-    trait: '운학',
-    traitDesc: (L = 0) => `필살기 충전 +${40 + 5 * L}%`,
-    tag: '학익진',
-    tagDesc: '필살기 충전을 크게 채운다',
-    fx: (m, L = 0) => {
-      gainCharge(45 * m + 5 * L);
-      ring(G.player.x, G.player.y, '#ffd77a', 10, 120, 0.4);
+    projectile: '깃털',
+    trait: {
+      name: '운학',
+      scope: 'party',
+      value: L => (star5(L) ? 2 : 1),
+      desc: L => `판 시작 필살기 +${star5(L) ? 2 : 1} (편대 전체)`,
+    },
+    entry: {
+      name: '학의 장막',
+      desc: L =>
+        '주위 결계 안에 들어온 탄이 사라진다' +
+        (star3(L) ? ' · 결계 확대' : '') +
+        (star5(L) ? ' · 결계 안 적도 피해' : ''),
+      seconds: time(12),
     },
   },
   hongryeon: {
@@ -97,11 +152,19 @@ export const HEROES = {
     terrain: 'sky',
     tint: 'rgba(210,50,105,.4)',
     color: '#ff8fb0',
-    trait: '홍련',
-    traitDesc: (L = 0) => `기본 공격 속도 +${20 + 3 * L}%`,
-    tag: '홍련비도',
-    tagDesc: '부채꼴로 비도를 흩뿌린다',
-    fx: (m, L = 0) => fan(5 + 4 * m + L, 0.15, D() * 1.8, '#ff8fb0'),
+    projectile: '비도',
+    trait: {
+      name: '홍련',
+      scope: 'self',
+      value: L => 0.15 + 0.025 * L,
+      desc: L => `치명타 ${pct(0.15 + 0.025 * L)} (피해 2배)`,
+    },
+    entry: {
+      name: '홍련화',
+      desc: L =>
+        '모든 공격이 치명타' + (star3(L) ? ' · 치명타 피해 2.5배' : '') + (star5(L) ? ' · 치명타 때 불꽃 폭발' : ''),
+      seconds: time(15),
+    },
   },
   yeoncheong: {
     art: heroineArt(0),
@@ -109,11 +172,19 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#9ddca8',
-    trait: '영민',
-    traitDesc: (L = 0) => `기본 공격 속도 +${12 + 2 * L}%, 필살기 충전 +${15 + 3 * L}%`,
-    tag: '탄지비침',
-    tagDesc: '부채꼴로 은침 7줄기를 발사한다',
-    fx: (m, L = 0) => fan(7, 0.12, D() * 2 * m * (1 + 0.1 * L), '#9ddca8'),
+    projectile: '은침',
+    trait: {
+      name: '영민',
+      scope: 'party',
+      value: L => 2 + 0.2 * L,
+      desc: L => `자석: 엽전·아이템 끌어당김 거리 ×${(2 + 0.2 * L).toFixed(1)} (편대 전체)`,
+    },
+    entry: {
+      name: '은침 비',
+      desc: L =>
+        `은침이 위쪽 적을 자동 사격` + (star3(L) ? ' · 은침 2배' : '') + (star5(L) ? ' · 은침이 탄도 지움' : ''),
+      seconds: time(20),
+    },
   },
   cheongwan: {
     art: heroineArt(1),
@@ -121,18 +192,18 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#e8ae88',
-    trait: '일점관통',
-    traitDesc: (L = 0) => `공격력 +${20 + 4 * L}%`,
-    tag: '회마관창',
-    tagDesc: '전방 한 줄을 강하게 관통하는 창격',
-    fx: (m, L = 0) =>
-      fireShot(G.player.x, G.player.y - 42, 0, D() * 10 * m * (1 + 0.1 * L), {
-        kind: 'gang',
-        pierce: true,
-        w: 16,
-        vy: 1100,
-        color: '#e8ae88',
-      }),
+    projectile: '창',
+    trait: {
+      name: '일점관통',
+      scope: 'self',
+      value: L => (star5(L) ? 2 : 1),
+      desc: L => `기본 공격이 적 ${star5(L) ? 2 : 1}명 관통`,
+    },
+    entry: {
+      name: '관창',
+      desc: L => `${star5(L) ? '0.4' : '0.6'}초마다 정면으로 거대 관통 창 투척` + (star3(L) ? ' · 창 2자루씩' : ''),
+      seconds: time(10),
+    },
   },
   seolyeong: {
     art: heroineArt(2),
@@ -140,15 +211,17 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#e889a0',
-    trait: '음풍보',
-    traitDesc: (L = 0) => `스침 판정 +${25 + 4 * L}%, 공격력 +${10 + 2 * L}%`,
-    tag: '음풍편',
-    tagDesc: '전방 가까운 적들을 채찍으로 휩쓴다',
-    fx: (m, L = 0) => {
-      const y = G.player.y - 90,
-        radius = 145;
-      aoe(G.player.x, y, radius, D() * 7 * m * (1 + 0.1 * L), '#e889a0', false);
-      skillCue('seolyeong', G.player.x, y, radius * 2, false, false, true, 1);
+    projectile: '채찍',
+    trait: {
+      name: '음풍보',
+      scope: 'self',
+      value: L => 0.5 + 0.1 * L,
+      desc: L => `처치 시 엽전 +${pct(0.5 + 0.1 * L)}`,
+    },
+    entry: {
+      name: '음풍',
+      desc: L => `적 탄 속도 ${star5(L) ? '1/3' : '절반'}` + (star3(L) ? ' · 적 이동도 느려짐' : ''),
+      seconds: time(15),
     },
   },
   soun: {
@@ -157,17 +230,17 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#91baff',
-    trait: '쾌검',
-    traitDesc: (L = 0) => `기본 공격 속도 +${20 + 3 * L}%`,
-    tag: '쌍연참',
-    tagDesc: '전방을 시간차로 두 번 베어낸다',
-    fx: (m, L = 0) => {
-      const strike = () => {
-        aoe(G.player.x, G.player.y - 105, 115, D() * 3.5 * m * (1 + 0.1 * L), '#91baff', false);
-        skillCue('soun', G.player.x, G.player.y - 105, 230, false, false, true, 1);
-      };
-      strike();
-      queueHeroAction('soun', 0.18, strike);
+    projectile: '쾌검',
+    trait: {
+      name: '쾌검',
+      scope: 'self',
+      value: L => 0.5 + 0.1 * L,
+      desc: L => `무아지경 시간 +${pct(0.5 + 0.1 * L)}`,
+    },
+    entry: {
+      name: '질풍',
+      desc: L => '무아지경 질주 (무적, 빠른 진행)' + (star5(L) ? ' · 끝날 때 화면 탄 제거' : ''),
+      seconds: L => 8 + L + (star3(L) ? 3 : 0),
     },
   },
   yoran: {
@@ -176,18 +249,21 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#eee5c7',
-    trait: '정심',
-    traitDesc: (L = 0) => `필살기 충전 +${30 + 5 * L}%`,
-    tag: '정심반격',
-    tagDesc: '근처 탄을 지우고 곧은 검기로 반격한다',
-    fx: (m, L = 0) => {
-      clearBullets(G.player.x, G.player.y, 110 + 20 * m);
-      fireShot(G.player.x, G.player.y - 40, 0, D() * 5 * m * (1 + 0.1 * L), {
-        kind: 'gang',
-        pierce: true,
-        w: 12,
-        color: '#eee5c7',
-      });
+    projectile: '검기',
+    trait: {
+      name: '정심',
+      scope: 'self',
+      value: L => 0.5 + 0.1 * L,
+      desc: L => `처치 게이지 +${pct(0.5 + 0.1 * L)}`,
+      pending: '스테이지 개편 후 적용',
+    },
+    entry: {
+      name: '정심반사',
+      desc: L =>
+        (star5(L) ? '모든 방향의' : '앞에서 오는') +
+        ' 탄을 튕겨 적에게 되돌린다' +
+        (star3(L) ? ' · 되돌린 탄 위력 2배' : ''),
+      seconds: time(8),
     },
   },
   ayeong: {
@@ -196,31 +272,21 @@ export const HEROES = {
     terrain: 'ground',
     tint: null,
     color: '#8ed6cc',
-    trait: '명궁',
-    traitDesc: (L = 0) => `공격력 +${15 + 3 * L}%, 기본 공격 속도 +${8 + L}%`,
-    tag: '삼연시',
-    tagDesc: '전방 적을 향해 화살을 세 번 연속 발사한다',
-    fx: (m, L = 0) => {
-      const arrow = () => {
-        const originX = G.player.x,
-          originY = G.player.y - 34;
-        const target = G.enemies
-          .filter(e => targetable(e) && e.y < originY)
-          .sort((a, b) => Math.hypot(a.x - originX, a.y - originY) - Math.hypot(b.x - originX, b.y - originY))[0];
-        const dx = target ? target.x - originX : 0,
-          dy = target ? originY - target.y : 900;
-        const length = Math.hypot(dx, dy);
-        fireShot(originX, originY, (dx / length) * 1050, D() * 4 * m * (1 + 0.1 * L), {
-          vy: (dy / length) * 1050,
-          color: '#8ed6cc',
-        });
-      };
-      arrow();
-      queueHeroAction('ayeong', 0.12, arrow);
-      queueHeroAction('ayeong', 0.24, arrow);
+    projectile: '화살',
+    trait: {
+      name: '명궁',
+      scope: 'self',
+      value: () => 1,
+      desc: () => '공격 단계 +1 (최대 3)',
+    },
+    entry: {
+      name: '매의 눈',
+      desc: L =>
+        '기본 공격이 가까운 적을 자동 조준' + (star3(L) ? ' · 화살 관통' : '') + (star5(L) ? ' · 공격 단계 +1' : ''),
+      seconds: time(12),
     },
   },
-} satisfies Record<HeroId, { name: string; art: HeroArt; [key: string]: unknown }>;
+};
 
 function heroineArt(index: number): HeroArt {
   const group = index < 3 ? 'a' : 'b';

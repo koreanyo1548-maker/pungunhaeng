@@ -1,5 +1,6 @@
 import type { Meta, HeroId } from '../data/meta';
 import type { PlannedGate } from '../systems/run-plan';
+import type { HeroEffect } from '../systems/hero-effects';
 export interface SkillInstance {
   id: string;
   ready?: number;
@@ -78,7 +79,13 @@ export interface RunState {
   victory: boolean;
   course: string;
   active: number;
-  swapReady: number;
+  /** the running entry skill (systems/hero-effects.ts) */
+  effect: HeroEffect | null;
+  /** 풍운객 ★5: the fallen vanguard whose trait he carries */
+  inheritTrait?: HeroId;
+  /** 매설영: the fraction of a coin carried between kills */
+  coinFrac?: number;
+  critLabel?: number;
   lastHurt: number;
   meditate: boolean;
   spent: number;
@@ -98,8 +105,6 @@ export interface RunState {
   lastStepDir?: number;
   lastStepTime?: number;
   lastGraze?: number;
-  swaps?: number;
-  combos2?: number;
 }
 export interface Player {
   x: number;
@@ -136,6 +141,10 @@ export interface Shot {
   w?: number;
   vy?: number;
   homing?: boolean;
+  /** enemies a basic shot still passes through (목청완) */
+  pierceLeft?: number;
+  /** the shot erases the first hazard it touches (비천, 은침 ★5) */
+  erase?: boolean;
   hits?: Set<Enemy>;
   dead?: boolean;
 }

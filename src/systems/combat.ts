@@ -10,17 +10,16 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
 import { difficulty, region } from './flow';
-import { traitCharge, traitPower } from './formation';
 import { notify, syncHUD } from '../ui/hud';
 
 const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
 export function shotPower() {
-  return 1.3 * (1 + 0.12 * difficulty()) * traitPower();
+  return 1.3 * (1 + 0.12 * difficulty());
 }
 export function gainCharge(n) {
-  n *= (hasSkill('chukgi') ? 1.5 : 1) * traitCharge() * (region().terrain === 'cloud' ? TUNE.cloudCharge : 1);
+  n *= (hasSkill('chukgi') ? 1.5 : 1) * (region().terrain === 'cloud' ? TUNE.cloudCharge : 1);
   if (G.state.bombs >= G.state.maxBombs) {
     G.state.charge = 100;
     return;
@@ -79,6 +78,7 @@ export interface ShotOptions {
   w?: number;
   vy?: number;
   homing?: boolean;
+  erase?: boolean;
 }
 export function fireShot(x, y, vx, dmg, o: ShotOptions = {}) {
   G.shots.push({
@@ -97,6 +97,7 @@ export function fireShot(x, y, vx, dmg, o: ShotOptions = {}) {
     w: o.w,
     vy: o.vy,
     homing: o.homing,
+    erase: o.erase,
   });
 }
 export function fan(n, spread, dmg, color, kind = 'knife', art?: string) {

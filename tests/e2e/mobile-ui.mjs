@@ -38,7 +38,7 @@ try {
     await shot('formation');
     await g.page.locator('#formationConfirm').tap();
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '대기');
+    assert.equal(await g.choiceTitle(), '후발');
     assert.equal(await roster.count(), 11, 'front hero excluded from rear roster');
     await g.pick(0);
     await g.step(2);
@@ -54,20 +54,22 @@ try {
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await g.step(10);
     assert.ok(await g.state(() => window.__g.player.target < 240), 'touch drag moves left');
-    await g.eval(() => window.__g.setSwap());
     const before = await g.state(() => ({
       active: window.__g.state.active,
       x: window.__g.player.target,
       bombs: window.__g.state.bombs,
     }));
-    await g.page.locator('#swap').tap();
+    // the swap button is gone from play: its place is kept invisible, and tapping there does nothing
+    assert.equal(
+      await g.eval(() => getComputedStyle(document.getElementById('swap')).visibility),
+      'hidden',
+      'swap slot is hidden',
+    );
+    const ult = await g.page.locator('#blast').boundingBox();
+    await g.page.touchscreen.tap(ult.x + ult.width / 2, ult.y - 40);
     await g.step(2);
-    assert.notEqual(await g.state(() => window.__g.state.active), before.active);
-    assert.equal(await g.state(() => window.__g.player.target), before.x, 'button tap does not drag');
-    const sw = await g.page.locator('#swap').boundingBox(),
-      ult = await g.page.locator('#blast').boundingBox();
-    assert.ok(sw.width >= 44 && ult.width >= 44, 'touch targets at least 44px');
-    assert.ok(sw.x + sw.width < ult.x || sw.y + sw.height <= ult.y, 'action targets do not overlap');
+    assert.equal(await g.state(() => window.__g.state.active), before.active, 'no manual swap');
+    assert.ok(ult.width >= 44, 'touch target at least 44px');
     assert.ok(ult.y + ult.height <= c.y + c.height, 'button stays inside game');
     await g.seconds(1);
     await shot('combat');
@@ -91,7 +93,9 @@ try {
     assert.equal(await g.state(() => window.__g.state.skills.length), count + 1);
     assert.deepEqual(g.errors, []);
     await g.page.close();
-    console.log(`PASS ${viewport.width}: preview/confirm, touch drag, swap/blast, reward selection, no page errors`);
+    console.log(
+      `PASS ${viewport.width}: preview/confirm, touch drag, hidden swap slot, blast, reward selection, no page errors`,
+    );
   }
 } finally {
   await browser.close();

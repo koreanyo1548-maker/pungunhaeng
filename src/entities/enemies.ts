@@ -17,7 +17,7 @@ import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
 import { gainCharge } from '../systems/combat';
 import { difficulty, region } from '../systems/flow';
-import { traitNearCharge, traitOn } from '../systems/formation';
+import { coinsForKill, critical, onNearKill } from '../systems/hero-effects';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
@@ -162,7 +162,7 @@ export function kill(e, byHyper = false) {
     G.state.cleared++;
     setPhase('clear');
   } else {
-    for (let i = 0; i < 3; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
+    for (let i = 0, n = coinsForKill(); i < n; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
     if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))
       addPickup('power', e.x, e.y);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
@@ -174,7 +174,7 @@ export function kill(e, byHyper = false) {
     if (!byHyper && !G.state.blasting) {
       if (G.player.y - e.y < TUNE.nearDy) {
         emit('nearKill', { e });
-        if (traitOn('pungun')) gainCharge(traitNearCharge());
+        onNearKill();
       }
       emit('kill', { e });
       if (G.state.combo % 10 === 0) emit('combo10');
@@ -187,6 +187,7 @@ export function hitEnemy(e, damage, skill?: string) {
     damage *= 1.4;
     skillCue('swaegap', e.x, e.y, 65, true);
   }
+  damage = critical(e, damage);
   e.hp -= damage * (e.boss && e.action === 'recover' ? 1.6 : 1);
   e.hit = 0.055;
   e.recoil = 0.12;

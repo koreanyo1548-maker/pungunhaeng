@@ -54,7 +54,7 @@ export function createRunState(meta: Meta, hyperCooldown: number): RunState {
     course: 'ground',
     formation: ['pungun', 'cheolhyeol'],
     active: 0,
-    swapReady: 0,
+    effect: null,
     lastHurt: -9,
     meditate: false,
     forceNpc: null,

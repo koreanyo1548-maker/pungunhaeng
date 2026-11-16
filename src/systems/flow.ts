@@ -1,4 +1,3 @@
-import { clearHeroActions } from './hero-actions';
 import { createRunState, createPlayer, createRunTransient } from '../core/run-state';
 import { clearSkillAnimations } from '../render/skill-animation';
 import { clearCallouts } from '../render/callout';
@@ -50,7 +49,6 @@ export function start() {
   Object.assign(G, createRunTransient());
   clearPfx();
   clearSkillAnimations();
-  clearHeroActions();
   clearCallouts();
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();
@@ -135,7 +133,6 @@ export function home() {
 export function nextStage() {
   const oldTier = movementTier();
   G.state.stage++;
-  G.state.swapReady = Math.min(G.state.swapReady, G.time + 1);
   G.state.previousTier = oldTier;
   G.state.ascend = movementTier() !== oldTier ? 2.6 : 0;
   G.state.stageTime = 0;

@@ -87,11 +87,26 @@ async function scenarioA(browser, course, seed) {
     if (forced) check(f, s.quest.npc === forced, `${at}: 수소문 replaced the 인연 (${s.quest.npc} vs ${forced})`);
     const npc = s.quest.npc;
 
-    // 교대 (user-controlled swap)
-    await g.eval(() => window.__g.setSwap());
-    await g.key('q');
-    await g.step(6);
-    check(f, (await g.state(S)).active !== s.active, `${at}: Q swaps the active hero`);
+    // 선봉이 쓰러지면 후발이 나서고 등장 기술이 시작된다 (수동 교체는 없음)
+    if (gate === 1) {
+      await g.key('q');
+      await g.step(2);
+      check(f, (await g.state(S)).active === s.active, `${at}: Q no longer swaps`);
+      await g.eval(() => window.__g.fell());
+      await g.step(2);
+      const e = await g.state(() => ({
+        active: window.__g.state.active,
+        effect: window.__g.effect && window.__g.effect.hero,
+        second: window.__g.state.formation[1],
+        mode: window.__g.mode,
+      }));
+      check(
+        f,
+        e.mode === 'play' && e.active === 1 && e.effect === e.second,
+        `${at}: the vanguard falls, the second enters with their entry skill (${JSON.stringify(e)})`,
+      );
+      await g.eval(() => window.__g.god());
+    }
 
     // 화두 성취 → 돈오
     await g.eval(() => {
@@ -463,7 +478,7 @@ async function scenarioF(browser, seed) {
   }));
   check(
     f,
-    stuck.title === '출전' && stuck.disabled && /뽑기/.test(stuck.detail),
+    stuck.title === '선봉' && stuck.disabled && /뽑기/.test(stuck.detail),
     `a locked hero is previewed and cannot be confirmed (${JSON.stringify(stuck)})`,
   );
   await g.pick(0);
@@ -502,8 +517,8 @@ async function scenarioF(browser, seed) {
   const preview = await g.eval(() => document.querySelector('.formation-preview').textContent);
   check(
     f,
-    /성급 3/.test(preview) && /충전 \+7/.test(preview),
-    `풍운객 shows 성급 3 and the stronger trait (${preview})`,
+    /성급 3/.test(preview) && /반경 100/.test(preview) && /시간 \+50%/.test(preview),
+    `풍운객 shows 성급 3, the stronger trait and the ★3 entry change (${preview})`,
   );
   await g.pick(0);
   await g.step(2);

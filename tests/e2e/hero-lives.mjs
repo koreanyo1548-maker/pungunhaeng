@@ -32,11 +32,13 @@ try {
         ].map(x => import(x)),
       )),
     );
+    // course, then the vanguard (first card: 풍운객) and the second (second card after him: 묵영). 철혈 is left out
+    // on purpose: his trait (+1 health) and entry skill (불굴) are tested in heroines.mjs.
     window.begin = () => {
       M.start();
-      for (let i = 0; i < 3; i++) {
+      for (const i of [0, 0, 1]) {
         const confirm = document.getElementById('formationConfirm');
-        document.querySelector('#choice button.card').click();
+        document.querySelectorAll('#choice button.card')[i].click();
         confirm?.click();
       }
       document.querySelector('#choice .act').click();
@@ -49,7 +51,6 @@ try {
     const { G } = M;
     const ids = [...G.state.formation];
     const initial = structuredClone(G.state.heroHealth);
-    G.state.swapReady = 999;
     M.damagePlayer();
     M.syncHUD();
     const first = {
@@ -57,11 +58,9 @@ try {
       hp: G.player.hp,
       dead: structuredClone(G.state.heroHealth[ids[0]]),
       mode: G.mode,
-      disabled: document.getElementById('swap').disabled,
       inv: G.player.inv,
-      combos: G.state.combos2 || 0,
+      effect: G.state.effect?.hero,
     };
-    M.swapHero();
     M.damagePlayer();
     const protectedHp = G.player.hp;
     G.player.inv = 0;
@@ -81,33 +80,30 @@ try {
   assert.equal(result.first.hp, 1);
   assert.equal(result.first.mode, 'play');
   assert.ok(result.first.inv > 0);
-  assert.equal(result.first.combos, 0);
-  assert.equal(result.first.disabled, true);
+  assert.equal(result.first.effect, result.ids[1], 'the second hero starts their entry skill');
   assert.deepEqual(result.first.dead, { hp: 0, maxHp: 1, fallen: true });
   assert.equal(result.protectedHp, 1);
   assert.equal(result.final.mode, 'result');
   assert.equal(result.final.bankUnchanged, true);
   for (const id of result.ids) assert.equal(result.final.health[id].fallen, true);
   console.log(
-    'PASS base 1 HP, lethal auto-replacement through cooldown, grace invulnerability, no dead swap, all fallen defeat, single settlement',
+    'PASS base 1 HP, lethal hit brings in the second hero with their entry skill, grace invulnerability, all fallen defeat, single settlement',
   );
-  // The accessors always refer to the active hero; manual swaps preserve individual wounds.
+  // The accessors always refer to the active hero; each hero keeps their own health. No manual swap exists.
   const manual = await p.evaluate(() => {
     begin();
     const { G } = M;
-    M.learn('cheolgol');
+    M.learn('cheolgol'); // both heroes: max 2, health 2
     const ids = G.state.formation;
-    G.player.hp = 1;
-    M.swapHero();
-    const reserveHp = G.player.hp;
-    G.state.swapReady = 0;
-    M.swapHero();
-    const firstHp = G.player.hp;
     G.player.inv = 0;
-    M.damagePlayer(); // active has 1 HP, falls; the reserve still has 2.
+    M.damagePlayer(); // vanguard 2 -> 1
+    const woundedHp = G.player.hp;
     G.player.inv = 0;
-    M.damagePlayer();
-    const survived = { mode: G.mode, hp: G.player.hp, max: G.player.maxHp, active: G.state.active };
+    M.damagePlayer(); // vanguard falls; the second enters with their own 2
+    G.state.effect = null;
+    const entered = { mode: G.mode, hp: G.player.hp, max: G.player.maxHp, active: G.state.active };
+    G.player.inv = 0;
+    M.damagePlayer(); // second 2 -> 1
     M.learn('hoegi');
     G.state.skills.find(s => s.id === 'hoegi').used = false;
     M.trig('blast');
@@ -118,18 +114,17 @@ try {
     const afterStage = structuredClone(G.state.heroHealth[ids[0]]);
     M.learn('cheolgol');
     const afterBuff = structuredClone(G.state.heroHealth[ids[0]]);
-    return { reserveHp, firstHp, survived, healed, afterStage, afterBuff };
+    return { woundedHp, entered, healed, afterStage, afterBuff };
   });
-  assert.equal(manual.reserveHp, 2);
-  assert.equal(manual.firstHp, 1);
-  assert.deepEqual(manual.survived, { mode: 'play', hp: 1, max: 2, active: 1 });
+  assert.equal(manual.woundedHp, 1);
+  assert.deepEqual(manual.entered, { mode: 'play', hp: 2, max: 2, active: 1 });
   assert.equal(manual.healed, 2);
   assert.equal(manual.afterStage.hp, 0);
   assert.equal(manual.afterStage.fallen, true);
   assert.equal(manual.afterBuff.hp, 0);
   assert.equal(manual.afterBuff.fallen, true);
   console.log(
-    'PASS independent manual-swap health, retained HP buff/heal, buff removal, stage recovery cannot revive fallen heroes',
+    'PASS individual health, retained HP buff/heal, buff removal, stage recovery cannot revive fallen heroes',
   );
   for (const defense of ['shield', 'hoechun', 'inv', 'hyper']) {
     const state = await p.evaluate(defense => {

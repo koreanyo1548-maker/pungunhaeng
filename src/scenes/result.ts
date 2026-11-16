@@ -31,10 +31,8 @@ export function runSummary() {
       .filter(k => G.state.rel[k])
       .map(k => `${NPCS[k].name} ${relText(G.state.rel[k])}`)
       .join(', ') || '없음';
-  const form = G.state.formation
-    .map(id => HEROES[id].name + (HEROES[id].terrain === G.state.course ? '' : ' (적성 아님)'))
-    .join(' · ');
-  return `<span class="h">${COURSES[G.state.course].label} · 편대</span>${form} · 교체 ${G.state.swaps || 0}회 (제때 교체 ${G.state.combos2 || 0}회) · 엽전 사용 ${G.state.spent || 0}냥 · 덕 ${G.state.virtue || 0}<span class="h">지나온 길</span>${path}<span class="h">기술</span>${sk}<span class="h">인연 호감도</span>${rel}`;
+  const form = G.state.formation.map((id, i) => (i ? '후발 ' : '선봉 ') + HEROES[id].name).join(' · ');
+  return `<span class="h">${COURSES[G.state.course].label} · 편대</span>${form} · 엽전 사용 ${G.state.spent || 0}냥 · 덕 ${G.state.virtue || 0}<span class="h">지나온 길</span>${path}<span class="h">기술</span>${sk}<span class="h">인연 호감도</span>${rel}`;
 }
 export function dominantTitle() {
   const end = G.state.course === 'sky' ? '하늘에 닿다' : '땅 끝에 서다';

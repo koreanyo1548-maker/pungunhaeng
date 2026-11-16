@@ -152,6 +152,8 @@ function updateEnemies(dt: number): boolean {
       kill(e, true);
       continue;
     }
+    // 스침: an enemy passing close beside the player (not touching) counts once. Between two enemies of a row
+    // both count, so slipping through a gap is two.
     if (
       !e.grazed &&
       G.player.hp > 0 &&
@@ -159,20 +161,9 @@ function updateEnemies(dt: number): boolean {
       Math.abs(e.x - G.player.x) >= e.r + 10 &&
       Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * bondGraze() * grazeReach() * 1.15
     ) {
-      const mate = G.enemies.find(
-        o =>
-          o !== e &&
-          !o.dead &&
-          o.row === e.row &&
-          !o.grazed &&
-          Math.sign(o.x - G.player.x) !== Math.sign(e.x - G.player.x) &&
-          Math.abs(o.x - G.player.x) < o.r + 10 + TUNE.grazeRadius * bondGraze() * grazeReach() * 1.15,
-      );
-      if (mate) {
-        e.grazed = mate.grazed = true;
-        grazeEnemy(e);
-        if (G.mode !== 'play') return false;
-      }
+      e.grazed = true;
+      grazeEnemy(e);
+      if (G.mode !== 'play') return false;
     }
     if (Math.abs(e.x - G.player.x) < e.r + 10 && Math.abs(e.y - G.player.y) < e.r + 12) {
       damagePlayer();

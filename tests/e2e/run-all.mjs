@@ -475,6 +475,40 @@ async function scenarioD(browser, seed) {
   await blastKills(g, 1);
   const yoran = await g.state(() => window.__g.state.gauge);
   check(f, yoran === 1.5, `정요란: a kill fills 1.5 (${yoran})`);
+  // 스침 on enemies: one enemy passing close beside counts once, slipping between two counts twice
+  const grazes = await g.eval(() => {
+    const G = window.__g,
+      st = G.state,
+      out = [];
+    for (const sides of [[1], [-1, 1]]) {
+      G.enemies.length = 0;
+      G.hazards.length = 0;
+      G.player.x = G.player.target = 240;
+      G.player.fire = 99;
+      for (const side of sides)
+        G.enemies.push({
+          x: 240 + side * 45,
+          baseX: 240 + side * 45,
+          y: G.player.y - 60,
+          hp: 999,
+          maxHp: 999,
+          type: 1,
+          rank: 0,
+          size: 80,
+          r: 22,
+          phase: 0,
+          hit: 0,
+          dead: false,
+          row: -1,
+        });
+      const before = st.grazes;
+      window.__step(40);
+      out.push(st.grazes - before);
+    }
+    G.player.fire = 0;
+    return out;
+  });
+  check(f, grazes.join() === '1,2', `스침: one enemy beside 1, between two 2 (${grazes})`);
   // a combo 의뢰 counts only the chain after it was accepted (the combo does not run down during a 만남)
   await g.eval(() => {
     const st = window.__g.state;

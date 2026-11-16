@@ -15,7 +15,8 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
-import { gainCharge } from '../systems/combat';
+import { addKill } from '../systems/encounter';
+import { bondArmor } from '../data/skills';
 import { difficulty, region } from '../systems/flow';
 import { coinsForKill, critical, onNearKill } from '../systems/hero-effects';
 
@@ -89,7 +90,6 @@ export function resolveRow(e, missed = false) {
     if (!row.missed) {
       G.state.score += 500;
       if (!G.state.blasting) label('한 줄 전멸 +500', W / 2, 270, '#a3ffe0', 18);
-      gainCharge(8);
       ring(240, 270, '#a3ffe0', 10, 160, 0.42);
       tone(880, 0.12, 'sine', 0.12, 1320);
       if (!G.state.blasting) {
@@ -109,7 +109,6 @@ export function kill(e, byHyper = false) {
     near = e.boss ? 1 : dy < 154 ? 3 : dy < 304 ? 2 : 1,
     mult = Math.min(5, 1 + Math.floor(G.state.combo / 10));
   G.state.score += (e.boss ? 5000 + G.state.stage * 1000 : 100 + e.rank * 65) * near * mult;
-  gainCharge(e.boss ? 20 : 3);
   const color = e.boss ? region().color : e.color;
   const art = enemyArt(e);
   G.wrecks.push({
@@ -162,6 +161,7 @@ export function kill(e, byHyper = false) {
     G.state.cleared++;
     setPhase('clear');
   } else {
+    addKill(e);
     for (let i = 0, n = coinsForKill(); i < n; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
     if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))
       addPickup('power', e.x, e.y);
@@ -183,8 +183,9 @@ export function kill(e, byHyper = false) {
 }
 export function hitEnemy(e, damage, skill?: string) {
   if (e.dead || (e.boss && ['enter', 'return'].includes(e.action))) return;
-  if (hasSkill('swaegap') && (e.rank >= 2 || e.boss || e.rock)) {
-    damage *= 1.4;
+  const armor = bondArmor();
+  if (armor > 1 && (e.rank >= 2 || e.boss || e.rock)) {
+    damage *= armor;
     skillCue('swaegap', e.x, e.y, 65, true);
   }
   damage = critical(e, damage);

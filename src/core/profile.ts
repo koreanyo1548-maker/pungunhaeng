@@ -2,6 +2,7 @@
 // A run never reads this directly. It takes a snapshot (metaSnapshot) when it starts, so a run is reproducible
 // from its seed and its snapshot.
 import { HERO_IDS, NPC_IDS, PIECES_MAX, STARTERS, emptyMeta, pieceLevel } from '../data/meta';
+import { STAGE_COUNT } from '../data/stages';
 import type { HeroId, Meta, NpcId } from '../data/meta';
 
 // Debug only (#debug&roster): every hero and every 인연 card is unlocked (one piece each), the way the game was
@@ -21,6 +22,8 @@ export type Profile = {
   heroes: Record<HeroId, number>;
   /** 인연 card pieces: 1 makes the card (the 인연 appears in runs), more raise its level */
   cards: Record<NpcId, number>;
+  /** stages opened, 1 to 6: beating a stage's boss opens the next */
+  stages: number;
 };
 
 const fresh = (): Profile => ({
@@ -29,6 +32,7 @@ const fresh = (): Profile => ({
   best: 0,
   heroes: Object.fromEntries(HERO_IDS.map(id => [id, ROSTER || STARTERS.includes(id) ? 1 : 0])) as Profile['heroes'],
   cards: Object.fromEntries(NPC_IDS.map(id => [id, ROSTER ? 1 : 0])) as Profile['cards'],
+  stages: ROSTER ? STAGE_COUNT : 1,
 });
 
 const whole = (n: unknown, max = Number.MAX_SAFE_INTEGER) =>
@@ -43,6 +47,7 @@ export function sanitize(raw: any): Profile {
   // the starters (and, in debug, everyone) always keep at least their first piece
   for (const id of HERO_IDS) p.heroes[id] = Math.max(p.heroes[id], whole(raw.heroes?.[id], PIECES_MAX));
   for (const id of NPC_IDS) p.cards[id] = Math.max(p.cards[id], whole(raw.cards?.[id], PIECES_MAX));
+  p.stages = Math.max(p.stages, whole(raw.stages, STAGE_COUNT));
   return p;
 }
 
@@ -84,6 +89,13 @@ export const heroOwned = (id: HeroId) => profile.heroes[id] > 0;
 /** a hero's 성급, 1 to 5 (0: not unlocked) */
 export const heroStars = (id: HeroId) => pieceLevel(profile.heroes[id]);
 export const cardOf = (id: NpcId) => pieceLevel(profile.cards[id]);
+/** Opens the stage after `stage` (its boss was beaten). True when that stage was not open before. */
+export function openNextStage(stage: number): boolean {
+  const next = Math.min(STAGE_COUNT, stage + 1);
+  if (next <= profile.stages) return false;
+  profile.stages = next;
+  return true;
+}
 
 export function metaSnapshot(): Meta {
   const m = emptyMeta();

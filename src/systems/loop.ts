@@ -11,10 +11,11 @@ import { burst, effects, impact } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { draw } from '../render/renderer';
 import { updateSkills } from './abilities';
-import { hasSkill } from './skill-state';
 import { graze, grazeEnemy } from './combat';
-import { difficulty } from './flow';
-import { donoBeat, updatePhase } from './stage-phases';
+import { difficulty, skyStage } from './flow';
+import { updatePhase } from './stage-phases';
+import { updateEncounter } from './encounter';
+import { bondFireRate, bondGraze } from '../data/skills';
 import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
 import { syncHUD } from '../ui/hud';
 
@@ -25,8 +26,6 @@ export function update(dt) {
     G.hitstop -= dt;
     dt *= 0.12;
   }
-  dt = donoBeat(dt, realDt);
-  if (dt === null) return;
   G.time += dt;
   G.state.elapsed += dt;
   G.state.distance += dt * (G.state.hyper > 0 ? 420 : 85 + Math.min(difficulty() * 12, 65));
@@ -40,12 +39,12 @@ export function update(dt) {
   G.flash = Math.max(0, G.flash - realDt * 1.8);
   G.state.comboTimer -= dt;
   if (G.state.comboTimer <= 0) G.state.combo = 0;
-  const old = updatePlayer(dt);
+  updatePlayer(dt);
 
   if (!updatePhase(dt)) return;
   updateHeroEffect(dt);
   if (G.mode !== 'play') return;
-  updateSkills(dt, old);
+  updateSkills(dt);
   if (G.mode !== 'play') return;
   updateShots(dt);
   if (!updateEnemies(dt)) return;
@@ -55,6 +54,7 @@ export function update(dt) {
   G.enemies = G.enemies.filter(e => !e.dead);
   G.hazards = G.hazards.filter(h => !h.dead && h.y < H + 80 && h.x > -90 && h.x < W + 90);
   G.pickups = G.pickups.filter(p => !p.dead && p.y < H + 30 && p.life > 0);
+  if (!updateEncounter()) return;
   G.hudClock -= realDt;
   if (G.hudClock <= 0) {
     syncHUD();
@@ -65,7 +65,7 @@ function updatePlayer(dt: number): number {
   if (G.keys.has('ArrowLeft') || G.keys.has('a')) G.player.target -= dt * 510;
   if (G.keys.has('ArrowRight') || G.keys.has('d')) G.player.target += dt * 510;
   G.player.target = clamp(G.player.target, 24, W - 24);
-  if (G.state.course === 'sky') {
+  if (TUNE.freeFlight && skyStage()) {
     if (G.keys.has('ArrowUp') || G.keys.has('w')) G.player.targetY -= dt * 430;
     if (G.keys.has('ArrowDown') || G.keys.has('s')) G.player.targetY += dt * 430;
     G.player.targetY = clamp(G.player.targetY, TUNE.skyMinY, TUNE.skyMaxY);
@@ -77,7 +77,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += 0.148;
+    G.player.fire += 0.148 / bondFireRate();
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -156,7 +156,7 @@ function updateEnemies(dt: number): boolean {
       G.player.hp > 0 &&
       Math.abs(e.y - G.player.y) < e.r + 12 &&
       Math.abs(e.x - G.player.x) >= e.r + 10 &&
-      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach() * 1.15
+      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * bondGraze() * grazeReach() * 1.15
     ) {
       const mate = G.enemies.find(
         o =>
@@ -165,8 +165,7 @@ function updateEnemies(dt: number): boolean {
           o.row === e.row &&
           !o.grazed &&
           Math.sign(o.x - G.player.x) !== Math.sign(e.x - G.player.x) &&
-          Math.abs(o.x - G.player.x) <
-            o.r + 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach() * 1.15,
+          Math.abs(o.x - G.player.x) < o.r + 10 + TUNE.grazeRadius * bondGraze() * grazeReach() * 1.15,
       );
       if (mate) {
         e.grazed = mate.grazed = true;
@@ -188,7 +187,7 @@ function updateEnemies(dt: number): boolean {
 }
 
 function updateHazards(dt: number): boolean {
-  const grazeR = TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach();
+  const grazeR = TUNE.grazeRadius * bondGraze() * grazeReach();
   for (const h of G.hazards) {
     if (h.warn > 0) {
       h.warn -= dt;

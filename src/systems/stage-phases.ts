@@ -1,25 +1,25 @@
-import { isFinal } from './run-plan';
-// Phases of one stage (one gate): flight → warning → boss → clear. Each phase has an optional enter (runs once
-// when the phase starts) and update (runs every simulation step while the phase is active). setPhase is the only
-// way to change phase, so every transition inside a stage is listed here. Leaving the stage (clear → 투학/결과,
-// 화두 성취 → 돈오) goes through the run flow in scene-flow.ts.
+// Phases of a stage: flight → warning → boss → clear. Each phase has an optional enter (runs once when the phase
+// starts) and update (runs every simulation step while the phase is active). setPhase is the only way to change
+// phase, so every transition inside a stage is listed here. Leaving the stage (clear → 결과, a full 처치 게이지 →
+// 만남) goes through the run flow in scene-flow.ts.
 //
-//   flight  rows, hazards and pickups spawn; after stageDuration() → warning
+//   flight  rows, hazards and pickups spawn; after stageDistance() metres → warning (however many 만남 came)
 //   warning field is cleared, boss intro plays for phaseTimer → boss
 //   boss    the boss fights; its death (entities/enemies.ts kill) → clear
-//   clear   the gate is announced, then the stage is done (waits for a pending 돈오 beat first)
+//   clear   the stage is announced, then the run ends with a victory
 import { G } from '../core/context';
 import { chime } from '../core/audio';
 import { W } from '../core/dom';
-import { clamp, rnd } from '../core/math';
+import { clamp, josa, rnd } from '../core/math';
 import { TUNE } from '../data/tune';
 import { bossSpawn, createBoss } from '../entities/boss';
 import { meteor, spawnRow, spear } from '../entities/enemies';
 import { addPickup } from '../entities/pickups';
 import { announce } from '../ui/hud';
-import { difficulty, region, stageDuration } from './flow';
-import { closeQuest } from './quest';
-import { done, go } from './scene-flow';
+import { difficulty, region, stageDistance } from './flow';
+import { profile } from '../core/profile';
+import { STAGES, STAGE_COUNT } from '../data/stages';
+import { done } from './scene-flow';
 
 export type Phase = 'flight' | 'warning' | 'boss' | 'clear';
 
@@ -33,11 +33,15 @@ const PHASES: Record<Phase, PhaseDef> = {
   flight: {
     update: dt => {
       updateFlight(dt);
-      if (G.state.stageTime >= stageDuration()) setPhase('warning');
+      if (G.state.distance >= stageDistance()) setPhase('warning');
     },
   },
   warning: {
-    enter: bossSpawn,
+    enter: () => {
+      // no 만남 from here on; an 의뢰 still running carries into the boss fight
+      G.state.meetReady = false;
+      bossSpawn();
+    },
     update: dt => {
       G.state.phaseTimer -= dt;
       if (G.state.phaseTimer <= 0) setPhase('boss');
@@ -50,7 +54,7 @@ const PHASES: Record<Phase, PhaseDef> = {
     enter: enterClear,
     update: dt => {
       G.state.phaseTimer -= dt;
-      if (G.state.phaseTimer <= 0 && G.state.donoDelay <= 0) {
+      if (G.state.phaseTimer <= 0) {
         done('stage');
         return false;
       }
@@ -68,21 +72,6 @@ export function updatePhase(dt: number): boolean {
   return PHASES[G.state.phase as Phase].update?.(dt) !== false;
 }
 
-/**
- * 돈오 beat: after a 화두 is fulfilled the stage runs at quarter speed for donoDelay (real) seconds, then the 돈오
- * choice opens. Returns the scaled dt, or null when the choice opened and the rest of the step must be skipped.
- */
-export function donoBeat(dt: number, realDt: number): number | null {
-  if (G.state.donoDelay <= 0) return dt;
-  G.state.donoDelay -= realDt;
-  dt *= 0.25;
-  if (G.state.donoDelay <= 0) {
-    go('dono');
-    return null;
-  }
-  return dt;
-}
-
 function updateFlight(dt) {
   G.state.stageTime += dt;
   G.state.rowTimer -= dt;
@@ -93,7 +82,7 @@ function updateFlight(dt) {
     spawnRow();
     G.state.rowTimer =
       Math.max(0.68, 1.27 - difficulty() * 0.08 - G.state.stageTime * 0.005) +
-      (G.state.stage === 1 ? Math.max(0, TUNE.openingGap - G.state.stageTime * 0.02) : 0);
+      Math.max(0, TUNE.openingGap - G.state.stageTime * 0.02);
   }
   if (G.state.hyper <= 0 && G.state.meteorTimer <= 0) {
     meteor();
@@ -115,7 +104,7 @@ function updateFlight(dt) {
   if (
     G.state.hyperCooldown <= 0 &&
     G.state.hyper <= 0 &&
-    G.state.stageTime < stageDuration() - 8 &&
+    G.state.distance < stageDistance() - 1000 &&
     !G.pickups.some(p => p.kind === 'hyper')
   ) {
     addPickup('hyper', clamp(G.player.x + rnd(-100, 100), 45, W - 45), -20);
@@ -124,7 +113,7 @@ function updateFlight(dt) {
   }
 }
 
-/** clear phase: the gate is announced and the field emptied */
+/** clear phase: the stage is announced and the field emptied (the 의뢰 stays open until the result) */
 function enterClear() {
   G.state.phaseTimer = 2.4;
   G.hazards = [];
@@ -132,11 +121,13 @@ function enterClear() {
   G.shots = [];
   G.state.hyper = 0;
   G.player.inv = 4;
-  closeQuest();
+  const next = G.state.stage < STAGE_COUNT ? STAGES[G.state.stage] : null;
   announce(
-    isFinal() ? region().name + ' 돌파' : '관문 ' + G.state.stage + ' 돌파',
+    'S' + G.state.stage + ' 돌파',
     region().boss + ' 처치',
-    isFinal() ? region().winLine : '쓰러진 자의 기술이 눈에 들어온다',
+    next && G.state.stage >= profile.stages
+      ? `S${G.state.stage + 1} ${josa(next.name, '이', '가')} 열린다`
+      : '강호에 이름이 퍼진다',
     region().color,
     2.6,
   );

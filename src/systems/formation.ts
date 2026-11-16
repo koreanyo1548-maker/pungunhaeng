@@ -46,6 +46,7 @@ export function replaceFallenHero(): boolean {
   label('등장 · ' + h.name, 240, 470, h.color, 19);
   tone(520, 0.12, 'triangle', 0.1, 780);
   startEntry(id, vanguard);
+  G.state.enteredAt = G.time; // a 만남 waits one step after an entry
   syncHUD();
   return true;
 }

@@ -5,7 +5,7 @@ import { G } from '../core/context';
 import { W, ctx, reduced } from '../core/dom';
 import { clamp } from '../core/math';
 import { BR } from '../data/branches';
-import { ARTS, SKILLS } from '../data/skills';
+import { SKILLS, cooldown } from '../data/skills';
 
 type Callout = { name: string; sub: string; color: string; seal: string; age: number; slot: number };
 
@@ -20,11 +20,11 @@ const live: Callout[] = [];
 /** Rare, deliberate skills keep their callout for the whole run. */
 function always(id: string) {
   const d = SKILLS[id];
-  return d.trig === 'blast' || d.trig === 'combo10' || (d.trig === 'tick' && d.cd >= 10);
+  return d.trig === 'blast' || (d.trig === 'tick' && cooldown(d) >= 10);
 }
 
-/** `s` is the skill instance in G.state.skills (it carries the boss enhancement, `mod`). */
-export function skillCallout(s: { id: string; mod?: string | number }) {
+/** `s` is the skill instance in G.state.skills. */
+export function skillCallout(s: { id: string }) {
   const count = shown.get(s) ?? 0;
   if (!always(s.id) && count >= FIRST) return;
   if (G.time - (lastAt.get(s) ?? -99) < GAP) return;
@@ -34,8 +34,8 @@ export function skillCallout(s: { id: string; mod?: string | number }) {
   const d = SKILLS[s.id];
   live.push({
     name: d.name,
-    sub: s.mod ? '★★ ' + ARTS[s.mod].name : '',
-    color: s.mod ? '#ffd77a' : BR[d.br].color,
+    sub: '',
+    color: BR[d.br].color,
     seal: BR[d.br].hanja,
     age: 0,
     slot,

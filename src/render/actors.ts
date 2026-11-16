@@ -7,7 +7,7 @@ import { borrowedSword, heroPose } from '../entities/player';
 import { drawBossSeal } from './fx';
 import { blade, drawVfxSprite } from './projectiles';
 import { enemyFrameIndex } from './util';
-import { movementTier, region } from '../systems/flow';
+import { movementTier, region, skyStage } from '../systems/flow';
 import { activeFrames, activeHeroId } from '../systems/formation';
 
 export function drawActor(type, x, y, size, pose = 0, angle = 0, hit = 0, sx = 1, sy = 1) {
@@ -31,7 +31,7 @@ export function drawEnemy(e) {
     drawRock(e);
     return;
   }
-  const flying = G.state?.course === 'sky' && !e.boss;
+  const flying = skyStage() && !e.boss;
   const pose = flying ? 0 : enemyFrameIndex(e),
     recoil = (e.recoil || 0) / 0.12,
     pulse = Math.sin(G.time * 4 + (e.phase || 0)),

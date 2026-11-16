@@ -1,9 +1,10 @@
-// Balance simulation: a simple bot plays full runs (no invincibility) on the synthetic clock with fixed seeds,
-// and reports survival, hits taken, stage length, coins and 화두 results per gate.
+// Balance simulation: a simple bot plays whole stages (no invincibility) on the synthetic clock with fixed seeds,
+// and reports survival, hits taken, stage length, kills, 만남 count, coins and 의뢰 results per stage.
 // The bot is deliberately plain (aims at the weakest enemy of the nearest row, sidesteps warned hazards,
-// never uses 내공 or 교대 on purpose, ignores 화두), so the numbers are a floor, not a skilled player.
-// usage: node tests/sim/balance.mjs [build.html] [--runs N] [--parallel P] [--seed S] [--god]
-//   --god: invincible bot, for stage length, coin income and 화두 flow over the full run
+// never uses 필살기 on purpose, always follows an 인연 and helps or gives to passers-by, ignores the 의뢰), so the
+// numbers are a floor, not a skilled player.
+// usage: node tests/sim/balance.mjs [build.html] [--runs N] [--parallel P] [--seed S] [--stages 1,6] [--god]
+//   --god: invincible bot, for stage length, 만남 count and coin income over a whole stage
 import { DEFAULT_BUILD, launch, openGame } from '../lib/harness.mjs';
 
 const args = process.argv.slice(2);
@@ -11,24 +12,21 @@ const opt = (name, def) => {
   const i = args.indexOf('--' + name);
   return i >= 0 ? Number(args[i + 1]) : def;
 };
-const file = args.find(a => !a.startsWith('--') && !/^\d+$/.test(a)) || DEFAULT_BUILD;
+const file = args.find(a => !a.startsWith('--') && !/^[\d,]+$/.test(a)) || DEFAULT_BUILD;
 const runs = opt('runs', 4),
   parallel = opt('parallel', 4),
   baseSeed = opt('seed', 1000),
-  god = args.includes('--god');
+  god = args.includes('--god'),
+  stageList = (args.includes('--stages') ? args[args.indexOf('--stages') + 1] : '1,6').split(',').map(Number);
 
 // Runs inside the page: bot decisions every 6 frames, metrics collected per stage.
 const botScript = () => {
   window.__sim = { stages: {}, hits: 0, lastHp: null, frames: 0 };
   const choose = () => {
-    const act = document.querySelector('#choice .act');
-    if (act) return act.click(); // 따른다
-    const title = document.getElementById('choiceTitle').textContent;
+    // 만남: 따른다 / 돕는다 / 엽전을 베푼다 when it can, otherwise the other choice
+    const act = [...document.querySelectorAll('#choice .act')].find(b => !b.disabled);
+    if (act) return act.click();
     const cards = [...document.querySelectorAll('#choice button.card')];
-    if (title === '객잔') {
-      const heal = cards.find(c => c.querySelector('h3')?.textContent === '약주와 휴식' && !c.disabled);
-      return (window.__simGod ? cards.at(-1) : heal || cards.at(-1)).click(); // god runs keep their coins
-    }
     (cards.find(c => !c.disabled) || cards.at(-1))?.click();
   };
   const steer = () => {
@@ -74,19 +72,20 @@ const botScript = () => {
         st.hpEnd = g.player.hp;
         st.coins = g.state.coins;
         st.kills = g.state.kills;
+        st.encounters = g.state.encounters;
       }
-      sim.lastHp = g.mode === 'play' || g.mode === 'result' ? g.player.hp : null; // HP changes between gates are not hits
+      sim.lastHp = g.mode === 'play' || g.mode === 'result' ? g.player.hp : null; // HP changes in a 만남 are not hits
     }
     return g.mode;
   };
 };
 
-async function oneRun(browser, course, seed) {
+async function oneRun(browser, stage, seed) {
   const g = await openGame(file, { browser, seed });
   await g.eval(botScript);
   await g.eval(() => document.getElementById('start').click());
   await g.step(2);
-  await g.pick(course);
+  await g.pick(stage - 1);
   await g.step(2);
   await g.pick(0);
   await g.step(2);
@@ -109,12 +108,13 @@ async function oneRun(browser, course, seed) {
       hp: window.__g.player.hp,
       title: document.getElementById('resultTitle').textContent,
       path: s.path.map(p => p.result),
-      skills: s.skills.map(k => k.id + (k.mod ? '+' + k.mod : '')),
+      skills: s.skills.map(k => k.id),
+      align: s.align,
       score: Math.round(s.score),
     };
   });
   r.wall = Date.now() - t0;
-  r.course = course;
+  r.course = stage;
   r.seed = seed;
   r.errors = g.errors;
   await g.page.close();
@@ -123,42 +123,31 @@ async function oneRun(browser, course, seed) {
 
 const browser = await launch();
 const jobs = [];
-for (const course of [0, 1]) for (let i = 0; i < runs; i++) jobs.push([course, baseSeed + course * 100 + i]);
+for (const stage of stageList) for (let i = 0; i < runs; i++) jobs.push([stage, baseSeed + stage * 100 + i]);
 const results = [];
 for (let i = 0; i < jobs.length; i += parallel)
   results.push(...(await Promise.all(jobs.slice(i, i + parallel).map(([c, s]) => oneRun(browser, c, s)))));
 await browser.close();
 
-const COURSE = ['땅', '하늘'];
 const f1 = n => (Math.round(n * 10) / 10).toFixed(1);
+const won = r => r.hp > 0 && /돌파/.test(r.title);
 for (const r of results) {
-  const won = r.hp > 0 && r.stage >= 4 && /제패|등정/.test(r.title);
-  const per = Object.entries(r.sim.stages)
-    .map(
-      ([k, s]) =>
-        `S${k} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) hit${s.hits} hp${s.hpStart}→${s.hpEnd} ${s.coins}냥`,
-    )
-    .join(' | ');
+  const s = r.sim.stages[r.course] || {};
   console.log(
-    `${COURSE[r.course]} seed ${r.seed}: ${won ? '완주' : `사망 S${r.stage} ${r.phase}`} "${r.title}" 화두[${r.path.join(',')}] ${r.skills.join(',')}`,
-  );
-  console.log(
-    `   ${per}   (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
+    `S${r.course} seed ${r.seed}: ${won(r) ? '돌파' : `사망 ${r.phase}`} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) ` +
+      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 저울 ${r.align} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
+      ` (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
   );
 }
 console.log('\nsummary');
-for (const course of [0, 1]) {
-  const rs = results.filter(r => r.course === course);
-  const won = rs.filter(r => r.hp > 0 && r.stage >= 4 && /제패|등정/.test(r.title)).length;
-  const line = [1, 2, 3, 4]
-    .map(k => {
-      const ss = rs.map(r => r.sim.stages[k]).filter(Boolean);
-      if (!ss.length) return `S${k} -`;
-      const avg = fn => ss.reduce((a, s) => a + fn(s), 0) / ss.length;
-      return `S${k} reached ${ss.length}/${rs.length} time ${f1(avg(s => s.time))}s hits ${f1(avg(s => s.hits))} coins ${Math.round(avg(s => s.coins))}`;
-    })
-    .join(' | ');
-  console.log(`${COURSE[course]}: 완주 ${won}/${rs.length} | ${line}`);
+for (const stage of stageList) {
+  const rs = results.filter(r => r.course === stage),
+    ss = rs.map(r => r.sim.stages[stage]).filter(Boolean),
+    avg = fn => ss.reduce((a, s) => a + fn(s), 0) / Math.max(1, ss.length);
+  console.log(
+    `S${stage}: 돌파 ${rs.filter(won).length}/${rs.length} | time ${f1(avg(s => s.time))}s hits ${f1(avg(s => s.hits))} ` +
+      `kills ${Math.round(avg(s => s.kills))} 만남 ${f1(avg(s => s.encounters))} coins ${Math.round(avg(s => s.coins))}`,
+  );
 }
 const errs = results.flatMap(r => r.errors);
 if (errs.length) {

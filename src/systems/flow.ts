@@ -1,22 +1,16 @@
 import { createRunState, createPlayer, createRunTransient } from '../core/run-state';
 import { clearSkillAnimations } from '../render/skill-animation';
 import { clearCallouts } from '../render/callout';
-import { currentGate, isFinal } from './run-plan';
-import { setPhase } from './stage-phases';
 import { go } from './scene-flow';
 import { seedRun } from '../core/rng';
 import { G } from '../core/context';
-import { metaSnapshot, profile, saveProfile } from '../core/profile';
+import { metaSnapshot, openNextStage, profile, saveProfile } from '../core/profile';
 import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
-import { fmt, rnd } from '../core/math';
-import { COURSES } from '../data/courses';
-import { HEROES } from '../data/heroes';
-import { VIRTUE_CAP, settle } from '../data/meta';
-import { hoechunBlocks } from '../data/skills';
-import { TUNE } from '../data/tune';
-import { dominantTitle, runSummary } from '../scenes/result';
-import { hasSkill } from './skill-state';
+import { clamp, fmt, josa, rnd } from '../core/math';
+import { settle } from '../data/meta';
+import { STAGES, STAGE_COUNT } from '../data/stages';
+import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
@@ -27,15 +21,19 @@ export function movementTier() {
 export function movementName() {
   return ['질주', '경공', '어검'][movementTier()];
 }
-/** region data of the current gate (see run-plan.ts) */
+/** the current stage's data (stage 1 before one is picked) */
 export function region() {
-  return currentGate().region;
+  return STAGES[clamp(G.state?.stage ?? 1, 1, STAGE_COUNT) - 1];
 }
+/** a 운해 stage: ground heroes ride a sword, enemies fly (movement stays left-right, TUNE.freeFlight) */
+export const skyStage = () => !!G.state && G.mode !== 'title' && region().world === 2;
+/** stage number as difficulty: 0 on stage 1, about 1.8 on stage 6 */
 export function difficulty() {
   return Math.log2(G.state.stage + 1) - 1;
 }
-export function stageDuration() {
-  return isFinal() ? TUNE.finalFlight : 34 + Math.min(8, G.state.stage - 1);
+/** metres to run before the boss */
+export function stageDistance() {
+  return region().distance;
 }
 export function start() {
   if (!G.loaded) return;
@@ -58,7 +56,7 @@ export function start() {
   showBest();
   syncHUD();
   tone(440, 0.2, 'triangle', 0.2, 880);
-  go('course');
+  go('stageSelect');
 }
 export function pause() {
   if (G.mode === 'play') {
@@ -87,25 +85,22 @@ export function end(victory = false) {
   closeQuest();
   const record = G.state.score > profile.best;
   if (record) profile.best = Math.floor(G.state.score);
-  // 정산: what is left of this run's 엽전 goes to the bank.
-  const banked = settle(G.state.coins, victory, G.state.virtue),
-    base = settle(G.state.coins, victory);
+  // 정산: what is left of this run's 엽전 goes to the bank; beating the boss opens the next stage.
+  const banked = settle(G.state.coins, victory),
+    opened = victory && openNextStage(G.state.stage),
+    r = region();
   profile.coins += banked;
   saveProfile();
   $('settle').innerHTML =
     `남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
-    (base > G.state.coins ? ` + 완주 <b>${fmt(base - G.state.coins)}냥</b>` : '') +
-    (banked > base ? ` + 덕 ${Math.min(VIRTUE_CAP, G.state.virtue)} <b>${fmt(banked - base)}냥</b>` : '') +
+    (banked > G.state.coins ? ` + 보스 처치 <b>${fmt(banked - G.state.coins)}냥</b>` : '') +
     ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>`;
-  $('resultTitle').textContent = victory ? region().win : '강호행 종료';
-  $('resultEyebrow').textContent = victory
-    ? dominantTitle()
-    : COURSES[G.state.course].label +
-      ' · ' +
-      (isFinal() ? region().name : '관문 ' + G.state.stage) +
-      ' · ' +
-      G.state.cleared +
-      '개 관문 돌파';
+  $('resultTitle').textContent = victory ? r.name + ' 돌파' : '강호행 종료';
+  $('resultEyebrow').textContent =
+    `S${G.state.stage} ${r.name} · ` +
+    (victory
+      ? r.boss + ' 처치' + (opened ? ` · S${G.state.stage + 1} ${STAGES[G.state.stage].name} 열림` : '')
+      : `만남 ${G.state.encounters}번 · ${fmt(G.state.distance)} / ${fmt(stageDistance())} m`);
   $('summary').innerHTML = runSummary();
   $('newRecord').classList.toggle('hidden', !record);
   $('finalScore').textContent = fmt(G.state.score);
@@ -130,50 +125,9 @@ export function home() {
   showBest();
   showBank();
 }
-export function nextStage() {
-  const oldTier = movementTier();
-  G.state.stage++;
-  G.state.previousTier = oldTier;
-  G.state.ascend = movementTier() !== oldTier ? 2.6 : 0;
-  G.state.stageTime = 0;
-  setPhase('flight');
-  G.state.phaseTimer = 0;
-  G.state.rowTimer = 1.3;
-  G.state.meteorTimer = 6;
-  G.state.powerTimer = 9;
-  G.state.spearTimer = 1.5;
-  G.state.hyper = 0;
-  G.enemies = [];
-  G.hazards = [];
-  G.shots = [];
-  G.rows.clear();
-  G.pickups = [];
-  G.player.inv = Math.max(G.player.inv, 2);
-  G.player.hp = Math.min(G.player.maxHp, G.player.hp + 1);
-  G.player.weapon = Math.min(3, G.player.weapon + 1);
-  G.state.bombs = Math.min(G.state.maxBombs, G.state.bombs + 1);
-  if (G.state.bombs === G.state.maxBombs) G.state.charge = 100;
-  for (const s of G.state.skills) s.used = false;
-  G.state.negate = hasSkill('hoechun');
-  G.state.negateLeft = hoechunBlocks();
-  syncHUD();
-}
 export function beginStage() {
-  const r = region(),
-    tierUp = G.state.ascend > 0 && movementTier() > G.state.previousTier;
-  announce(
-    isFinal()
-      ? '최종 관문'
-      : G.state.stage === 1
-        ? COURSES[G.state.course].label
-        : tierUp
-          ? ['', '경공 개방', '어검 개방'][movementTier()]
-          : '제 ' + G.state.stage + ' 관',
-    tierUp ? ['', '대숲을 딛고 솟아오르다', '검 위에서 운해를 가르다'][movementTier()] : r.name,
-    r.hint,
-    r.color,
-    2.4,
-  );
+  const r = region();
+  announce('S' + G.state.stage + ' · ' + r.name, josa(r.boss, '을', '를') + ' 찾아서', r.hint, r.color, 2.4);
   chime();
   syncHUD();
 }

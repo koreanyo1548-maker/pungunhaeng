@@ -25,8 +25,7 @@ try {
             '/src/core/context.ts',
             '/src/core/profile.ts',
             '/src/core/ambient-art.ts',
-            '/src/scenes/crossroads.ts',
-            '/src/scenes/inn.ts',
+            '/src/scenes/encounter.ts',
             '/src/scenes/gacha.ts',
             '/src/render/renderer.ts',
           ].map(x => import(x)),
@@ -40,44 +39,36 @@ try {
       }
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
-    for (let stage = 1; stage <= 4; stage++) {
-      await p.evaluate(stage => {
-        M.G.state.stage = stage;
+    // no 인연 card in this save: every 만남 is a passer-by, in portrait order; the first is level 1 (help), the
+    // rest level 2 (give 엽전)
+    for (let n = 0; n < 4; n++) {
+      await p.evaluate(n => {
+        M.G.state.passers = n;
         M.G.state.coins = 40;
-        M.openCrossroads();
-      }, stage);
+        M.G.mode = 'play';
+        M.openEncounter();
+      }, n);
       await p.waitForFunction(() => {
         let im = document.querySelector('#choice .npc-choice-art');
         return im?.complete && im.naturalWidth === 627;
       });
-      await p.screenshot({ path: `${out}/${width}-passer-${stage}.png` });
-      const before = await p.evaluate(() => ({ coins: M.G.state.coins, virtue: M.G.state.virtue }));
+      await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
+      const before = await p.evaluate(() => ({ coins: M.G.state.coins, align: M.G.state.align }));
       await p.locator('#choice .act').first().click();
       const after = await p.evaluate(() => ({
         coins: M.G.state.coins,
-        virtue: M.G.state.virtue,
+        align: M.G.state.align,
         mode: M.G.mode,
         toast: document.querySelector('#toast img')?.getAttribute('src'),
       }));
-      assert.equal(after.coins, before.coins - 20);
-      assert.equal(after.virtue, before.virtue + 2);
+      assert.equal(after.coins, before.coins - (n ? 20 : 0));
+      assert.equal(after.align, before.align + (n ? 2 : 1));
       assert.equal(after.mode, 'play');
       assert.ok(after.toast?.startsWith('data:image/png'));
       await p.waitForFunction(() => document.querySelector('#toast img')?.complete);
       await p.evaluate(() => M.draw());
-      await p.screenshot({ path: `${out}/${width}-thanks-${stage}.png` });
+      await p.screenshot({ path: `${out}/${width}-thanks-${n + 1}.png` });
     }
-    await p.evaluate(() => {
-      M.G.state.stage = 2;
-      M.G.state.coins = 1000;
-      M.G.player.hp = 2;
-      M.openInn();
-    });
-    await p.waitForFunction(() =>
-      [...document.querySelectorAll('#choice .skill-choice-art')].every(im => im.complete && im.naturalWidth === 512),
-    );
-    assert.equal(await p.locator('#choice .skill-choice-art').count(), 3);
-    await p.screenshot({ path: `${out}/${width}-inn.png` });
     await p.evaluate(() => {
       document.getElementById('choice').classList.add('hidden');
       M.profile.coins = 1000;
@@ -101,7 +92,7 @@ try {
     );
     await p.screenshot({ path: `${out}/${width}-bond-piece.png` });
     assert.deepEqual(errors, []);
-    console.log(`PASS ${width}: four portraits + thanks, unchanged payment/virtue, three inn items, both piece types`);
+    console.log(`PASS ${width}: four passer portraits + thanks, help then give (엽전, 저울), both piece types`);
     await p.close();
   }
 } finally {

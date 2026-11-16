@@ -1,13 +1,9 @@
 import type { Meta, HeroId } from '../data/meta';
-import type { PlannedGate } from '../systems/run-plan';
 import type { HeroEffect } from '../systems/hero-effects';
 export interface SkillInstance {
   id: string;
   ready?: number;
   flash?: number;
-  mod?: number;
-  modReady?: number;
-  used?: boolean;
 }
 export interface Quest {
   npc: string;
@@ -18,10 +14,10 @@ export interface Quest {
   br: string;
   done: boolean;
   failed: boolean;
-  stage: number;
   tick?: number;
 }
 export interface PathEntry {
+  /** which 만남 of the run (1 = first) */
   stage: number;
   npc: string | null;
   who?: string;
@@ -40,7 +36,6 @@ export interface RunState {
   distance: number;
   coins: number;
   kills: number;
-  charge: number;
   bombs: number;
   hyper: number;
   hyperCooldown: number;
@@ -63,21 +58,13 @@ export interface RunState {
   jumpPhase: number;
   ascend: number;
   previousTier: number;
-  maxBombs: number;
   grazes: number;
-  moveAcc: number;
-  orbs: number;
-  orbAngle: number;
   rain: number;
   rainTimer: number;
   negate: boolean;
-  donoDelay: number;
-  allyTimer: number;
-  foeTimer: number;
   blasting: boolean;
   spearTimer: number;
   victory: boolean;
-  course: string;
   active: number;
   /** the running entry skill (systems/hero-effects.ts) */
   effect: HeroEffect | null;
@@ -87,18 +74,31 @@ export interface RunState {
   coinFrac?: number;
   critLabel?: number;
   lastHurt: number;
-  meditate: boolean;
   spent: number;
-  virtue: number;
   skills: SkillInstance[];
-  rel: Record<string, number>;
   met: Record<string, number>;
   quest: Quest | null;
   path: PathEntry[];
   formation: HeroId[];
   meta: Meta;
+  /** debug: the 인연 the next 만남 brings */
   forceNpc: string | null;
-  plan?: PlannedGate[];
+  /** 선·악 저울, −9 (악) to +9 (선) (systems/alignment.ts) */
+  align: number;
+  /** 인연 the scale has unlocked this run (kept when it swings back) */
+  unlocked: string[];
+  /** each 인연's level this run, 0 to 3 */
+  bond: Record<string, number>;
+  /** 처치 게이지 toward the next 만남 (systems/encounter.ts) */
+  gauge: number;
+  /** the gauge is full: a 만남 opens at the next safe step */
+  meetReady: boolean;
+  /** 만남 so far this run */
+  encounters: number;
+  /** passers-by met this run (their level and portrait) */
+  passers: number;
+  /** game time of the last 등장, so a 만남 waits one step after it */
+  enteredAt?: number;
   questPath?: PathEntry;
   stats?: Record<string, number>;
   negateLeft?: number;

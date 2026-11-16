@@ -47,7 +47,6 @@ try {
         document.querySelector('#choice button.card').click();
         confirm?.click();
       }
-      [...document.querySelectorAll('#choice .act')].at(-1).click();
     });
   await begin();
   await p.evaluate(() => {
@@ -92,6 +91,15 @@ try {
     M.skillAura('muyoung', 2);
     M.G.player.hp = 1;
     M.G.state.coins = 42;
+    Object.assign(M.G.state, {
+      align: 4,
+      unlocked: ['yakseon'],
+      bond: { yakseon: 2 },
+      gauge: 30,
+      encounters: 3,
+      passers: 2,
+    });
+    M.G.state.meetReady = true;
     M.start();
     return {
       hp: M.G.player.hp,
@@ -102,12 +110,31 @@ try {
       best: M.profile.best,
       cues: M.skillAnimationSnapshot().cues.length,
       auras: M.skillAnimationSnapshot().auras.length,
+      run: [
+        M.G.state.align,
+        M.G.state.unlocked.length,
+        Object.keys(M.G.state.bond).length,
+        M.G.state.gauge,
+        M.G.state.meetReady,
+        M.G.state.encounters,
+        M.G.state.passers,
+      ].join(),
     };
   });
-  assert.deepEqual(reset, { hp: 1, coins: 0, skills: 0, shots: 0, hazards: 0, best: 100000, cues: 0, auras: 0 });
+  assert.deepEqual(reset, {
+    hp: 1,
+    coins: 0,
+    skills: 0,
+    shots: 0,
+    hazards: 0,
+    best: 100000,
+    cues: 0,
+    auras: 0,
+    run: '0,0,0,0,false,0,0',
+  });
   assert.deepEqual(errors, []);
   console.log(
-    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart',
+    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart (scale, 인연 levels, gauge cleared)',
   );
 } finally {
   await b.close();

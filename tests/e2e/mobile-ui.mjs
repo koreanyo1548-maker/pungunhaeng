@@ -19,7 +19,9 @@ try {
     };
     await g.page.locator('#start').tap();
     await g.step(2);
-    await g.pick(1);
+    assert.equal(await g.choiceTitle(), '어디로 갈까');
+    await shot('stages');
+    await g.pick(3); // S4 부유암 (운해: left-right only)
     await g.step(2);
     const formation = await g.state(() => [...window.__g.state.formation]);
     const roster = g.page.locator('#choice button.card');
@@ -42,7 +44,7 @@ try {
     assert.equal(await roster.count(), 11, 'front hero excluded from rear roster');
     await g.pick(0);
     await g.step(2);
-    await g.act(0);
+    assert.equal(await g.mode(), 'play', 'play starts after the party is set');
     await g.eval(() => (window.__g.player.inv = 999)); // UI input checks do not depend on combat survival.
     await g.seconds(5);
     // A touch drag moves the player; tapping an action must not move it.
@@ -77,24 +79,36 @@ try {
     await g.page.waitForTimeout(400); // allow synthesized touch click: must not spend a second charge
     await g.step(2);
     assert.equal(await g.state(() => window.__g.state.bombs), before.bombs - 1);
+    // a 만남: the 인연 card and its two choices fit, and a choice is a tap
+    await g.eval(() => window.__g.meet('yakseon'));
+    await g.step(2);
+    assert.equal(await g.choiceTitle(), '인연');
+    assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover the 만남');
+    const acts = g.page.locator('#choice .act');
+    assert.equal(await acts.count(), 2);
+    assert.ok(
+      await acts.nth(1).evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return r.height >= 44 && r.bottom <= innerHeight;
+      }),
+      'both choices reachable, at least 44px',
+    );
+    await shot('encounter');
+    await acts.first().tap();
+    await g.step(2);
+    assert.equal(await g.mode(), 'play');
+    const count = await g.state(() => window.__g.state.skills.length);
     await g.eval(() => {
       const q = window.__g.state.quest;
       if (q.t === 'combo') window.__g.state.combo = 999;
       window.__g.questEvent(q.t, 999);
     });
-    await g.seconds(2);
-    assert.equal(await g.choiceTitle(), '기술 선택');
-    assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover reward title');
-    assert.ok(await g.page.locator('#choice.reward-screen').count());
-    await shot('dono');
-    const count = await g.state(() => window.__g.state.skills.length);
-    await g.page.locator('#choice button.card').first().tap();
     await g.step(2);
-    assert.equal(await g.state(() => window.__g.state.skills.length), count + 1);
+    assert.equal(await g.state(() => window.__g.state.skills.length), count + 1, 'the met 의뢰 teaches 1단계');
     assert.deepEqual(g.errors, []);
     await g.page.close();
     console.log(
-      `PASS ${viewport.width}: preview/confirm, touch drag, hidden swap slot, blast, reward selection, no page errors`,
+      `PASS ${viewport.width}: stage select, preview/confirm, touch drag, hidden swap slot, blast, 만남, no page errors`,
     );
   }
 } finally {

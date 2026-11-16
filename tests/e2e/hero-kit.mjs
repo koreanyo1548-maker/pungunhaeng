@@ -60,7 +60,7 @@ try {
     window.party = (first, second) => {
       M.clearSkillAnimations();
       M.start();
-      document.querySelector('#choice button.card').click(); // first road
+      document.querySelector('#choice button.card').click(); // S1 산길
       for (const id of [first, second]) {
         const name = M.HEROES[id].name;
         [...document.querySelectorAll('#choice button.card')]
@@ -68,7 +68,6 @@ try {
           .click();
         document.getElementById('formationConfirm').click();
       }
-      [...document.querySelectorAll('#choice .act')].at(-1).click();
       const { G } = M;
       G.time = 10;
       G.state.phase = 'flight';
@@ -194,6 +193,10 @@ try {
     // 정요란: waits for the kill gauge (step 2): no effect yet, nothing breaks
     party('yoran', 'pungun');
     out.yoran = M.traitActive('yoran');
+    // 정요란: a kill fills the 처치 게이지 1.5 while she fights
+    G.state.gauge = 0;
+    M.kill(target());
+    out.yoranGauge = G.state.gauge;
     // 운학 (party): one more 필살기 at the start, even as second
     party('pungun', 'unhak');
     out.unhak = G.state.bombs;
@@ -206,7 +209,7 @@ try {
     out.yeoncheong = { second, first, afterFall: M.magnetReach() };
     // traits of the hero who does not fight stay off (self scope), on every road
     party('mukyoung', 'hongryeon');
-    G.state.course = 'sky';
+    G.state.stage = 4; // a 운해 stage
     out.offWhileWaiting = { graze: M.grazeReach(), crit: M.traitActive('hongryeon') };
     return out;
   });
@@ -221,7 +224,8 @@ try {
   assert.equal(traits.soun, 1.5);
   assert.equal(traits.ayeong, 3, 'level 1 + 1 = three shots');
   assert.equal(traits.yoran, true);
-  assert.equal(traits.unhak, 3, 'two 필살기 + 1');
+  assert.equal(traits.yoranGauge, 1.5, '정요란: gauge +50% per kill');
+  assert.equal(traits.unhak, 2, 'one 필살기 + 1');
   assert.deepEqual(traits.yeoncheong, { second: 2, first: 2, afterFall: 1 });
   assert.deepEqual(traits.offWhileWaiting, { graze: 1.4, crit: false });
   console.log('PASS 12 traits, their scope (self / party), no road affinity, party trait off after a fall');

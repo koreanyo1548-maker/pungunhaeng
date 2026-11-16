@@ -1,12 +1,10 @@
-// 인연 카드: each 인연's card level, pieces, and what the card does to their unique skill. Opened from the title.
-// Read only: pieces come from 뽑기 (systems/gacha.ts). Only 인연 with a card appear in runs.
+// 인연 카드: each 인연's card level, pieces, and what the card does to their three 인연 단계. Opened from the title.
+// Read only: pieces come from 뽑기 (systems/gacha.ts). Only 인연 with a card come to a 만남 in runs.
 import { npcPictures } from '../core/assets';
 import { $ } from '../core/dom';
 import { profile } from '../core/profile';
 import { BR } from '../data/branches';
 import {
-  CARD_EASE,
-  CARD_HELP,
   LEVEL_MAX as CARD_MAX,
   NPC_IDS,
   PIECE_STEPS as CARD_STEPS,
@@ -14,18 +12,14 @@ import {
   pipText,
 } from '../data/meta';
 import type { NpcId } from '../data/meta';
-import { NPCS } from '../data/npcs';
-import { SKILLS, skillEffect, skillWhen } from '../data/skills';
+import { NPCS, SIDE_NAME } from '../data/npcs';
+import { SKILLS, skillEffect } from '../data/skills';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
 
 /** What reaching this level adds (1 to 5). */
 export function cardGain(id: string, level: number): string {
-  const boost = NPCS[id].card,
-    skill = SKILLS[NPCS[id].unique].name;
-  return ['인연 카드 등록', `${skill} 강화 · ${boost[0]}`, CARD_EASE, `${skill} 강화 · ${boost[1]}`, CARD_HELP][
-    level - 1
-  ];
+  return level === 1 ? '인연 카드 등록 · 만남에 나온다' : '1·2·3단계 수치 강화 (위력 +10%)';
 }
 const pips = pipText;
 
@@ -58,7 +52,7 @@ function detail(id: NpcId): Detail {
     pieces = profile.cards[id],
     level = cardLevel(pieces),
     [now, goal] = toNext(id),
-    skill = SKILLS[n.unique];
+    shown = Math.max(1, level);
   return {
     name: n.name,
     image: npcPictures[id],
@@ -73,10 +67,17 @@ function detail(id: NpcId): Detail {
       goal,
     },
     sections: [
-      { title: `고유 기술 「${skill.name}」`, body: `${skillWhen(n.unique)} · ${skillEffect(n.unique, level)}` },
+      {
+        title: `${SIDE_NAME[n.side]} · 저울 ${n.side === 'good' ? '선' : '악'} ${n.unlock}에서 열림`,
+        body: '판에서 선·악 저울이 이 값에 닿으면 만남에 나온다. 의뢰를 따라 이루면 한 단계씩 오른다(3단계 뒤에는 엽전).',
+      },
+      ...n.levels.map((skill, i) => ({
+        title: `${i + 1}단계 「${SKILLS[skill].name}」`,
+        body: skillEffect(skill, shown),
+      })),
       {
         title: '조각 얻는 법',
-        body: '뽑기. 카드가 생기면 이 인연이 판에 나타나고, 카드가 없으면 그 자리에 행인이 나온다.',
+        body: '뽑기. 카드가 없으면 이 인연은 만남에 나오지 않고, 그 자리에 행인이 나온다.',
       },
     ],
     track: {

@@ -4,7 +4,7 @@ import { $, H, W, canvas } from '../core/dom';
 import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { blast } from '../systems/combat';
-import { home, pause, resume, start } from '../systems/flow';
+import { home, pause, resume, skyStage, start } from '../systems/flow';
 
 // Touch actions respond on contact, independently of the browser's synthesized click.
 // Ignore that later touch click so one tap cannot spend two charges.
@@ -40,7 +40,7 @@ canvas.addEventListener('pointermove', e => {
   if (G.mode !== 'play' || G.pointer?.id !== e.pointerId) return;
   const rect = canvas.getBoundingClientRect();
   G.player.target = clamp(G.pointer.start + (((e.clientX - G.pointer.x) * W) / rect.width) * 1.12, 24, W - 24);
-  if (G.state?.course === 'sky')
+  if (TUNE.freeFlight && skyStage())
     G.player.targetY = clamp(
       G.pointer.startY + (((e.clientY - G.pointer.y) * H) / rect.height) * 1.12,
       TUNE.skyMinY,

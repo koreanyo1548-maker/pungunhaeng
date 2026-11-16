@@ -27,12 +27,11 @@ try {
           '/src/data/skills.ts',
           '/src/ui/hud.ts',
           '/src/systems/loop.ts',
-          '/src/scenes/inn.ts',
           '/src/render/renderer.ts',
         ].map(x => import(x)),
       )),
     );
-    // course, then the vanguard (first card: 풍운객) and the second (second card after him: 묵영). 철혈 is left out
+    // stage 1, then the vanguard (first card: 풍운객) and the second (second card after him: 묵영). 철혈 is left out
     // on purpose: his trait (+1 health) and entry skill (불굴) are tested in heroines.mjs.
     window.begin = () => {
       M.start();
@@ -41,7 +40,6 @@ try {
         document.querySelectorAll('#choice button.card')[i].click();
         confirm?.click();
       }
-      document.querySelector('#choice .act').click();
       M.G.player.inv = 0;
       M.G.time = 10;
     };
@@ -104,34 +102,29 @@ try {
     const entered = { mode: G.mode, hp: G.player.hp, max: G.player.maxHp, active: G.state.active };
     G.player.inv = 0;
     M.damagePlayer(); // second 2 -> 1
-    M.learn('hoegi');
-    G.state.skills.find(s => s.id === 'hoegi').used = false;
-    M.trig('blast');
-    const healed = G.player.hp;
-    M.SKILLS.cheolgol.lose();
-    G.state.skills = G.state.skills.filter(s => s.id !== 'cheolgol');
-    M.nextStage();
-    const afterStage = structuredClone(G.state.heroHealth[ids[0]]);
+    const wounded = G.player.hp;
+    // 약선 1단계 again: the living hero gains, the fallen one stays down
     M.learn('cheolgol');
+    const healed = G.player.hp;
     const afterBuff = structuredClone(G.state.heroHealth[ids[0]]);
-    return { woundedHp, entered, healed, afterStage, afterBuff };
+    return { woundedHp, entered, wounded, healed, afterBuff };
   });
   assert.equal(manual.woundedHp, 1);
   assert.deepEqual(manual.entered, { mode: 'play', hp: 2, max: 2, active: 1 });
+  assert.equal(manual.wounded, 1);
   assert.equal(manual.healed, 2);
-  assert.equal(manual.afterStage.hp, 0);
-  assert.equal(manual.afterStage.fallen, true);
   assert.equal(manual.afterBuff.hp, 0);
   assert.equal(manual.afterBuff.fallen, true);
-  console.log(
-    'PASS individual health, retained HP buff/heal, buff removal, stage recovery cannot revive fallen heroes',
-  );
+  console.log('PASS individual health, retained HP buff, 약선 1단계 heals the living and cannot revive the fallen');
   for (const defense of ['shield', 'hoechun', 'inv', 'hyper']) {
     const state = await p.evaluate(defense => {
       begin();
       const { G } = M;
       if (defense === 'shield') G.player.shield = 1;
-      if (defense === 'hoechun') M.learn('hoechun');
+      if (defense === 'hoechun') {
+        M.learn('hoechun');
+        M.updateSkills(1 / 60); // its first period arms it at once
+      }
       if (defense === 'inv') G.player.inv = 0.3;
       if (defense === 'hyper') G.state.hyper = 1;
       M.damagePlayer();

@@ -3,16 +3,16 @@ import { W, ctx } from '../core/dom';
 import { clamp } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { TUNE } from '../data/tune';
-import { hasSkill } from '../systems/skill-state';
+import { bondGraze } from '../data/skills';
 import { grazeReach } from '../systems/hero-effects';
 
 export function drawQuestCue() {
   const q = G.state?.quest;
-  if (!q || q.done || q.failed || q.stage !== G.state.stage || G.mode === 'title' || G.player.hp <= 0) return;
+  if (!q || q.done || q.failed || G.mode === 'title' || G.player.hp <= 0) return;
   const c = BR[q.br].color;
   ctx.save();
   if (q.t === 'graze') {
-    const r = 10 + TUNE.grazeRadius * (hasSkill('biyeon') ? 1.6 : 1) * grazeReach() + 8;
+    const r = 10 + TUNE.grazeRadius * bondGraze() * grazeReach() + 8;
     ctx.strokeStyle = c;
     ctx.globalAlpha = 0.62;
     ctx.setLineDash([6, 6]);

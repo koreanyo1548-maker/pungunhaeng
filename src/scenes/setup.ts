@@ -4,28 +4,32 @@ import energy from '../assets/icons/energy.svg';
 import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { heroPictures, heroAnimations } from '../core/assets';
-import { COURSES } from '../data/courses';
+import { STAGES } from '../data/stages';
+import { fmt } from '../core/math';
 import { heroOwned, profile } from '../core/profile';
 import { HEROES } from '../data/heroes';
 import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
 import { openChoice } from './choice';
 
-export function openCourseSelect() {
+/** Stage select: six stages opened in order; beating a stage's boss opens the next (profile.stages). */
+export function openStageSelect() {
   openChoice({
-    eyebrow: '관문 모드',
-    title: '길을 고르라',
-    sub: '땅과 하늘, 두 갈래 길이 있다. 무한 모드(땅과 하늘을 오가는 길)는 준비 중이다.',
-    cards: Object.entries(COURSES).map(([id, c]) => ({
-      color: id === 'sky' ? '#9fe5ff' : '#ffc179',
-      tag: c.name + ' · 관문 3개 + ' + c.regions[3].name,
-      title: c.label,
-      desc: c.desc,
-      onPick: () => {
-        G.state.course = id;
-        done('course');
-      },
-    })),
+    eyebrow: '스테이지',
+    title: '어디로 갈까',
+    sub: '보스를 잡으면 다음 스테이지가 열린다. 적을 처치해 게이지를 채우면 인연이나 행인을 만난다.',
+    cards: STAGES.map((st, i) => {
+      const n = i + 1,
+        locked = n > profile.stages;
+      return {
+        color: st.color,
+        disabled: locked,
+        tag: locked ? `잠김 · S${n - 1} 보스를 잡으면 열림` : `S${n} · ${st.world === 2 ? '하늘' : '땅'}`,
+        title: st.name,
+        desc: `보스 <b>${st.boss}</b> · ${fmt(st.distance)}m<br>${st.hint}`,
+        onPick: () => done('stageSelect', n),
+      };
+    }),
   });
 }
 /** "★★☆☆☆ 성급 2 · 다음 성급까지 조각 2개" for a hero's 성급 (raised by pieces from 뽑기). */
@@ -91,7 +95,7 @@ export function openFormation(slot) {
     title: slot === 0 ? '선봉' : '후발',
     sub:
       slot === 0
-        ? '먼저 싸울 고수를 고른다. 특성은 싸우는 동안 켜진다. 각 영웅은 체력 1로 시작하고, 얻은 기술은 편대가 함께 쓴다.'
+        ? '먼저 싸울 고수를 고른다. 특성은 싸우는 동안 켜진다. 각 영웅은 체력 1로 시작하고, 인연에게 얻은 기술은 편대가 함께 쓴다.'
         : '선봉이 쓰러지면 나설 고수를 고른다. 나서는 순간 등장 기술이 펼쳐진다. 지원형의 특성은 대기 중에도 편대 전체에 켜진다.',
     cards: ids.map(id => heroCard(id, slot)),
   });

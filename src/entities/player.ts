@@ -9,7 +9,7 @@ import { hoechunSeconds } from '../data/skills';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
-import { movementTier } from '../systems/flow';
+import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
 import { basicShotOptions, cloneOffsets, unbowedHit, weaponBonus } from '../systems/hero-effects';
@@ -33,12 +33,11 @@ export function damagePlayer() {
     return;
   }
   if (G.state.negate) {
-    // 회춘단: one block per gate, two with a level 4 card
-    G.state.negateLeft = (G.state.negateLeft ?? 1) - 1;
-    G.state.negate = G.state.negateLeft > 0;
+    // 회춘단 (떠돌이 약선 3단계): one block, armed again on its timer (data/skills.ts)
+    G.state.negate = false;
+    G.state.negateLeft = 0;
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
     G.player.inv = hoechunSeconds();
-    G.state.bombs = Math.min(G.state.maxBombs, G.state.bombs + 1);
     if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
     label('회춘단', G.player.x, G.player.y - 55, BR.gi.color, 20);
     chime();
@@ -93,7 +92,7 @@ export function shoot() {
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);
 }
 export function borrowedSword() {
-  return G.state?.course === 'sky' && HEROES[activeHeroId()].terrain === 'ground';
+  return skyStage() && HEROES[activeHeroId()].terrain === 'ground';
 }
 export function heroPose() {
   if (reduced || borrowedSword()) return 0;

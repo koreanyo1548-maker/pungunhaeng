@@ -4,44 +4,24 @@ import { emit } from '../core/events';
 import { G } from '../core/context';
 import { boom, chime, tone } from '../core/audio';
 import { BR } from '../data/branches';
-import { TUNE } from '../data/tune';
 import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
-import { difficulty, region } from './flow';
+import { difficulty } from './flow';
+import { bondPower } from '../data/skills';
 import { notify, syncHUD } from '../ui/hud';
 
 const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
+/** damage scale of one basic shot: the stage, and 녹림 의적 1단계 */
 export function shotPower() {
-  return 1.3 * (1 + 0.12 * difficulty());
-}
-export function gainCharge(n) {
-  n *= (hasSkill('chukgi') ? 1.5 : 1) * (region().terrain === 'cloud' ? TUNE.cloudCharge : 1);
-  if (G.state.bombs >= G.state.maxBombs) {
-    G.state.charge = 100;
-    return;
-  }
-  emit('charge', { n });
-  if (n > 0 && hasSkill('chukgi')) skillCue('chukgi', G.player.x, G.player.y, 80, false, true);
-  G.state.charge += n;
-  while (G.state.charge >= 100 && G.state.bombs < G.state.maxBombs) {
-    G.state.charge -= 100;
-    G.state.bombs++;
-    notify('필살기 +1', 1);
-    chime();
-    if (G.state.bombs >= G.state.maxBombs) {
-      G.state.charge = 100;
-      emit('fullCharge');
-    }
-  }
+  return 1.3 * (1 + 0.12 * difficulty()) * bondPower();
 }
 export function blast() {
   if (G.mode !== 'play' || G.state.bombs <= 0 || ['clear', 'warning'].includes(G.state.phase)) return;
   G.state.bombs--;
-  if (G.state.charge === 100) G.state.charge = 0;
   G.hazards = [];
   const before = G.state.kills;
   G.state.blasting = true;
@@ -139,15 +119,10 @@ export function clearBullets(x, y, r) {
 export function graze(h) {
   h.grazed = true;
   G.state.grazes++;
-  gainCharge(TUNE.grazeCharge);
   const gx = (h.x + G.player.x) / 2,
     gy = (h.y + G.player.y) / 2;
   if (!pfx('hit', gx, gy, { palette: GRAZE })) burst(gx, gy, BR.yu.color, 5, 120);
-  if (hasSkill('biyeon')) {
-    skillCue('biyeon', h.x, h.y, 65);
-    h.vx = (h.vx || 0) * 0.5;
-    h.vy *= 0.5;
-  }
+  if (hasSkill('biyeon')) skillCue('biyeon', h.x, h.y, 65);
   if (G.time - (G.state.lastGraze || -1) > 0.06) {
     tone(1500, 0.04, 'sine', 0.04, 2100);
     G.state.lastGraze = G.time;
@@ -157,7 +132,6 @@ export function graze(h) {
 export function grazeEnemy(e) {
   if (hasSkill('biyeon')) skillCue('biyeon', G.player.x, G.player.y, 80);
   G.state.grazes++;
-  gainCharge(TUNE.grazeCharge);
   const gx = (e.x + G.player.x) / 2;
   if (!pfx('hit', gx, G.player.y, { palette: GRAZE })) burst(gx, G.player.y, BR.yu.color, 5, 120);
   if (G.time - (G.state.lastGraze || -1) > 0.06) {

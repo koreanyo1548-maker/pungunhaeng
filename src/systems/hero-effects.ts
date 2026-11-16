@@ -55,7 +55,6 @@ export function applyStartTraits() {
     }
     if (id === 'unhak') {
       s.bombs += HEROES.unhak.trait.value(heroLevel('unhak'));
-      s.maxBombs = Math.max(s.maxBombs, s.bombs);
     }
   }
 }

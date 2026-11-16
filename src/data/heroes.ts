@@ -255,7 +255,6 @@ export const HEROES: Record<HeroId, Hero> = {
       scope: 'self',
       value: L => 0.5 + 0.1 * L,
       desc: L => `처치 게이지 +${pct(0.5 + 0.1 * L)}`,
-      pending: '스테이지 개편 후 적용',
     },
     entry: {
       name: '정심반사',

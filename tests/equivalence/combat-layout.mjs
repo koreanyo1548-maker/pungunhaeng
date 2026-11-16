@@ -14,6 +14,11 @@ async function snapshot(file, viewport) {
   await g.step(2);
   await g.pick(0);
   await g.step(2);
+  // builds before the stage redesign open a crossroads here; later ones start in play, so call an 인연 first
+  if ((await g.mode()) !== 'choice') {
+    await g.eval(() => window.__g.meet('yakseon'));
+    await g.step(2);
+  }
   await g.act(0);
   await g.seconds(0.2);
   const read = () =>

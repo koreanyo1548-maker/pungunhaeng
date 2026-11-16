@@ -18,10 +18,10 @@ npm run typecheck
 
 - **고정 시간 간격**: 시뮬레이션은 화면 주사율과 상관없이 1/60초 단위로 진행합니다 (`systems/loop.ts`). 60·90·120Hz에서 같은 판이 나옵니다.
 - **시드 난수**: 게임플레이 난수(`random`, `rnd`)와 연출 난수(`fxRandom`, `fxRnd`)를 나눴습니다 (`core/rng.ts`). 파티클·화면 흔들림은 게임 결과에 영향을 주지 않습니다.
-- **장면 흐름**: 한 판의 장면 순서(길·편대 → 관문 → 스테이지 → 투학 → 객잔 → … → 결과)는 `systems/scene-flow.ts`의 전환표 한 곳에서 정합니다. 장면은 끝났다는 것만 알립니다(`done`).
-- **스테이지 단계**: 한 관문 안의 비행 → 경고 → 보스 → 돌파는 `systems/stage-phases.ts`의 단계표에 있고, 단계 전환은 `setPhase`로만 합니다.
-- **판 구성**: 어떤 관문을 어떤 순서로 지나는지는 `systems/run-plan.ts`의 계획 목록입니다. 최종 관문 규칙은 `isFinal()`로 확인합니다. 스테이지 모드는 코스의 고정 목록(관문 3개와 최종 관문)을 씁니다.
-- **이벤트 버스**: 전투는 일어난 일만 알리고(`emit`), 화두와 깨달음이 구독합니다 (`core/events.ts`). 화두 리스너가 먼저 등록되어 있어야 합니다 (`main.ts`).
+- **장면 흐름**: 한 판의 장면 순서(스테이지 선택 → 편대 → 비행 ↔ 만남 → 보스 → 결과)는 `systems/scene-flow.ts`의 전환표 한 곳에서 정합니다. 장면은 끝났다는 것만 알립니다(`done`).
+- **스테이지 단계**: 한 스테이지 안의 비행(정해진 거리) → 경고 → 보스 → 돌파는 `systems/stage-phases.ts`의 단계표에 있고, 단계 전환은 `setPhase`로만 합니다.
+- **스테이지와 만남**: 스테이지 6개는 `data/stages.ts`(배경, 보스, 거리, 게이지 크기). 처치 게이지는 `systems/encounter.ts`, 선·악 저울과 인연 해금은 `systems/alignment.ts`, 의뢰와 인연 단계는 `systems/quest.ts`, 행인은 `systems/virtue.ts`에 있습니다. 설계는 `docs/ability-redesign-plan.md`.
+- **이벤트 버스**: 전투는 일어난 일만 알리고(`emit`), 의뢰와 인연 기술이 구독합니다 (`core/events.ts`). 의뢰 리스너가 먼저 등록되어 있어야 합니다 (`main.ts`).
 - **데이터 주도**: 수치와 콘텐츠는 `data/`에 있습니다. 밸런스 조정은 먼저 `data/tune.ts`를 봅니다.
 
 ## 구조
@@ -31,11 +31,11 @@ src/
   main.ts       진입점
   assets/       원본 PNG 아틀라스와 manifest
   core/         DOM·캔버스, 공유 상태(G), 수학·문자 유틸, 사운드, 리소스 로더
-  data/         기획 데이터: 수치(tune), 코스, 영웅, 인연, 깨달음, 갈래·조건, 적 등급
+  data/         기획 데이터: 수치(tune), 스테이지, 영웅, 인연, 인연 기술, 의뢰 조건, 적 등급
   entities/     플레이어, 적, 보스, 줍는 물건
-  systems/      게임 흐름, 루프, 전투, 깨달음, 화두, 인연, 편대
-  scenes/       선택 화면: 길·편대, 갈림길(인연), 돈오, 투학, 객잔, 최종 관문, 결과
-  render/       그리기: 배경, 캐릭터, 투사체, 이펙트, 보스 UI, 화두 단서
+  systems/      게임 흐름, 루프, 전투, 인연 기술, 의뢰, 처치 게이지, 저울, 행인, 편대, 영웅 특성·등장 기술
+  scenes/       선택 화면: 스테이지·편대, 만남(인연·행인), 결과, 영웅·인연 카드·뽑기 (최종 관문은 흐름 밖에 보관)
+  render/       그리기: 배경, 캐릭터, 투사체, 이펙트, 보스 UI, 의뢰 단서
   ui/           HUD, 입력
   debug/        #debug 훅
 tests/
@@ -52,17 +52,17 @@ tests/
 ```bash
 npm test               # 타입 검사 → 한 파일 빌드 → e2e
 
-# e2e: 두 코스 완주(인연 따름·돈오·교대·보스·투학·객잔 구매·최종 관문)와
-#      거스름·미달 분기(관계 변화, 같은 인연 재등장)를 검사. 실패하면 종료 코드 1
+# e2e: 스테이지 선택·해금, 만남(행인 1·2단계, 인연 의뢰 따름·거스름·실패), 저울 해금,
+#      인연 1→2→3단계→엽전, 처치 게이지 규칙, 거리 → 보스 → 결과, 뽑기·영웅·인연 카드. 실패하면 종료 코드 1
 npm run test:e2e
 
-# 밸런스 봇: 시드별로 생존, 피격, 스테이지 길이, 엽전을 관문마다 보고
-npm run test:sim                         # 코스마다 4판
-npm run test:sim -- --runs 8 --god       # 무적 봇: 전체 판의 길이와 엽전 흐름
+# 밸런스 봇: 시드별로 생존, 피격, 스테이지 길이, 처치, 만남 횟수, 엽전을 보고
+npm run test:sim                         # S1·S6 각 4판
+npm run test:sim -- --stages 1,3,6 --god # 무적 봇: 스테이지 길이와 만남 횟수
 npm run test:sim -- other-build.html     # 다른 빌드와 비교할 때
 
 # 리팩터링 검증: 시드·시간·입력을 고정해 두 빌드의 게임 상태를 비교. 차이가 나면 종료 코드 1
-node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps] [course 0=땅 1=하늘]
+node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps] [stage 0=S1 … 5=S6]
 FRAME_MS_B=8.333333333333334 node tests/equivalence/run.mjs a.html a.html   # 60Hz와 120Hz 비교
 
 # 화면 검증: UI 상태 13개 × 화면 2종의 계산된 스타일을 덤프해 비교

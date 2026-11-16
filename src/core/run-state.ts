@@ -30,8 +30,6 @@ export function createRunState(meta: Meta, hyperCooldown: number): RunState {
     ghostTimer: 0,
     runPhase: 0,
     jumpPhase: 0,
-    ascend: 0,
-    previousTier: 0,
     skills: [],
     met: {},
     quest: null,

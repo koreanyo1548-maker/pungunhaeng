@@ -59,8 +59,8 @@ export function registerAbilityListeners() {
   on('nearKill', d => trig('nearKill', d));
 }
 
-/** Visuals are emitted only for actual effects; the gameplay callback still always runs. */
-function performSkill(s, fn) {
+/** Visuals are emitted only for actual effects; the gameplay callback still always runs. False when it did nothing. */
+function performSkill(s, fn): boolean {
   const id = s.id,
     shield = G.player.shield,
     negate = G.state.negate;
@@ -69,20 +69,21 @@ function performSkill(s, fn) {
   // a shield or a 회춘단 block is named when it actually forms
   if (id === 'art_cheolgap') {
     if (G.player.shield && !shield) skillCallout(s);
-    return;
+    return !shield;
   }
   if (id === 'hoechun') {
     if (G.state.negate && !negate) skillCallout(s);
-    return;
+    return !negate;
   }
-  if (id === 'art_cheonma' && !hasTarget) return;
+  if (id === 'art_cheonma' && !hasTarget) return false;
   skillCallout(s);
   if (!['yusu', 'bungsan', 'art_cheonma'].includes(id)) skillCue(id, G.player.x, G.player.y - 45, 115);
+  return true;
 }
 
 /** Called only after each trigger's own eligibility checks; keep execution order identical. */
 function executeSkill(s, cooldown: number, effect: () => void) {
   s.ready = G.time + cooldown;
-  s.flash = G.time;
-  performSkill(s, effect);
+  // the HUD chip lights only when the skill did something
+  if (performSkill(s, effect)) s.flash = G.time;
 }

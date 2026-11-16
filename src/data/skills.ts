@@ -11,12 +11,10 @@ import { hasSkill } from '../systems/skill-state';
 // 인연 단계 skills (docs/ability-redesign-plan.md, 4.6). Each 인연 has three, one per level (data/npcs.ts
 // `levels`): 1단계 a number, 2단계 a projectile skill, 3단계 their signature skill (the three boss skills moved
 // here). They are learned in a run when an 의뢰 is followed and met, and last for that run.
-// An 인연 card raises the numbers: every card level above 1 adds its step (`k` below, 0 to 4), read from the
+// An 인연 card raises the numbers: every card level above 1 adds a step (`r - 1`, 0 to 4), read from the
 // run's snapshot. All numbers are provisional (balance pass).
 // D() is the damage of one basic shot; a skill's projectile hits at least twice as hard (see docs/terms.md).
 
-/** card level above 1 of an 인연 in this run: 0 (card level 1, or no card) to 4 */
-const step = (npc: string) => Math.max(0, cardRank(npc) - 1);
 /** damage multiplier an 인연 card gives that 인연's skills: +10% per card level above 1 */
 export const cardBoost = (npc: string, r = cardRank(npc)) => 1 + 0.1 * Math.max(0, r - 1);
 const pct = (n: number) => Math.round(n * 100) + '%';
@@ -100,7 +98,6 @@ export const SKILLS: Record<string, SkillDef> = {
     fx: () => {
       if (G.state.negate) return;
       G.state.negate = true;
-      G.state.negateLeft = 1;
     },
   },
   // 청운 도인 (정파)
@@ -282,18 +279,4 @@ export const cooldown = (d: SkillDef) => (typeof d.cd === 'function' ? d.cd() : 
 /** A skill's 효과 line, worded for the 인연 card level (the run's, or the one given). */
 export function skillEffect(id: string, rank = cardRank(SKILLS[id].npc)): string {
   return SKILLS[id].effect(rank);
-}
-
-/** When a skill goes off, in the player's words (the 발동 line). */
-const WHEN = {
-  step: '좌우 전환할 때',
-  graze: '적이나 탄을 스칠 때',
-  nearKill: '근접 처치할 때',
-  rowClear: '한 줄을 전멸시킬 때',
-  blast: '필살기를 쓸 때',
-  passive: '항상',
-};
-export function skillWhen(id: string): string {
-  const d = SKILLS[id];
-  return d.trig === 'tick' ? cooldown(d) + '초마다' : WHEN[d.trig];
 }

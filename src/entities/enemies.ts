@@ -177,7 +177,6 @@ export function kill(e, byHyper = false) {
         onNearKill();
       }
       emit('kill', { e });
-      if (G.state.combo % 10 === 0) emit('combo10');
     }
   }
 }

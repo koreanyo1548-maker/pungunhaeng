@@ -100,7 +100,7 @@ export function end(victory = false) {
     `S${G.state.stage} ${r.name} · ` +
     (victory
       ? r.boss + ' 처치' + (opened ? ` · S${G.state.stage + 1} ${STAGES[G.state.stage].name} 열림` : '')
-      : `만남 ${G.state.encounters}번 · ${fmt(G.state.distance)} / ${fmt(stageDistance())} m`);
+      : `만남 ${G.state.encounters}번 · ${fmt(Math.min(G.state.distance, stageDistance()))} / ${fmt(stageDistance())} m`);
   $('summary').innerHTML = runSummary();
   $('newRecord').classList.toggle('hidden', !record);
   $('finalScore').textContent = fmt(G.state.score);

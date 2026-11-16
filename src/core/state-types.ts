@@ -15,6 +15,8 @@ export interface Quest {
   done: boolean;
   failed: boolean;
   tick?: number;
+  /** combo 의뢰: the combo already running when it was accepted (only the chain after it counts) */
+  from?: number;
 }
 export interface PathEntry {
   /** which 만남 of the run (1 = first) */
@@ -56,8 +58,6 @@ export interface RunState {
   ghostTimer: number;
   runPhase: number;
   jumpPhase: number;
-  ascend: number;
-  previousTier: number;
   grazes: number;
   rain: number;
   rainTimer: number;
@@ -97,11 +97,10 @@ export interface RunState {
   encounters: number;
   /** passers-by met this run (their level and portrait) */
   passers: number;
-  /** game time of the last 등장, so a 만남 waits one step after it */
-  enteredAt?: number;
+  /** a hero entered during this step, so a 만남 waits one step (cleared when the next step starts) */
+  enteredStep?: boolean;
   questPath?: PathEntry;
   stats?: Record<string, number>;
-  negateLeft?: number;
   lastStepDir?: number;
   lastStepTime?: number;
   lastGraze?: number;

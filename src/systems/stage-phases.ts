@@ -104,7 +104,8 @@ function updateFlight(dt) {
   if (
     G.state.hyperCooldown <= 0 &&
     G.state.hyper <= 0 &&
-    G.state.distance < stageDistance() - 1000 &&
+    // 무아지경 runs about 1,800m (4.2s at 420m/s): leave room so the boss warning does not cut it short
+    G.state.distance < stageDistance() - 2000 &&
     !G.pickups.some(p => p.kind === 'hyper')
   ) {
     addPickup('hyper', clamp(G.player.x + rnd(-100, 100), 45, W - 45), -20);

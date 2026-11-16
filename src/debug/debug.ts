@@ -37,6 +37,9 @@ if (location.hash.includes('debug'))
     get enemies() {
       return G.enemies;
     },
+    get hazards() {
+      return G.hazards;
+    },
     questEvent,
     learn,
     /** fire the skills bound to a trigger, as combat would (tests count what they shoot) */

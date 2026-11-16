@@ -17,7 +17,7 @@ export interface Stage {
   patterns: string[];
   /** metres to run before the boss comes */
   distance: number;
-  /** kills that fill the 처치 게이지 (a 만남); later stages kill slower, so it is smaller (about 6 per run) */
+  /** kills that fill the 처치 게이지 (a 만남): set from the bot's kills per stage so a run has about 6 (provisional) */
   gauge: number;
 }
 

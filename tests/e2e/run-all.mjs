@@ -428,6 +428,12 @@ async function scenarioC(browser, seed) {
   const left = await g.state(() => window.__g.state.coins);
   const p = await P();
   check(f, title === '강호행 종료', `defeat title (got ${title})`);
+  const run = (await g.page.$eval('#resultEyebrow', e => e.textContent)).match(/([\d,]+) \/ ([\d,]+) m/);
+  check(
+    f,
+    run && +run[1].replace(/,/g, '') <= +run[2].replace(/,/g, ''),
+    `the distance on defeat stops at the stage length (${run?.[0]})`,
+  );
   check(
     f,
     p.coins === before + left && p.stages === 2,
@@ -469,6 +475,53 @@ async function scenarioD(browser, seed) {
   await blastKills(g, 1);
   const yoran = await g.state(() => window.__g.state.gauge);
   check(f, yoran === 1.5, `정요란: a kill fills 1.5 (${yoran})`);
+  // a combo 의뢰 counts only the chain after it was accepted (the combo does not run down during a 만남)
+  await g.eval(() => {
+    const st = window.__g.state;
+    st.met.monk = 1; // 철벽 노승's second 의뢰: follow = 연속 처치 40
+    st.combo = 39;
+    st.comboTimer = 2;
+    window.__g.meet('monk');
+  });
+  await g.act(0);
+  await g.step(1);
+  // one ordinary kill: the combo reaches 40 and the kill event reports it
+  await g.eval(() => {
+    window.__g.state.combo = 40;
+    window.__g.questEvent('combo');
+  });
+  s = await g.state(S);
+  const comboQuest = await g.state(() => ({ ...window.__g.state.quest }));
+  check(
+    f,
+    comboQuest.t === 'combo' && comboQuest.prog === 1 && !comboQuest.done,
+    `combo 40 reached, but the 의뢰 counts 1 since it was accepted (${JSON.stringify(comboQuest)})`,
+  );
+  // a hero entering in a step holds the waiting 만남 to the next step
+  const entry = await g.eval(() => {
+    const G = window.__g,
+      st = G.state;
+    st.formation = ['pungun', 'cheolhyeol'];
+    st.active = 0;
+    for (const id of st.formation) Object.assign(st.heroHealth[id], { hp: 1, maxHp: 1, fallen: false });
+    Object.assign(G.player, { inv: 0, shield: 0 });
+    Object.assign(st, { hyper: 0, negate: false, effect: null, meetReady: true });
+    G.enemies.length = 0;
+    G.hazards.length = 0;
+    G.hazards.push({ kind: 'bullet', x: G.player.x, y: G.player.y, vx: 0, vy: 0, r: 8, warn: 0 });
+    window.__step(1);
+    return { mode: G.mode, active: st.active, ready: st.meetReady };
+  });
+  await g.eval(() => window.__step(1));
+  const next = await g.mode();
+  check(
+    f,
+    entry.mode === 'play' && entry.active === 1 && entry.ready && next === 'choice',
+    `an entry holds the 만남 one step (${JSON.stringify(entry)}, then ${next})`,
+  );
+  await g.act(0);
+  await g.step(2);
+  await g.eval(() => window.__g.god());
   // an 의뢰 open at the warning carries into the boss fight; met there, it pays
   await g.eval(() => window.__g.meet('milsa'));
   await g.act(0);
@@ -493,6 +546,19 @@ async function scenarioD(browser, seed) {
     f,
     s.bond.milsa === 1 && s.bombs === bombs + 1,
     `met in the boss fight: 혈마 밀사 1단계, 필살기 +1 (${bombs} → ${s.bombs})`,
+  );
+  const skillCount = await g.eval(() => {
+    const G = window.__g;
+    G.raiseBond('milsa');
+    G.raiseBond('milsa');
+    const at3 = G.state.skills.length;
+    G.raiseBond('milsa');
+    return [G.state.bond.milsa, at3, G.state.skills.length];
+  });
+  check(
+    f,
+    skillCount[0] === 3 && skillCount[1] === skillCount[2],
+    `raising an 인연 past 3단계 adds nothing (${skillCount})`,
   );
   const ring = await g.eval(() => document.getElementById('blast').style.getPropertyValue('--p'));
   check(f, ring === '100', `the 필살기 ring is full while one is left (${ring})`);

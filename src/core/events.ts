@@ -13,8 +13,6 @@ export interface GameEvents {
   nearKill: { e: any };
   /** any non-boss kill that is not from a blast or 무아지경 */
   kill: { e: any };
-  /** every 10th combo kill */
-  combo10: undefined;
   /** a full row cleared without any enemy slipping past */
   rowClear: undefined;
   /** 필살기 (bomb) used */

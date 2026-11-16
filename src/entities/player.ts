@@ -35,7 +35,6 @@ export function damagePlayer() {
   if (G.state.negate) {
     // 회춘단 (떠돌이 약선 3단계): one block, armed again on its timer (data/skills.ts)
     G.state.negate = false;
-    G.state.negateLeft = 0;
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
     G.player.inv = hoechunSeconds();
     if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
@@ -103,7 +102,6 @@ export function heroPose() {
 export function updateMartialMotion(dt, oldX) {
   const tier = movementTier(),
     speed = Math.abs(G.player.x - oldX) / Math.max(0.001, dt);
-  G.state.ascend = Math.max(0, G.state.ascend - dt);
   G.state.runPhase += dt * 18;
   G.state.jumpPhase += dt * 5;
   G.player.step = Math.max(0, G.player.step - dt);

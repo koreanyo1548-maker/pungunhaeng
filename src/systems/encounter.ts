@@ -34,7 +34,7 @@ export function updateEncounter(): boolean {
     s.meetReady = false;
     return true;
   }
-  if (s.enteredAt === G.time) return true;
+  if (s.enteredStep) return true;
   s.meetReady = false;
   go('encounter');
   return false;

@@ -27,6 +27,7 @@ export function update(dt) {
     dt *= 0.12;
   }
   G.time += dt;
+  G.state.enteredStep = false;
   G.state.elapsed += dt;
   G.state.distance += dt * (G.state.hyper > 0 ? 420 : 85 + Math.min(difficulty() * 12, 65));
   G.state.score += dt * 8;

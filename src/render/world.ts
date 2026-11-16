@@ -29,10 +29,7 @@ export function background() {
   const tier = G.state && G.mode !== 'title' ? movementTier() : 0;
   ctx.fillStyle = '#49645b';
   ctx.fillRect(0, 0, W, H);
-  if (G.state?.ascend > 0 && G.mode !== 'title') {
-    drawWorld(G.state.previousTier);
-    drawWorld(tier, 1 - G.state.ascend / 2.6);
-  } else drawWorld(tier);
+  drawWorld(tier);
   ctx.fillStyle = tier === 0 ? '#162c2333' : tier === 1 ? '#063d3e3d' : '#102e514f';
   ctx.fillRect(0, 0, W, H);
   const edge = ctx.createLinearGradient(0, 0, W, 0);
@@ -65,11 +62,6 @@ export function background() {
     ctx.moveTo(x, y);
     ctx.quadraticCurveTo(x - 6, y + len / 2, x, y + len);
     ctx.stroke();
-  }
-  if (G.state?.ascend > 0) {
-    const a = Math.sin((1 - G.state.ascend / 2.6) * Math.PI) * 0.32;
-    ctx.fillStyle = `rgba(224,250,232,${a})`;
-    ctx.fillRect(0, 0, W, H);
   }
 }
 export function drawFootprints() {

@@ -38,8 +38,11 @@ export function questEvent(type, amount = 1) {
   }
   const q = G.state?.quest;
   if (!q || q.done || q.failed || q.t !== type || G.mode !== 'play' || G.state.phase === 'clear') return;
-  if (type === 'combo') q.prog = Math.max(q.prog, G.state.combo);
-  else q.prog += amount;
+  if (type === 'combo') {
+    // the chain counts from the 의뢰's acceptance: a combo that ran into the 만남 does not count
+    if (G.state.combo < (q.from ?? 0)) q.from = 0;
+    q.prog = Math.max(q.prog, G.state.combo - (q.from ?? 0));
+  } else q.prog += amount;
   if (q.prog >= q.target) {
     completeQuest();
     return;
@@ -49,7 +52,8 @@ export function questEvent(type, amount = 1) {
 
 /** Raises an 인연 one level: they teach the skill of that level. */
 export function raiseBond(id: string) {
-  const level = Math.min(BOND_MAX, bondLevel(id) + 1);
+  if (bondLevel(id) >= BOND_MAX) return;
+  const level = bondLevel(id) + 1;
   G.state.bond[id] = level;
   learn(NPCS[id].levels[level - 1]);
 }
@@ -102,6 +106,7 @@ export function acceptQuest(id, qmode) {
     br: COND[c.t].br,
     done: false,
     failed: false,
+    from: c.t === 'combo' ? G.state.combo : undefined,
   };
   G.state.path.push({ stage: G.state.encounters, npc: id, mode: qmode, t: c.t, result: '진행 중' });
   G.state.questPath = G.state.path[G.state.path.length - 1];

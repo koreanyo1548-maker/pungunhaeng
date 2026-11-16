@@ -70,6 +70,19 @@ export function coinsForKill(): number {
   return 3 + extra;
 }
 
+/** 비천: every Nth kill of a combo sends a flying sword at the nearest enemy. A broken combo starts over. */
+export function onComboKill() {
+  const n = traitValue('bicheon');
+  if (n === undefined || G.state.combo % n !== 0) return;
+  fireShot(G.player.x, G.player.y - 40, 0, D() * 4, {
+    kind: 'sword',
+    homing: true,
+    vy: 760,
+    color: HEROES.bicheon.color,
+  });
+  ring(G.player.x, G.player.y - 20, HEROES.bicheon.color, 6, 46, 0.25);
+}
+
 /** 풍운객: a close kill clears the bullets around him. */
 export function onNearKill() {
   const r = traitValue('pungun');
@@ -291,6 +304,5 @@ export function basicShotOptions() {
   return {
     homing: aim || undefined,
     pierceLeft: pierce || undefined,
-    erase: traitActive('bicheon') || undefined,
   };
 }

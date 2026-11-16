@@ -122,7 +122,7 @@ function updateShots(dt: number): void {
   }
 }
 
-/** A shot that erases hazards (비천's basic shots, 은침 ★5) removes the first one it touches and is spent. */
+/** A shot that erases hazards (은침 ★5) removes the first one it touches and is spent. */
 function eraseHazard(s): boolean {
   for (const h of G.hazards) {
     if (h.dead || h.warn > 0) continue;

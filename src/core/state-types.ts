@@ -142,7 +142,7 @@ export interface Shot {
   homing?: boolean;
   /** enemies a basic shot still passes through (목청완) */
   pierceLeft?: number;
-  /** the shot erases the first hazard it touches (비천, 은침 ★5) */
+  /** the shot erases the first hazard it touches (은침 ★5) */
   erase?: boolean;
   hits?: Set<Enemy>;
   dead?: boolean;

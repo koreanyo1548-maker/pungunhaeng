@@ -162,13 +162,19 @@ try {
     // 묵영: wider graze while he fights
     party('mukyoung', 'pungun');
     out.mukyoung = M.grazeReach();
-    // 비천: a basic shot erases the bullet it touches and is spent
+    // 비천: every 10th kill of a combo sends a homing sword (4 basic shots of damage); other kills do not
     party('bicheon', 'pungun');
-    const b = hazard(0, -80);
-    M.shoot();
-    const before = G.shots.length;
-    run(0.15);
-    out.bicheon = { erased: !!b.dead, shotsBefore: before, spent: G.shots.length < before };
+    const swords = () => G.shots.filter(s => s.kind === 'sword' && s.homing);
+    G.state.combo = 4;
+    M.kill(target(80, -200));
+    const off = swords().length;
+    G.state.combo = 9;
+    M.kill(target(80, -200));
+    out.bicheon = { off, on: swords().length, power: Math.round((swords()[0]?.damage / M.D()) * 10) / 10 };
+    party('pungun', 'bicheon');
+    G.state.combo = 9;
+    M.kill(target(80, -200));
+    out.bicheonWaiting = swords().length;
     // 홍련: some hits are critical (game random)
     party('hongryeon', 'pungun');
     const t = target();
@@ -217,7 +223,8 @@ try {
   assert.deepEqual(traits.cheolhyeolFirst, { hp: 2, max: 2 });
   assert.deepEqual(traits.cheolhyeolSecond, { hp: 2, maxHp: 2, fallen: false });
   assert.equal(traits.mukyoung, 1.4);
-  assert.deepEqual(traits.bicheon, { erased: true, shotsBefore: 2, spent: true });
+  assert.deepEqual(traits.bicheon, { off: 0, on: 1, power: 4 }, '비천: a sword on the 10th combo kill');
+  assert.equal(traits.bicheonWaiting, 0, '비천 waiting: no sword');
   assert.ok(traits.hongryeon > 0.08 && traits.hongryeon < 0.24, 'about 15% crits: ' + traits.hongryeon);
   assert.equal(traits.cheongwan, true);
   assert.deepEqual(traits.seolyeong, [4, 5, 4, 5]);

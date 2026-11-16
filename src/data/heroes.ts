@@ -115,7 +115,8 @@ export const HEROES: Record<HeroId, Hero> = {
     trait: {
       name: '비천',
       scope: 'self',
-      desc: () => '기본 공격이 적 탄에 닿으면 탄을 지운다 (그 공격도 사라짐)',
+      value: L => 10 - L,
+      desc: L => `연속 처치 ${10 - L}마다 비검이 날아가 가까운 적을 벤다 (기본 공격 4발 위력)`,
     },
     entry: {
       name: '어검진',

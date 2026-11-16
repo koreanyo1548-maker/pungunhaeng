@@ -18,7 +18,7 @@ import { hasSkill } from '../systems/skill-state';
 import { addKill } from '../systems/encounter';
 import { bondArmor } from '../data/skills';
 import { difficulty, region } from '../systems/flow';
-import { coinsForKill, critical, onNearKill } from '../systems/hero-effects';
+import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero-effects';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
@@ -162,6 +162,7 @@ export function kill(e, byHyper = false) {
     setPhase('clear');
   } else {
     addKill(e);
+    onComboKill();
     for (let i = 0, n = coinsForKill(); i < n; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
     if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))
       addPickup('power', e.x, e.y);

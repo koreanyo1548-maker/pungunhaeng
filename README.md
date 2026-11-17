@@ -7,7 +7,7 @@
 ```bash
 npm install
 npm run dev            # 개발 서버
-npm run build          # dist/ : index.html + JS/CSS/PNG 파일
+npm run build          # dist/ : index.html + JS/CSS/WebP 파일
 npm run build:single   # dist-single/index.html : 모든 리소스를 넣은 한 파일 (공유용)
 npm run typecheck
 ```
@@ -15,6 +15,30 @@ npm run typecheck
 작업 규칙(Codex·Claude 공통: 브랜치·PR 표시, 완료 기준, 빌드 공유)은 [`docs/workflow.md`](docs/workflow.md)에 있습니다.
 
 `index.html#debug` 로 열면 테스트용 `window.__g` 훅이 켜집니다. `#seed=42` (또는 `#debug&seed=42`)로 시드를 고정하면 같은 입력에서 같은 판이 재현됩니다.
+
+## 이미지 원본과 모바일 배포 리소스
+
+- `art/originals/`: 수정하지 않는 원본 PNG와 제작용 문서. 배포에 포함하지 않습니다.
+- `src/assets/images/`: Git에 커밋된 게임용 WebP. 별도 변환 없이 기존 Cloudflare 명령으로 빌드합니다.
+- 현재 빌드 이미지 40개 중 11개는 약 50%, 25개는 약 75% 크기로 축소합니다. 정수 픽셀과 시트 칸 단위로 반올림합니다.
+- 전장 배경, 큰 타이틀 초상, 해상도가 작은 비행/교대 시트 4개는 유지합니다. 미사용 `fx.webp`도 변경하지 않습니다.
+- `tools/mobile-image-profile.json`에 대상·축소율·시트 격자·유지 이유를 기록했습니다.
+- 소품 좌표, 아틀라스 여백, 기술 오프셋은 원본 좌표계로 유지하고 실제 이미지 비율로 환산합니다. HUD/게임 영역/규칙은 변경하지 않습니다.
+- WebP 인코딩은 **축소된 이미지 기준 무손실**입니다. 해상도 축소 자체는 원본의 세부 정보를 줄입니다.
+
+재생성:
+
+```bash
+python -m pip install -r tools/requirements-assets.txt
+npm run build
+python tools/convert-webp.py
+npm run build
+python tools/convert-webp.py --check
+```
+
+변환기는 `dist`에 실제 출력된 파일을 해시로 대조해 대상 목록과 다르면 중단합니다. 새 리소스는 먼저 기존 방식으로 WebP를 추가한 뒤 빌드에 연결하고 프로필에 축소 여부를 명시합니다. 원본과 미사용 WebP를 덮어쓰지 않습니다.
+
+`src/assets/image-dimensions.json`은 로더의 원본/배포 크기 정보입니다. `docs/webp-report.json`의 `build`는 현재 배포 이미지끼리 비교한 크기·픽셀 수이며 로딩 시간 실측값은 아닙니다. `docs/webp-fullsize-baseline.json`은 축소 전 WebP 기준값입니다. 원화 갤러리는 원본 PNG를 사용합니다.
 
 ## 핵심 구조 원칙
 
@@ -31,7 +55,7 @@ npm run typecheck
 ```
 src/
   main.ts       진입점
-  assets/       원본 PNG 아틀라스와 manifest
+  assets/       게임용 WebP 아틀라스와 manifest (원본은 art/originals/)
   core/         DOM·캔버스, 공유 상태(G), 수학·문자 유틸, 사운드, 리소스 로더
   data/         기획 데이터: 수치(tune), 스테이지, 영웅, 인연, 인연 기술, 의뢰 조건, 적 등급
   entities/     플레이어, 적, 보스, 줍는 물건

@@ -6,7 +6,7 @@
 
 1. `data/roster.ts`의 `HERO_IDS`에 ID를 더한다. 화면에 보이는 순서가 이 순서다.
 2. 그림을 넣는다.
-   - 따로 그린 그림: `assets/images/characters/`에 PNG를 넣으면 자동 등록된다. 달리기·비행 프레임은 가로 4칸 한 장, 초상은 한 장.
+   - 따로 그린 그림: `art/originals/characters/`에 원본 PNG를 넣고 `python tools/convert-webp.py`로 변환한 WebP를 함께 커밋하면 자동 등록된다. 달리기·비행 프레임은 가로 4칸 한 장, 초상은 한 장.
    - 여러 명이 모인 시트: `core/assets.ts`의 `SHEET_GRIDS`에 칸 수를 적는다.
 3. `data/heroes.ts`에 항목을 더한다. 빠지면 타입 오류가 난다.
    - `art`: `frames`(달리기·비행 4프레임), `portrait`(초상), `swapPose`(등장 자세 줄, 없으면 생략)

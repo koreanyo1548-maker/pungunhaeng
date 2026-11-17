@@ -2,12 +2,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-const root = 'src/assets/images/heroines';
+const root = 'art/originals/heroines';
 const catalog = JSON.parse(await readFile(`${root}/catalog.json`, 'utf8'));
 const urls = Object.fromEntries(await Promise.all(Object.keys(catalog.atlases).map(async file => [
   file, `data:image/png;base64,${(await readFile(`${root}/${file}`)).toString('base64')}`,
 ])));
-const oldRun = `data:image/png;base64,${(await readFile('src/assets/images/hero-run.png')).toString('base64')}`;
+const oldRun = `data:image/png;base64,${(await readFile('art/originals/hero-run.png')).toString('base64')}`;
 const out = resolve(process.argv[2] || '/workspace/artifacts/heroine-art-gallery.html');
 await mkdir(dirname(out), { recursive: true });
 await writeFile(out, `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

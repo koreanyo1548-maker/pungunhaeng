@@ -1,12 +1,26 @@
 /** Image decoding and atlas geometry; no gameplay or renderer dependencies. */
-export function atlasCell(atlas, cols, rows, col, row) {
+export function atlasCell(atlas, cols, rows, col, row, sourceSize = [atlas.width, atlas.height]) {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
   const cc = c.getContext('2d'),
-    w = atlas.width / cols,
-    h = atlas.height / rows,
+    [sourceWidth, sourceHeight] = sourceSize,
+    scaleX = atlas.width / sourceWidth,
+    scaleY = atlas.height / sourceHeight,
+    w = sourceWidth / cols,
+    h = sourceHeight / rows,
     k = 248 / Math.max(w, h);
-  cc.drawImage(atlas, col * w + 1, row * h + 1, w - 2, h - 2, 128 - (w * k) / 2, 128 - (h * k) / 2, w * k, h * k);
+  // Source padding is authored in original pixels; destination geometry stays unchanged.
+  cc.drawImage(
+    atlas,
+    (col * w + 1) * scaleX,
+    (row * h + 1) * scaleY,
+    (w - 2) * scaleX,
+    (h - 2) * scaleY,
+    128 - (w * k) / 2,
+    128 - (h * k) / 2,
+    w * k,
+    h * k,
+  );
   return c;
 }
 export function makeWhite(im) {
@@ -38,12 +52,14 @@ function decodeImage(src: string): Promise<HTMLImageElement> {
     im.src = src;
   });
 }
-export function cropProp(im, rect) {
+export function cropProp(im, rect, sourceSize = [im.width, im.height]) {
   const [x, y, w, h] = rect,
+    scaleX = im.width / sourceSize[0],
+    scaleY = im.height / sourceSize[1],
     c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  c.getContext('2d').drawImage(im, x, y, w, h, 0, 0, w, h);
+  c.width = Math.max(1, Math.round(w * scaleX));
+  c.height = Math.max(1, Math.round(h * scaleY));
+  c.getContext('2d').drawImage(im, x * scaleX, y * scaleY, w * scaleX, h * scaleY, 0, 0, c.width, c.height);
   return c;
 }
 export function cropArt(im, cols, rows, col, row) {

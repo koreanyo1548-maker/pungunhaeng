@@ -17,7 +17,7 @@
   padding: 3% 6% 4%;
   background:
     linear-gradient(#061b22cc, #061b2226 34%, #061b2233 52%, #04141af2 84%),
-    url('../assets/images/title-journey.png') center / cover;
+    url('../assets/images/title-journey.webp') center / cover;
 }
 /* drifting mist behind everything */
 .title-screen::before {

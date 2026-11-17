@@ -1,6 +1,6 @@
 {
   "sheets": {
-    "passers-neutral.png": {
+    "passers-neutral.webp": {
       "width": 1254,
       "height": 1254,
       "cols": 2,
@@ -8,7 +8,7 @@
       "cellWidth": 627,
       "cellHeight": 627
     },
-    "passers-grateful.png": {
+    "passers-grateful.webp": {
       "width": 1254,
       "height": 1254,
       "cols": 2,
@@ -16,7 +16,7 @@
       "cellWidth": 627,
       "cellHeight": 627
     },
-    "inn-collection.png": {
+    "inn-collection.webp": {
       "width": 1536,
       "height": 1024,
       "cols": 3,
@@ -27,67 +27,67 @@
   },
   "entries": {
     "market-woman-neutral": {
-      "file": "passers-neutral.png",
+      "file": "passers-neutral.webp",
       "col": 0,
       "row": 0
     },
     "wanderer-neutral": {
-      "file": "passers-neutral.png",
+      "file": "passers-neutral.webp",
       "col": 1,
       "row": 0
     },
     "woodcutter-neutral": {
-      "file": "passers-neutral.png",
+      "file": "passers-neutral.webp",
       "col": 0,
       "row": 1
     },
     "lost-child-neutral": {
-      "file": "passers-neutral.png",
+      "file": "passers-neutral.webp",
       "col": 1,
       "row": 1
     },
     "market-woman-grateful": {
-      "file": "passers-grateful.png",
+      "file": "passers-grateful.webp",
       "col": 0,
       "row": 0
     },
     "wanderer-grateful": {
-      "file": "passers-grateful.png",
+      "file": "passers-grateful.webp",
       "col": 1,
       "row": 0
     },
     "woodcutter-grateful": {
-      "file": "passers-grateful.png",
+      "file": "passers-grateful.webp",
       "col": 0,
       "row": 1
     },
     "lost-child-grateful": {
-      "file": "passers-grateful.png",
+      "file": "passers-grateful.webp",
       "col": 1,
       "row": 1
     },
     "inn-rest": {
-      "file": "inn-collection.png",
+      "file": "inn-collection.webp",
       "col": 0,
       "row": 0
     },
     "inn-pill": {
-      "file": "inn-collection.png",
+      "file": "inn-collection.webp",
       "col": 1,
       "row": 0
     },
     "inn-meditation": {
-      "file": "inn-collection.png",
+      "file": "inn-collection.webp",
       "col": 2,
       "row": 0
     },
     "hero-piece": {
-      "file": "inn-collection.png",
+      "file": "inn-collection.webp",
       "col": 0,
       "row": 1
     },
     "bond-piece": {
-      "file": "inn-collection.png",
+      "file": "inn-collection.webp",
       "col": 1,
       "row": 1
     }

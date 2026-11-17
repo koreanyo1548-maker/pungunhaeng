@@ -1,0 +1,324 @@
+{
+  "images": {
+    "ambient/inn-collection.webp": {
+      "scale": 0.5,
+      "grid": [
+        3,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "ambient/passers-grateful.webp": {
+      "scale": 0.5,
+      "grid": [
+        2,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "ambient/passers-neutral.webp": {
+      "scale": 0.5,
+      "grid": [
+        2,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "bosses.webp": {
+      "scale": 0.75,
+      "grid": [
+        3,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "combat-projectiles.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "hero-fly.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "hero-run.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/cast-a.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/cast-b.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/portraits.webp": {
+      "scale": 0.75,
+      "grid": [
+        3,
+        2
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/run-a.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/run-b.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-ayeong.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-cheongwan.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-seolyeong.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-soun.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-yeoncheong.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "heroines/skill-yoran.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "impact.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "mobs.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "npc-portraits.webp": {
+      "scale": 0.5,
+      "grid": [
+        3,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "portraits.webp": {
+      "scale": 1,
+      "grid": [
+        3,
+        2
+      ],
+      "reason": "타이틀 큰 초상과 자연 크기 유지"
+    },
+    "projectile.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "props.webp": {
+      "scale": 0.5,
+      "grid": [
+        1,
+        1
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "simma.webp": {
+      "scale": 0.5,
+      "grid": [
+        3,
+        1
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "skill-icons.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/attack.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/energy.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/flight.webp": {
+      "scale": 1,
+      "grid": [
+        6,
+        6
+      ],
+      "reason": "이미 프레임 해상도가 작아 유지"
+    },
+    "skills/movement.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/passive.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/secret.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/signature.webp": {
+      "scale": 0.75,
+      "grid": [
+        6,
+        4
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "skills/swap-poses.webp": {
+      "scale": 1,
+      "grid": [
+        4,
+        6
+      ],
+      "reason": "이미 프레임 해상도가 작아 유지"
+    },
+    "sky-enemies-motion.webp": {
+      "scale": 0.75,
+      "grid": [
+        4,
+        3
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "sky-enemies.webp": {
+      "scale": 0.5,
+      "grid": [
+        3,
+        1
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "title-art.webp": {
+      "scale": 0.75,
+      "grid": [
+        1,
+        1
+      ],
+      "reason": "동작/큰 연출의 프레임 선명도 유지"
+    },
+    "title-journey.webp": {
+      "scale": 0.75,
+      "grid": [
+        1,
+        1
+      ],
+      "reason": "모바일 타이틀 배경의 선명도와 용량 절충"
+    },
+    "utility.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        2
+      ],
+      "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
+    },
+    "world.webp": {
+      "scale": 1,
+      "grid": [
+        3,
+        1
+      ],
+      "reason": "배경 한 구간 너비 418px로 480px 전장보다 작아 유지"
+    }
+  }
+}

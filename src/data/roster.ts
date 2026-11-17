@@ -33,7 +33,7 @@ export type HeroArt = {
   frames: Cell;
   /** the face shown on cards, the HUD and menus */
   portrait: Cell;
-  /** row of skills/swap-poses.png drawn when the hero swaps in; none: no swap pose */
+  /** row of skills/swap-poses.webp drawn when the hero swaps in; none: no swap pose */
   swapPose?: number;
   /** Optional dedicated four-frame cast atlas. */
   cast?: Cell;

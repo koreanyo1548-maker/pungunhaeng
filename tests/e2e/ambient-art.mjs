@@ -2,7 +2,7 @@ import { createServer } from 'vite';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
-const out = process.env.SCREENSHOT_DIR || '/workspace/review/ambient-art';
+const out = process.env.SCREENSHOT_DIR || 'test-results/ambient-art';
 await mkdir(out, { recursive: true });
 const server = await createServer({ server: { host: '127.0.0.1', port: 5191 } });
 await server.listen();

@@ -6,7 +6,7 @@ import { mkdir } from 'node:fs/promises';
 const server = await createServer({ server: { port: 5188, host: '127.0.0.1' } });
 await server.listen();
 const browser = await chromium.launch();
-const out = process.env.SCREENSHOT_DIR || '/workspace/review/skill-animation';
+const out = process.env.SCREENSHOT_DIR || 'test-results/skill-animation';
 await mkdir(out, { recursive: true });
 const failures = [];
 try {

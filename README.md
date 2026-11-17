@@ -12,6 +12,8 @@ npm run build:single   # dist-single/index.html : 모든 리소스를 넣은 한
 npm run typecheck
 ```
 
+작업 규칙(Codex·Claude 공통: 브랜치·PR 표시, 완료 기준, 빌드 공유)은 [`docs/workflow.md`](docs/workflow.md)에 있습니다.
+
 `index.html#debug` 로 열면 테스트용 `window.__g` 훅이 켜집니다. `#seed=42` (또는 `#debug&seed=42`)로 시드를 고정하면 같은 입력에서 같은 판이 재현됩니다.
 
 ## 이미지 원본과 모바일 배포 리소스

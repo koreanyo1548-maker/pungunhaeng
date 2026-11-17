@@ -1,4 +1,6 @@
 src/assets/images
+# written by tools/convert-webp.py
+src/assets/image-dimensions.json
 dist
 dist-single
 src/vendor

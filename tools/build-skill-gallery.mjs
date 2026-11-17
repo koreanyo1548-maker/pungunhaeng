@@ -14,7 +14,7 @@ const sheets = await Promise.all(
   groups.map(async ([file, names]) => ({
     file,
     names,
-    url: 'data:image/png;base64,' + (await readFile(`src/assets/images/skills/${file}.png`)).toString('base64'),
+    url: 'data:image/png;base64,' + (await readFile(`art/originals/skills/${file}.png`)).toString('base64'),
   })),
 );
 const out = process.argv[2] || '/workspace/artifacts/skill-animation-gallery.html';

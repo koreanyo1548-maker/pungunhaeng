@@ -1,0 +1,272 @@
+{
+  "version": 2,
+  "status": "integrated",
+  "frameCount": 162,
+  "coordinateConvention": "zero-based rows and portrait index; cell edges round(index * imageDimension / gridCount), not integer fixed cell sizes",
+  "atlases": {
+    "cast-a.png": {
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "blend": "source-over",
+      "background": "alpha"
+    },
+    "cast-b.png": {
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "blend": "source-over",
+      "background": "alpha"
+    },
+    "portraits.png": {
+      "width": 1536,
+      "height": 1024,
+      "columns": 3,
+      "rows": 2,
+      "blend": "source-over",
+      "background": "alpha"
+    },
+    "run-a.png": {
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "blend": "source-over",
+      "background": "alpha"
+    },
+    "run-b.png": {
+      "width": 1448,
+      "height": 1086,
+      "columns": 4,
+      "rows": 3,
+      "blend": "source-over",
+      "background": "alpha"
+    },
+    "skill-ayeong.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    },
+    "skill-cheongwan.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    },
+    "skill-seolyeong.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    },
+    "skill-soun.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    },
+    "skill-yeoncheong.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    },
+    "skill-yoran.png": {
+      "width": 1774,
+      "height": 887,
+      "columns": 6,
+      "rows": 3,
+      "blend": "screen",
+      "background": "black"
+    }
+  },
+  "heroes": [
+    {
+      "id": "yeoncheong",
+      "name": "황연청",
+      "affiliation": "도화도 문하",
+      "visual": "밤갈색 반묶음·옥 핀 / 은침",
+      "portrait": 0,
+      "run": {
+        "file": "run-a.png",
+        "row": 0,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-a.png",
+        "row": 0,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-yeoncheong.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "loop"
+    },
+    {
+      "id": "cheongwan",
+      "name": "목청완",
+      "affiliation": "양가창법을 익힌 유랑 무인",
+      "visual": "적갈색 가는 땋은 머리·작은 견갑 / 창",
+      "portrait": 1,
+      "run": {
+        "file": "run-a.png",
+        "row": 1,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-a.png",
+        "row": 1,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-cheongwan.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "loop"
+    },
+    {
+      "id": "seolyeong",
+      "name": "매설영",
+      "affiliation": "도화도 출신 사파 무인",
+      "visual": "흑자주 긴 머리·체인 귀걸이 / 채찍",
+      "portrait": 2,
+      "run": {
+        "file": "run-a.png",
+        "row": 2,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-a.png",
+        "row": 2,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-seolyeong.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "one-shot"
+    },
+    {
+      "id": "soun",
+      "name": "한소운",
+      "affiliation": "강남 유협",
+      "visual": "코퍼 브라운 포니테일·교차 핀 / 쾌검",
+      "portrait": 3,
+      "run": {
+        "file": "run-b.png",
+        "row": 0,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-b.png",
+        "row": 0,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-soun.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "one-shot"
+    },
+    {
+      "id": "yoran",
+      "name": "정요란",
+      "affiliation": "전진교 속가 제자",
+      "visual": "애쉬 실버 올림머리·기하학 비녀 / 정검",
+      "portrait": 4,
+      "run": {
+        "file": "run-b.png",
+        "row": 1,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-b.png",
+        "row": 1,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-yoran.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "loop"
+    },
+    {
+      "id": "ayeong",
+      "name": "아영",
+      "affiliation": "몽골 유목 부족",
+      "visual": "청록색 브레이드·금속 커프 / 활",
+      "portrait": 5,
+      "run": {
+        "file": "run-b.png",
+        "row": 2,
+        "frames": 4,
+        "fps": 8
+      },
+      "cast": {
+        "file": "cast-b.png",
+        "row": 2,
+        "frames": 4,
+        "fps": 8,
+        "previewScale": 1
+      },
+      "skill": "skill-ayeong.png",
+      "skillRows": {
+        "cast": 0,
+        "progression": 1,
+        "impact": 2
+      },
+      "skillFramesPerRow": 6,
+      "skillFps": 12,
+      "progression": "loop"
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 import { loadImage, cropProp } from './image';
 import catalog from '../assets/images/ambient/catalog.json';
-import neutral from '../assets/images/ambient/passers-neutral.png';
-import grateful from '../assets/images/ambient/passers-grateful.png';
-import items from '../assets/images/ambient/inn-collection.png';
+import neutral from '../assets/images/ambient/passers-neutral.webp';
+import grateful from '../assets/images/ambient/passers-grateful.webp';
+import items from '../assets/images/ambient/inn-collection.webp';
 
 export const ambientPictures: Record<string, string> = {};
-const urls = { 'passers-neutral.png': neutral, 'passers-grateful.png': grateful, 'inn-collection.png': items };
+const urls = { 'passers-neutral.webp': neutral, 'passers-grateful.webp': grateful, 'inn-collection.webp': items };
 /** Slice by the actual atlas cells, not by the older character sheet's dimensions. */
 export async function loadAmbientArt() {
   const sheets = new Map<string, HTMLImageElement>();

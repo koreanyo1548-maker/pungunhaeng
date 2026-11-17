@@ -4,7 +4,7 @@
   "frameCount": 162,
   "coordinateConvention": "zero-based rows and portrait index; cell edges round(index * imageDimension / gridCount), not integer fixed cell sizes",
   "atlases": {
-    "cast-a.png": {
+    "cast-a.webp": {
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -12,7 +12,7 @@
       "blend": "source-over",
       "background": "alpha"
     },
-    "cast-b.png": {
+    "cast-b.webp": {
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -20,7 +20,7 @@
       "blend": "source-over",
       "background": "alpha"
     },
-    "portraits.png": {
+    "portraits.webp": {
       "width": 1536,
       "height": 1024,
       "columns": 3,
@@ -28,7 +28,7 @@
       "blend": "source-over",
       "background": "alpha"
     },
-    "run-a.png": {
+    "run-a.webp": {
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -36,7 +36,7 @@
       "blend": "source-over",
       "background": "alpha"
     },
-    "run-b.png": {
+    "run-b.webp": {
       "width": 1448,
       "height": 1086,
       "columns": 4,
@@ -44,7 +44,7 @@
       "blend": "source-over",
       "background": "alpha"
     },
-    "skill-ayeong.png": {
+    "skill-ayeong.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -52,7 +52,7 @@
       "blend": "screen",
       "background": "black"
     },
-    "skill-cheongwan.png": {
+    "skill-cheongwan.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -60,7 +60,7 @@
       "blend": "screen",
       "background": "black"
     },
-    "skill-seolyeong.png": {
+    "skill-seolyeong.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -68,7 +68,7 @@
       "blend": "screen",
       "background": "black"
     },
-    "skill-soun.png": {
+    "skill-soun.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -76,7 +76,7 @@
       "blend": "screen",
       "background": "black"
     },
-    "skill-yeoncheong.png": {
+    "skill-yeoncheong.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -84,7 +84,7 @@
       "blend": "screen",
       "background": "black"
     },
-    "skill-yoran.png": {
+    "skill-yoran.webp": {
       "width": 1774,
       "height": 887,
       "columns": 6,
@@ -101,19 +101,19 @@
       "visual": "밤갈색 반묶음·옥 핀 / 은침",
       "portrait": 0,
       "run": {
-        "file": "run-a.png",
+        "file": "run-a.webp",
         "row": 0,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-a.png",
+        "file": "cast-a.webp",
         "row": 0,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-yeoncheong.png",
+      "skill": "skill-yeoncheong.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,
@@ -130,19 +130,19 @@
       "visual": "적갈색 가는 땋은 머리·작은 견갑 / 창",
       "portrait": 1,
       "run": {
-        "file": "run-a.png",
+        "file": "run-a.webp",
         "row": 1,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-a.png",
+        "file": "cast-a.webp",
         "row": 1,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-cheongwan.png",
+      "skill": "skill-cheongwan.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,
@@ -159,19 +159,19 @@
       "visual": "흑자주 긴 머리·체인 귀걸이 / 채찍",
       "portrait": 2,
       "run": {
-        "file": "run-a.png",
+        "file": "run-a.webp",
         "row": 2,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-a.png",
+        "file": "cast-a.webp",
         "row": 2,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-seolyeong.png",
+      "skill": "skill-seolyeong.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,
@@ -188,19 +188,19 @@
       "visual": "코퍼 브라운 포니테일·교차 핀 / 쾌검",
       "portrait": 3,
       "run": {
-        "file": "run-b.png",
+        "file": "run-b.webp",
         "row": 0,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-b.png",
+        "file": "cast-b.webp",
         "row": 0,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-soun.png",
+      "skill": "skill-soun.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,
@@ -217,19 +217,19 @@
       "visual": "애쉬 실버 올림머리·기하학 비녀 / 정검",
       "portrait": 4,
       "run": {
-        "file": "run-b.png",
+        "file": "run-b.webp",
         "row": 1,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-b.png",
+        "file": "cast-b.webp",
         "row": 1,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-yoran.png",
+      "skill": "skill-yoran.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,
@@ -246,19 +246,19 @@
       "visual": "청록색 브레이드·금속 커프 / 활",
       "portrait": 5,
       "run": {
-        "file": "run-b.png",
+        "file": "run-b.webp",
         "row": 2,
         "frames": 4,
         "fps": 8
       },
       "cast": {
-        "file": "cast-b.png",
+        "file": "cast-b.webp",
         "row": 2,
         "frames": 4,
         "fps": 8,
         "previewScale": 1
       },
-      "skill": "skill-ayeong.png",
+      "skill": "skill-ayeong.webp",
       "skillRows": {
         "cast": 0,
         "progression": 1,

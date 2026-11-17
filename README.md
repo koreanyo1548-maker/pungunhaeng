@@ -7,12 +7,23 @@
 ```bash
 npm install
 npm run dev            # 개발 서버
-npm run build          # dist/ : index.html + JS/CSS/PNG 파일
+npm run build          # dist/ : index.html + JS/CSS/WebP 파일
 npm run build:single   # dist-single/index.html : 모든 리소스를 넣은 한 파일 (공유용)
 npm run typecheck
 ```
 
 `index.html#debug` 로 열면 테스트용 `window.__g` 훅이 켜집니다. `#seed=42` (또는 `#debug&seed=42`)로 시드를 고정하면 같은 입력에서 같은 판이 재현됩니다.
+
+## 이미지 원본과 배포 리소스
+
+- `art/originals/`: 원본 PNG와 제작용 카탈로그. Git에 보관하며 배포에는 포함하지 않습니다.
+- `src/assets/images/`: 게임이 읽는 무손실 WebP와 런타임 카탈로그. WebP도 Git에 커밋하므로 Cloudflare에서 변환기를 설치할 필요가 없습니다.
+- 원본을 수정한 뒤 `python -m pip install -r tools/requirements-assets.txt`, `python tools/convert-webp.py`를 실행하고 원본과 WebP를 함께 커밋합니다.
+- `python tools/convert-webp.py --check`는 크기·RGBA 픽셀·ICC 프로필과 저장된 용량 보고서를 검증합니다.
+- 변환은 리사이즈·크롭 없이 수행합니다. 기존 이미지 키, 아틀라스 좌표, 게임 규칙은 그대로입니다.
+- 원화 검수 갤러리는 `art/originals/`의 PNG를 사용합니다.
+- 최초 전환은 GitHub Actions의 **WebP resources**가 작업 브랜치에서 변환·검증 후 WebP를 커밋합니다. 이후에는 작업 브랜치에서 수동 실행하거나 로컬 변환기를 사용합니다. 이 작업은 main에 자동 커밋하지 않습니다.
+- `docs/webp-report.json`에 파일별 원본/변환 용량과 SHA-256이 기록됩니다. 이는 리소스 크기 비교이며 실제 로딩 시간 측정값은 아닙니다.
 
 ## 핵심 구조 원칙
 
@@ -29,7 +40,7 @@ npm run typecheck
 ```
 src/
   main.ts       진입점
-  assets/       원본 PNG 아틀라스와 manifest
+  assets/       게임용 WebP 아틀라스와 manifest (원본은 art/originals/)
   core/         DOM·캔버스, 공유 상태(G), 수학·문자 유틸, 사운드, 리소스 로더
   data/         기획 데이터: 수치(tune), 스테이지, 영웅, 인연, 인연 기술, 의뢰 조건, 적 등급
   entities/     플레이어, 적, 보스, 줍는 물건

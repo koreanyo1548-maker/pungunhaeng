@@ -1,13 +1,13 @@
 import { IMG } from './manifest';
 import { loadImage } from '../core/image';
-import signature from './images/skills/signature.png';
-import movement from './images/skills/movement.png';
-import attack from './images/skills/attack.png';
-import passive from './images/skills/passive.png';
-import energy from './images/skills/energy.png';
-import secret from './images/skills/secret.png';
-import flight from './images/skills/flight.png';
-import swapPoses from './images/skills/swap-poses.png';
+import signature from './images/skills/signature.webp';
+import movement from './images/skills/movement.webp';
+import attack from './images/skills/attack.webp';
+import passive from './images/skills/passive.webp';
+import energy from './images/skills/energy.webp';
+import secret from './images/skills/secret.webp';
+import flight from './images/skills/flight.webp';
+import swapPoses from './images/skills/swap-poses.webp';
 
 export const heroineSkillSheets: Record<string, number> = Object.fromEntries(
   ['yeoncheong', 'cheongwan', 'seolyeong', 'soun', 'yoran', 'ayeong'].map((id, i) => [id, 8 + i]),

@@ -1,0 +1,95 @@
+{
+  "sheets": {
+    "passers-neutral.png": {
+      "width": 1254,
+      "height": 1254,
+      "cols": 2,
+      "rows": 2,
+      "cellWidth": 627,
+      "cellHeight": 627
+    },
+    "passers-grateful.png": {
+      "width": 1254,
+      "height": 1254,
+      "cols": 2,
+      "rows": 2,
+      "cellWidth": 627,
+      "cellHeight": 627
+    },
+    "inn-collection.png": {
+      "width": 1536,
+      "height": 1024,
+      "cols": 3,
+      "rows": 2,
+      "cellWidth": 512,
+      "cellHeight": 512
+    }
+  },
+  "entries": {
+    "market-woman-neutral": {
+      "file": "passers-neutral.png",
+      "col": 0,
+      "row": 0
+    },
+    "wanderer-neutral": {
+      "file": "passers-neutral.png",
+      "col": 1,
+      "row": 0
+    },
+    "woodcutter-neutral": {
+      "file": "passers-neutral.png",
+      "col": 0,
+      "row": 1
+    },
+    "lost-child-neutral": {
+      "file": "passers-neutral.png",
+      "col": 1,
+      "row": 1
+    },
+    "market-woman-grateful": {
+      "file": "passers-grateful.png",
+      "col": 0,
+      "row": 0
+    },
+    "wanderer-grateful": {
+      "file": "passers-grateful.png",
+      "col": 1,
+      "row": 0
+    },
+    "woodcutter-grateful": {
+      "file": "passers-grateful.png",
+      "col": 0,
+      "row": 1
+    },
+    "lost-child-grateful": {
+      "file": "passers-grateful.png",
+      "col": 1,
+      "row": 1
+    },
+    "inn-rest": {
+      "file": "inn-collection.png",
+      "col": 0,
+      "row": 0
+    },
+    "inn-pill": {
+      "file": "inn-collection.png",
+      "col": 1,
+      "row": 0
+    },
+    "inn-meditation": {
+      "file": "inn-collection.png",
+      "col": 2,
+      "row": 0
+    },
+    "hero-piece": {
+      "file": "inn-collection.png",
+      "col": 0,
+      "row": 1
+    },
+    "bond-piece": {
+      "file": "inn-collection.png",
+      "col": 1,
+      "row": 1
+    }
+  }
+}

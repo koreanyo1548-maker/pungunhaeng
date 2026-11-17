@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
-// `npm run build`        → dist/ (index.html + hashed JS/CSS/PNG files)
+// `npm run build`        → dist/ (index.html + hashed JS/CSS/WebP files)
 // `npm run build:single` → dist-single/index.html with every asset inlined (for sharing one file)
 export default defineConfig(({ mode }) => {
   const single = mode === 'single';

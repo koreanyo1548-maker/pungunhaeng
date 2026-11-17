@@ -50,7 +50,7 @@ try {
       }, n);
       await p.waitForFunction(() => {
         let im = document.querySelector('#choice .npc-choice-art');
-        return im?.complete && im.naturalWidth === 627;
+        return im?.complete && im.naturalWidth === 314;
       });
       await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
       const before = await p.evaluate(() => ({ coins: M.G.state.coins, align: M.G.state.align }));

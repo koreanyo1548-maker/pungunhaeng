@@ -1,3 +1,4 @@
+import imageDimensions from '../assets/image-dimensions.json';
 import { loadImage, cropProp } from './image';
 import catalog from '../assets/images/ambient/catalog.json';
 import neutral from '../assets/images/ambient/passers-neutral.webp';
@@ -17,13 +18,14 @@ export async function loadAmbientArt() {
   for (const [id, cell] of Object.entries(catalog.entries)) {
     const spec = catalog.sheets[cell.file],
       im = sheets.get(cell.file)!;
-    if (im.width !== spec.width || im.height !== spec.height) throw new Error('Unexpected atlas size: ' + cell.file);
-    const canvas = cropProp(im, [
-      cell.col * spec.cellWidth,
-      cell.row * spec.cellHeight,
-      spec.cellWidth,
-      spec.cellHeight,
-    ]);
+    const dimensions = imageDimensions['ambient/' + cell.file];
+    if (im.width !== dimensions.runtime[0] || im.height !== dimensions.runtime[1])
+      throw new Error('Unexpected atlas size: ' + cell.file);
+    const canvas = cropProp(
+      im,
+      [cell.col * spec.cellWidth, cell.row * spec.cellHeight, spec.cellWidth, spec.cellHeight],
+      [spec.width, spec.height],
+    );
     ambientPictures[id] = canvas.toDataURL();
   }
 }

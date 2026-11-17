@@ -1,0 +1,412 @@
+{
+  "ambient/inn-collection.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "ambient/passers-grateful.webp": {
+    "source": [
+      1254,
+      1254
+    ],
+    "runtime": [
+      1254,
+      1254
+    ]
+  },
+  "ambient/passers-neutral.webp": {
+    "source": [
+      1254,
+      1254
+    ],
+    "runtime": [
+      1254,
+      1254
+    ]
+  },
+  "bosses.webp": {
+    "source": [
+      1246,
+      1263
+    ],
+    "runtime": [
+      1246,
+      1263
+    ]
+  },
+  "combat-projectiles.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "fx.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "hero-fly.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "hero-run.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "heroines/cast-a.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "heroines/cast-b.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "heroines/portraits.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "heroines/run-a.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "heroines/run-b.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "heroines/skill-ayeong.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "heroines/skill-cheongwan.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "heroines/skill-seolyeong.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "heroines/skill-soun.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "heroines/skill-yeoncheong.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "heroines/skill-yoran.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "impact.webp": {
+    "source": [
+      1263,
+      1245
+    ],
+    "runtime": [
+      1263,
+      1245
+    ]
+  },
+  "mobs.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "npc-portraits.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "portraits.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "projectile.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "props.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "simma.webp": {
+    "source": [
+      2172,
+      724
+    ],
+    "runtime": [
+      2172,
+      724
+    ]
+  },
+  "skill-icons.webp": {
+    "source": [
+      1312,
+      1199
+    ],
+    "runtime": [
+      1312,
+      1199
+    ]
+  },
+  "skills/attack.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/energy.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/flight.webp": {
+    "source": [
+      1254,
+      1254
+    ],
+    "runtime": [
+      1254,
+      1254
+    ]
+  },
+  "skills/movement.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/passive.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/secret.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/signature.webp": {
+    "source": [
+      1536,
+      1024
+    ],
+    "runtime": [
+      1536,
+      1024
+    ]
+  },
+  "skills/swap-poses.webp": {
+    "source": [
+      1024,
+      1536
+    ],
+    "runtime": [
+      1024,
+      1536
+    ]
+  },
+  "sky-enemies-motion.webp": {
+    "source": [
+      1448,
+      1086
+    ],
+    "runtime": [
+      1448,
+      1086
+    ]
+  },
+  "sky-enemies.webp": {
+    "source": [
+      2172,
+      724
+    ],
+    "runtime": [
+      2172,
+      724
+    ]
+  },
+  "title-art.webp": {
+    "source": [
+      1254,
+      1254
+    ],
+    "runtime": [
+      1254,
+      1254
+    ]
+  },
+  "title-journey.webp": {
+    "source": [
+      1024,
+      1536
+    ],
+    "runtime": [
+      1024,
+      1536
+    ]
+  },
+  "utility.webp": {
+    "source": [
+      1774,
+      887
+    ],
+    "runtime": [
+      1774,
+      887
+    ]
+  },
+  "world.webp": {
+    "source": [
+      1254,
+      1254
+    ],
+    "runtime": [
+      1254,
+      1254
+    ]
+  }
+}

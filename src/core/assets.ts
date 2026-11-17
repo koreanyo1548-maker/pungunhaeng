@@ -1,3 +1,4 @@
+import imageDimensions from '../assets/image-dimensions.json';
 import { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
 export { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
 import { loadAmbientArt } from './ambient-art';
@@ -30,7 +31,7 @@ export async function loadPortraitProps() {
     [610, 575, 325, 325],
     [1120, 590, 285, 305],
   ];
-  rects.forEach(r => propArt.push(cropProp(props, r)));
+  rects.forEach(r => propArt.push(cropProp(props, r, imageDimensions['props.webp'].source)));
   for (let i = 0; i < 2; i++) {
     const c = document.createElement('canvas');
     c.width = propArt[i].width;
@@ -50,7 +51,10 @@ export async function loadCombatArt() {
   const [bolts, hits, utility, dedicated] = await Promise.all(
     [...Object.values(COMBAT_ART), IMG['combat-projectiles']].map(loadImage),
   );
-  for (let i = 0; i < 8; i++) combatProjectileArt.push(atlasCell(dedicated, 4, 2, i % 4, Math.floor(i / 4)));
+  for (let i = 0; i < 8; i++)
+    combatProjectileArt.push(
+      atlasCell(dedicated, 4, 2, i % 4, Math.floor(i / 4), imageDimensions['combat-projectiles.webp'].source),
+    );
   for (let i = 0; i < 8; i++) projectileArt.push(cropArt(bolts, 4, 2, i % 4, Math.floor(i / 4)));
   G.fxFrames = [0, 1, 2, 3].map(row => [0, 1, 2, 3].map(col => cropArt(hits, 4, 4, col, row)));
   for (let i = 0; i < 8; i++) {
@@ -162,7 +166,9 @@ export async function load() {
       loadImage(IMG['simma']),
     ]);
     G.skyEnemies = [0, 1, 2].map(i => cropArt(skyEnemies, 3, 1, i, 0));
-    G.skyEnemyFrames = [0, 1, 2].map(row => [0, 1, 2, 3].map(col => atlasCell(skyMotion, 4, 3, col, row)));
+    G.skyEnemyFrames = [0, 1, 2].map(row =>
+      [0, 1, 2, 3].map(col => atlasCell(skyMotion, 4, 3, col, row, imageDimensions['sky-enemies-motion.webp'].source)),
+    );
     G.skyEnemyWhites = G.skyEnemyFrames.map(frames => frames.map(makeWhite));
     const boxes = [
       [0, 105, 313, 460],
@@ -197,11 +203,17 @@ export async function load() {
     G.heroFrames = frames.slice(0, 4);
     for (let rank = 0; rank < 4; rank++) {
       const type = RANKS[rank].type;
-      G.enemyFrames[type] = [atlasCell(mobs, 4, 2, rank, 0), atlasCell(mobs, 4, 2, rank, 1)];
+      G.enemyFrames[type] = [
+        atlasCell(mobs, 4, 2, rank, 0, imageDimensions['mobs.webp'].source),
+        atlasCell(mobs, 4, 2, rank, 1, imageDimensions['mobs.webp'].source),
+      ];
     }
-    for (let i = 0; i < 3; i++) G.enemyFrames[[3, 6, 7][i]] = [0, 1, 2].map(pose => atlasCell(bosses, 3, 3, pose, i));
+    for (let i = 0; i < 3; i++)
+      G.enemyFrames[[3, 6, 7][i]] = [0, 1, 2].map(pose =>
+        atlasCell(bosses, 3, 3, pose, i, imageDimensions['bosses.webp'].source),
+      );
     // Dedicated Simma poses: ready, telegraph, attack. Shared by intro, trails and defeat art.
-    G.enemyFrames[8] = [0, 1, 2].map(pose => atlasCell(simma, 3, 1, pose, 0));
+    G.enemyFrames[8] = [0, 1, 2].map(pose => atlasCell(simma, 3, 1, pose, 0, imageDimensions['simma.webp'].source));
     G.sprite = G.enemyFrames.map(frames => frames?.[0]);
     G.enemyWhites = G.enemyFrames.map(frames => frames.map(makeWhite));
 

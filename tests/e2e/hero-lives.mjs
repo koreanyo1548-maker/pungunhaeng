@@ -1,6 +1,8 @@
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { mkdir } from 'node:fs/promises';
+const SHOTS = process.env.SCREENSHOT_DIR || 'test-results';
 const server = await createServer({ server: { host: '127.0.0.1', port: 5194 } });
 await server.listen();
 const browser = await chromium.launch();
@@ -155,7 +157,9 @@ try {
     M.G.banner = null;
     M.draw();
   });
-  await p.screenshot({ path: '/workspace/artifacts/one-health-auto-replacement.png' });
+  // the shot is kept for a person to look at; tests run anywhere, so it goes under test-results/
+  await mkdir(SHOTS, { recursive: true });
+  await p.screenshot({ path: `${SHOTS}/one-health-auto-replacement.png` });
   const reset = await p.evaluate(() => {
     begin();
     return M.G.state.formation.map(id => M.G.state.heroHealth[id]);

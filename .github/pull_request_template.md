@@ -13,12 +13,10 @@
 
 <!-- docs/workflow.md 3장. 실제로 돌린 명령과 결과만 체크한다. 못 돌린 항목은 이유를 적는다. -->
 
-- [ ] `npm run typecheck`, `npm run format:check`
-- [ ] `npm run build`, `npm run build:single`
-- [ ] `npm test`
-- [ ] `npm run test:ui`
-- [ ] 바뀐 곳에 따른 검사:
-- [ ] 시드 비교 / 전투 화면 배치:
+- [ ] 올리기 전 직접: `npm run typecheck`, `npm run format:check`, `npm test`
+- [ ] 손댄 곳의 검사:
+- [ ] PR checks 통과 (기준 브랜치 시드 비교: IDENTICAL / DIVERGED)
+- 직접 못 돌린 검사와 이유:
 
 ## 남은 것
 

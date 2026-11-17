@@ -24,37 +24,35 @@ PR 작성자는 늘 사용자 계정이라 PR 목록만으로는 구분되지 �
 - PR 본문은 `.github/pull_request_template.md`의 순서를 따른다: 요약, 바뀐 것, 게임 규칙 영향, 검증, 남은 것.
 - 머지된 브랜치는 지운다.
 - 작업 브랜치에서만 쓰는 자동화(일회용 워크플로, 생성 스크립트의 자동 커밋)는 PR 본문에 적고, 머지 전에 지우거나 main에서도 쓸 수 있는 형태로 바꾼다.
+- 표시 규칙(1장)은 이 문서가 main에 들어간 뒤의 작업부터 적용한다. 이전 커밋은 고치지 않는다.
 
 ## 3. 완료 기준
 
-두 도구가 같은 기준으로 확인하고, PR 본문 "검증"에 실제로 돌린 명령과 결과를 적는다. 못 돌린 항목은 체크하지 않고 이유를 적는다.
+두 도구가 같은 기준으로 확인한다. **모든 PR에서 GitHub Actions의 `PR checks`(`.github/workflows/pr-checks.yml`)가 아래 검사를 같은 환경에서 돌린다.** 이 검사가 통과해야 완료다. 커밋은 하지 않는다.
 
-**항상**
+**PR checks가 돌리는 것**
 
-- `npm run typecheck`
-- `npm run format:check`
-- `npm run build`, `npm run build:single`
-- `npm test` (e2e 시나리오 A~G)
-- `npm run test:ui` (360·390·1280 화면)
-
-**바뀐 곳에 따라** (Vite 개발 서버로 도는 검사)
-
-| 바뀐 곳 | 검사 |
+| 묶음 | 명령 |
 |---|---|
-| 영웅 특성·등장 기술·편대 | `node tests/e2e/hero-kit.mjs`, `node tests/e2e/hero-lives.mjs` |
-| 인연 기술·기술 그림 | `node tests/e2e/skill-art.mjs` |
-| 행인·뽑기 그림 | `node tests/e2e/ambient-art.mjs` |
-| 저장·재시작·상태 구조 | `node tests/e2e/refactor-regressions.mjs` |
-| 이미지 리소스 | `npm run build` 후 `node tests/e2e/webp-assets.mjs` (PR #18이 머지된 뒤) |
+| 타입·형식 | `npm run typecheck`, `npm run format:check` |
+| 빌드·이미지 | `npm run build`, `python tools/convert-webp.py --check`, `node tests/e2e/webp-assets.mjs`(Chromium·WebKit), `npm run build:single` |
+| 흐름·모바일 화면 | `npm test`의 e2e(시나리오 A~G), `npm run test:ui`(360·390·1280) |
+| 영웅·기술·그림·회귀 (Vite 개발 서버) | `hero-kit`, `hero-lives`, `skill-art`, `ambient-art`, `refactor-regressions` (`tests/e2e/`) |
+| 재현성 | 같은 빌드를 두 번 돌린 시드 비교 `IDENTICAL` |
+| 기준 브랜치와 비교 | 전투 화면 배치(`combat-layout.mjs`)와 이미지 기하(`mobile-image-geometry.mjs`)가 같아야 한다. 시드 비교는 결과만 요약에 적는다 |
 
-**게임 규칙을 바꾸지 않는 작업** (그림, 연출, 리팩터링, 리소스)
+- 실패하면 고치고 다시 올린다. 검사를 끄거나 건너뛰지 않는다.
+- 결과 화면(요약)에 기준 브랜치와의 시드 비교가 `IDENTICAL`인지 `DIVERGED`인지 나온다. 게임 규칙을 바꾸지 않는 작업(그림, 연출, 리팩터링, 리소스)은 `IDENTICAL`이어야 한다.
+- 실행 결과의 artifact에 이 PR의 단일 HTML 빌드와 검사 스크린숏이 14일 동안 남는다.
 
-- 시드 비교: main 빌드와 이 빌드가 같은 판을 낸다. `node tests/equivalence/run.mjs <main.html> <이번.html> 12345 2400 0` → `IDENTICAL`
-- 전투 화면 배치: `node tests/equivalence/combat-layout.mjs <main.html> <이번.html>` → 3해상도 `IDENTICAL`
+**PR을 올리기 전에 각자 돌리는 것**
+
+- 최소: `npm run typecheck`, `npm run format:check`, `npm test`
+- 손댄 곳의 검사(위 표). 자기 환경에서 못 돌리는 검사(예: Claude 클라우드 환경의 WebKit)는 PR checks에 맡기고, PR 본문에 그렇게 적는다.
+- 기준 브랜치 비교를 직접 할 때: 기준 브랜치를 먼저 빌드해 `test-results/base.html`로 복사한 뒤 `node tests/equivalence/run.mjs test-results/base.html dist-single/index.html 12345 2400 0`, `node tests/equivalence/combat-layout.mjs …`, `node tests/e2e/mobile-image-geometry.mjs …`
 
 **게임 규칙을 바꾸는 작업**
 
-- 같은 빌드를 두 번 돌린 시드 비교가 `IDENTICAL`(재현성)
 - 바뀐 규칙을 확인하는 e2e 항목을 더한다
 - 설계 문서(`docs/`)의 해당 장에 바뀐 점과 이유를 적는다
 
@@ -64,14 +62,16 @@ PR 작성자는 늘 사용자 계정이라 PR 목록만으로는 구분되지 �
 
 ## 4. 빌드 공유
 
-- 확인용 단일 HTML은 각 도구가 대화로 전달한다(Claude는 파일로 보내고, Codex는 자기 방식대로).
+- 확인용 단일 HTML은 각 도구가 대화로 전달한다(Claude는 파일로 보내고, Codex는 자기 방식대로). PR checks의 artifact에도 같은 빌드가 남는다.
 - 저장소에 빌드 결과물(`dist`, `dist-single`, 빌드용 HTML)을 커밋하지 않는다. 빌드만 담는 `build/…` 브랜치도 새로 만들지 않는다.
 
-## 5. 문서
+## 5. 문서와 그림
 
 - 설계와 결정: `docs/`의 계획 문서. 구현한 뒤에는 그 문서의 "구현 기록" 절에 바뀐 점을 적는다.
 - 화면 용어: `docs/terms.md`
 - 수치는 데이터 파일(`src/data/`)에 두고, 문서에는 기준과 이유를 적는다.
+- 그림: 원본 PNG는 `art/originals/`에 두고, `python tools/convert-webp.py`로 만든 WebP(`src/assets/images/`)와 함께 커밋한다. 새 그림은 `tools/mobile-image-profile.json`에 축소 여부를 적는다. 자세한 순서는 README의 "이미지 원본과 모바일 배포 리소스".
+- 생성 파일(`src/assets/image-dimensions.json`, `docs/webp-report.json` 등)은 손으로 고치지 않고 스크립트로 다시 만든다.
 
 ## 6. 다른 도구의 작업을 이어받을 때
 

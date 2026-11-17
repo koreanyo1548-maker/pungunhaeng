@@ -13,5 +13,6 @@ Both Codex and Claude work in this repository. Follow `docs/workflow.md`; the es
 - Mark your work: branch `codex/<topic>` or `claude/<topic>` (keep a session-assigned `ccr-…` branch), PR title prefix `[Codex]` or `[Claude]`, a commit trailer `Agent: Codex` or `Agent: Claude`, and `작업: Codex` / `작업: Claude` at the end of the PR body.
 - Never push to main, and never let automation commit to main. Open PRs as drafts and follow `.github/pull_request_template.md`. The user merges.
 - Add commits to the other tool's PR only when the user asks.
-- Done means the checks in `docs/workflow.md` section 3 ran, with the commands and results written in the PR. Cloudflare build status is not checked (the user manages it).
+- Done means the `PR checks` workflow passes on the PR (`docs/workflow.md` section 3); before opening, run at least typecheck, format check and `npm test`. Never disable or skip a check. Cloudflare build status is not checked (the user manages it).
+- Images: originals in `art/originals/` as PNG, runtime WebP via `python tools/convert-webp.py`, committed together. Do not hand-edit generated files.
 - Share test builds in the conversation. Do not commit build output or create `build/…` branches.

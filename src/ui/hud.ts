@@ -1,4 +1,3 @@
-import { isFinal } from '../systems/run-plan';
 import { G } from '../core/context';
 import { profile } from '../core/profile';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
@@ -7,10 +6,10 @@ import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { HEROES } from '../data/heroes';
 import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
-import { ARTS, SKILLS, skillStars } from '../data/skills';
-import { TUNE } from '../data/tune';
-import { movementName, region, stageDuration } from '../systems/flow';
-import { swapCooldown, hasLivingReserve } from '../systems/formation';
+import { NPCS } from '../data/npcs';
+import { SKILLS } from '../data/skills';
+import { region, stageDistance } from '../systems/flow';
+import { gaugeMax } from '../systems/encounter';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -56,11 +55,14 @@ export function syncHUD() {
     ).join('');
     $('hearts').setAttribute('aria-label', `남은 체력 ${G.player.hp}`);
   }
-  $('stage').textContent = isFinal() ? region().name + ' · 최종 관문' : movementName() + ' · 관문 ' + G.state.stage;
+  // the stage box: the stage, the 처치 게이지 toward the next 만남 (the bar), and the distance left to the boss
+  const left = Math.max(0, stageDistance() - G.state.distance),
+    gauge = G.state.meetReady ? 1 : G.state.gauge / gaugeMax();
+  $('stage').textContent = `S${G.state.stage} ${region().name} · 만남 ${Math.floor(gauge * 100)}%`;
   syncQuestHUD();
-  $('stageName').textContent = region().name;
-  $('stagefill').style.width =
-    (G.state.phase === 'flight' ? Math.min(100, (G.state.stageTime / stageDuration()) * 100) : 100) + '%';
+  $('stageName').textContent =
+    G.state.phase === 'flight' ? `만남 ${G.state.encounters}번 · 보스까지 ${fmt(left)}m` : `${region().boss} 출현`;
+  $('stagefill').style.width = (G.state.phase === 'flight' ? Math.min(100, gauge * 100) : 0) + '%';
   $('bombcount').textContent = G.state.bombs;
   $('blast').disabled = !G.state.bombs || G.mode !== 'play' || ['clear', 'warning'].includes(G.state.phase);
   const boss = G.enemies.find(e => e.boss && !e.dead);
@@ -83,13 +85,13 @@ export function syncHUD() {
   }
 }
 export function syncQuestHUD() {
-  const key = G.state.skills.map(s => s.id + (s.mod || '')).join();
+  const key = G.state.skills.map(s => s.id).join();
   if (key !== G.skillsKey) {
     G.skillsKey = key;
     $('skills').innerHTML = G.state.skills
       .map(s => {
         const d = SKILLS[s.id];
-        return `<span class="chip${s.mod ? ' mod' : ''}" data-id="${s.id}" title="${d.name} ${skillStars(s.mod)}${s.mod ? ' (' + ARTS[s.mod].name + ')' : ''}" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}<i class="stars">${skillStars(s.mod)}</i></span>`;
+        return `<span class="chip" data-id="${s.id}" title="${d.name} (${NPCS[d.npc].name} ${d.level}단계)" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}<i class="stars">${d.level}</i></span>`;
       })
       .join('');
   }
@@ -106,7 +108,7 @@ export function syncQuestHUD() {
   syncSwapHUD();
   const q = G.state.quest,
     el = $('questHud'),
-    show = !!q && q.stage === G.state.stage && !isFinal();
+    show = !!q;
   el.classList.toggle('hidden', !show);
   if (!show) return;
   el.style.setProperty('--c', BR[q.br].color);
@@ -118,65 +120,19 @@ export function syncQuestHUD() {
     $('questImg').dataset.src = qp;
     $('questImg').src = qp;
   }
-  $('questText').textContent = q.done
-    ? '의뢰 성공 · ' + BR[q.br].name + ' 기술 획득'
-    : q.failed
-      ? '의뢰 실패'
-      : COND[q.t].label;
+  $('questText').textContent = q.done ? '의뢰 성공' : q.failed ? '의뢰 실패' : COND[q.t].label;
   $('questCount').textContent = Math.floor(q.prog) + ' / ' + q.target;
   $('questFill').style.width = Math.min(100, (q.prog / q.target) * 100) + '%';
 }
+/** The action button column: only 필살기 now. The old swap button keeps its place hidden, so 필살기 does not move.
+ * There is no charge any more: the ring is full while a 필살기 is left, and the number says how many. */
 export function syncSwapHUD() {
-  const nxtId = G.state.formation[1 - G.state.active],
-    nxt = HEROES[nxtId],
-    cd = Math.max(0, G.state.swapReady - G.time),
-    sw = $('swap'),
-    ub = $('blast');
-  sw.style.setProperty('--c', nxt.color);
-  sw.style.setProperty('--p', String(Math.round(100 - (cd / swapCooldown()) * 100)));
-  const pic = heroPictures[nxtId] || '';
-  if ($('swapImg').dataset.src !== pic) {
-    $('swapImg').dataset.src = pic;
-    $('swapImg').src = pic;
-  }
-  const reserveAlive = hasLivingReserve();
-  sw.disabled = !reserveAlive || G.mode !== 'play' || !['flight', 'boss', 'warning'].includes(G.state.phase) || cd > 0;
-  sw.setAttribute('aria-label', reserveAlive ? '편대 교체' : '대기 영웅 전투불능');
-  $('swapCd').textContent = !reserveAlive ? '×' : cd > 0 ? String(Math.ceil(cd)) : '';
-  $('swapName').textContent = (reserveAlive ? '교체 · ' : '전투불능 · ') + nxt.name;
-  const boss = G.enemies.find(e => e.boss && !e.dead),
-    win =
-      reserveAlive &&
-      cd <= 0 &&
-      G.mode === 'play' &&
-      (G.time - G.state.lastHurt < 1.5 || (!!boss && boss.action === 'recover'));
-  sw.classList.toggle('cool', !reserveAlive || cd > 0);
-  sw.classList.toggle('burst', win);
+  const ub = $('blast');
   ub.style.setProperty('--c', '#ffd77a');
-  ub.style.setProperty('--p', String(G.state.bombs >= G.state.maxBombs ? 100 : Math.round(G.state.charge)));
+  ub.style.setProperty('--p', G.state.bombs > 0 ? '100' : '0');
   ub.classList.toggle('cool', !G.state.bombs);
-  {
-    const q = G.state.quest,
-      qt = q && !q.done && !q.failed && q.stage === G.state.stage ? q.t : null,
-      hint = $('ultHint');
-    let ht = '',
-      go = false;
-    if (qt === 'blastKill') {
-      const n = G.enemies.filter(e => !e.dead && !e.boss && e.y > 0 && e.y < H).length;
-      ht = '화면 적 ' + n;
-      go = n >= 6 && G.state.bombs > 0;
-    } else if (qt === 'blast') {
-      ht = G.state.bombs > 0 ? '필살기!' : '충전 중';
-      go = G.state.bombs > 0;
-    }
-    hint.textContent = ht;
-    hint.classList.toggle('go', go);
-    ub.classList.toggle('focus', ['fullCharge', 'charge', 'blast', 'blastKill'].includes(qt));
-    if (go) ub.classList.add('burst');
-    else ub.classList.remove('burst');
-  }
+  $('ultHint').textContent = '';
   // 오른쪽 줄의 적이 버튼 뒤를 지나가면 버튼을 흐리게 해서 적을 가리지 않는다.
   const veil = G.enemies.some(e => !e.dead && !e.boss && e.x > W - 120 && e.y > H * 0.42 && e.y < H * 0.7);
-  sw.classList.toggle('veil', veil && !sw.classList.contains('burst'));
-  ub.classList.toggle('veil', veil && !ub.classList.contains('burst'));
+  ub.classList.toggle('veil', veil);
 }

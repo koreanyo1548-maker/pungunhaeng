@@ -9,13 +9,16 @@ import { hoechunSeconds } from '../data/skills';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
-import { movementTier } from '../systems/flow';
+import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
+import { basicShotOptions, cloneOffsets, unbowedHit, weaponBonus } from '../systems/hero-effects';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
     return;
+  // 불굴 (철혈's entry skill): the hit costs no health while it lasts
+  if (unbowedHit()) return;
   if (G.player.shield > 0) {
     G.player.shield = 0;
     paintFX(6, G.player.x, G.player.y, 112, 0.32);
@@ -30,12 +33,10 @@ export function damagePlayer() {
     return;
   }
   if (G.state.negate) {
-    // 회춘단: one block per gate, two with a level 4 card
-    G.state.negateLeft = (G.state.negateLeft ?? 1) - 1;
-    G.state.negate = G.state.negateLeft > 0;
+    // 회춘단 (떠돌이 약선 3단계): one block, armed again on its timer (data/skills.ts)
+    G.state.negate = false;
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
     G.player.inv = hoechunSeconds();
-    G.state.bombs = Math.min(G.state.maxBombs, G.state.bombs + 1);
     if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
     label('회춘단', G.player.x, G.player.y - 55, BR.gi.color, 20);
     chime();
@@ -68,24 +69,29 @@ export function shoot() {
   G.player.swing = 1;
   G.player.swingCount++;
   if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
-  const offsets = G.player.weapon === 1 ? [-9, 9] : G.player.weapon === 2 ? [-18, 0, 18] : [-27, -9, 9, 27];
-  for (const x of offsets)
-    G.shots.push({
-      x: G.player.x + x,
-      y: G.player.y - 34,
-      prevY: G.player.y - 34,
-      vx: G.player.weapon === 3 ? x * 1.5 : 0,
-      damage: shotPower() * 1.8,
-      r: 5,
-      kind: G.player.weapon === 2 && x !== 0 ? 'knife' : G.player.weapon === 3 ? 'sword' : 'qi',
-      phase: G.time,
-      skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
-      basic: true,
-    });
+  // Every hero shoots the same; traits and entry skills add aim, piercing, erasing, a higher level or clones.
+  const weapon = Math.min(3, G.player.weapon + weaponBonus()),
+    offsets = weapon === 1 ? [-9, 9] : weapon === 2 ? [-18, 0, 18] : [-27, -9, 9, 27],
+    extra = basicShotOptions();
+  for (const from of [0, ...cloneOffsets()])
+    for (const x of offsets)
+      G.shots.push({
+        x: G.player.x + from + x,
+        y: G.player.y - 34,
+        prevY: G.player.y - 34,
+        vx: weapon === 3 ? x * 1.5 : 0,
+        damage: shotPower() * 1.8,
+        r: 5,
+        kind: weapon === 2 && x !== 0 ? 'knife' : weapon === 3 ? 'sword' : 'qi',
+        phase: G.time,
+        skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
+        basic: true,
+        ...extra,
+      });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);
 }
 export function borrowedSword() {
-  return G.state?.course === 'sky' && HEROES[activeHeroId()].terrain === 'ground';
+  return skyStage() && HEROES[activeHeroId()].terrain === 'ground';
 }
 export function heroPose() {
   if (reduced || borrowedSword()) return 0;
@@ -96,7 +102,6 @@ export function heroPose() {
 export function updateMartialMotion(dt, oldX) {
   const tier = movementTier(),
     speed = Math.abs(G.player.x - oldX) / Math.max(0.001, dt);
-  G.state.ascend = Math.max(0, G.state.ascend - dt);
   G.state.runPhase += dt * 18;
   G.state.jumpPhase += dt * 5;
   G.player.step = Math.max(0, G.player.step - dt);

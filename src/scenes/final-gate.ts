@@ -1,30 +1,27 @@
+// 최종 관문 (심마): out of the run flow since the stage redesign (docs/ability-redesign-plan.md, 4.1). Kept for the
+// special stage 심마 will become; nothing opens it now.
 import { G } from '../core/context';
-import { relText } from '../core/math';
 import { BR } from '../data/branches';
 import { NPCS } from '../data/npcs';
+import { SIMMA } from '../data/stages';
 import { openChoice } from './choice';
-import { region } from '../systems/flow';
-import { done } from '../systems/scene-flow';
 
-export function openFinalGate() {
-  const pick = s => Object.keys(G.state.rel).filter(k => s * G.state.rel[k] > 0),
-    list = a =>
-      a.length
-        ? a
-            .map(k => `<b style="color:${BR[NPCS[k].br].color}">${NPCS[k].name}</b> (${relText(G.state.rel[k])})`)
-            .join(', ')
-        : '없음';
+export function openFinalGate(onEnter: () => void) {
+  const met = Object.keys(G.state.bond).filter(k => G.state.bond[k] > 0),
+    list = met.length
+      ? met.map(k => `<b style="color:${BR[NPCS[k].br].color}">${NPCS[k].name}</b> (${G.state.bond[k]}단계)`).join(', ')
+      : '없음';
   openChoice({
-    eyebrow: '최종 관문',
-    title: region().name,
-    sub: region().intro,
+    eyebrow: '특별 스테이지',
+    title: SIMMA.name,
+    sub: SIMMA.intro,
     cards: [
       {
-        color: '#c9a6ff',
+        color: SIMMA.color,
         tag: '지난 인연',
-        title: region().enter,
-        desc: '<b>도와주는 인연:</b> ' + list(pick(1)) + '<br><b>방해하는 인연:</b> ' + list(pick(-1)),
-        onPick: () => done('finalGate'),
+        title: SIMMA.enter,
+        desc: '<b>함께한 인연:</b> ' + list,
+        onPick: onEnter,
       },
     ],
   });

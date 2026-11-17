@@ -1,6 +1,6 @@
 // Seeded random numbers (mulberry32). Every run gets a seed; the same seed and the same inputs replay the same run.
 // Two independent streams:
-//   random()   — gameplay: spawns, drops, 인연/돈오 picks, skill targets. Reproducible from the run seed.
+//   random()   — gameplay: spawns, drops, 만남 picks, skill targets. Reproducible from the run seed.
 //   fxRandom() — cosmetic only: particles, screen shake, audio noise. How many frames are drawn or how many
 //                particles are spawned never shifts a gameplay roll (e.g. 60 Hz vs 120 Hz displays).
 // A seed can be forced with #seed=<number> in the URL (works with #debug too: #debug&seed=42).

@@ -1,5 +1,6 @@
 /** Painted six-frame sequences. Black atlases are intentional additive light passes, not masks. */
 import { HEROES } from '../data/heroes';
+import { SKILLS } from '../data/skills';
 import { G } from '../core/context';
 import { combatProjectileArt, heroCastAnimations } from '../core/assets';
 import { H, W, ctx, reduced } from '../core/dom';
@@ -205,8 +206,7 @@ export function updateSkillAnimations(dt: number) {
     return;
   }
   if (G.mode === 'play' && ['flight', 'boss'].includes(G.state.phase)) {
-    for (const id of learned.splice(0))
-      if (['cheolgol', 'manryu', 'chukgi', 'swaegap', 'biyeon'].includes(id)) skillCue(id, G.player.x, G.player.y, 110);
+    for (const id of learned.splice(0)) if (SKILLS[id]?.trig === 'passive') skillCue(id, G.player.x, G.player.y, 110);
   }
   for (const [id, a] of auras)
     if (G.time >= a.end || a.owner !== G.state.active || !['flight', 'boss'].includes(G.state.phase)) {

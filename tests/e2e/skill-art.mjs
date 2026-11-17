@@ -49,7 +49,6 @@ try {
         document.querySelector('#choice button.card').click();
         c?.click();
       }
-      document.querySelector('#choice .act').click();
       const { G } = M;
       G.banner = null;
       G.bossIntro = null;
@@ -63,10 +62,8 @@ try {
         G.impacts = [];
         G.state.skills = [];
         G.state.bombs = 2;
-        G.state.charge = 0;
         G.state.hyper = 0;
         G.state.negate = false;
-        G.state.orbs = 0;
         G.state.rain = 0;
         G.player.shield = 0;
         G.player.inv = 0;
@@ -101,7 +98,7 @@ try {
       };
     });
     const ids = await page.evaluate(() => Object.keys(M.SKILLS));
-    assert.equal(ids.length, 24);
+    assert.equal(ids.length, 18, 'six 인연 × three levels');
     assert.equal(await page.evaluate(() => M.skillAnimationSnapshot().loaded), 14);
     for (const id of ids) {
       const result = await page.evaluate(id => {
@@ -110,15 +107,10 @@ try {
         M.learn(id);
         const d = SKILLS[id],
           e = G.enemies[0];
-        if (d.trig === 'tick') M.updateSkills(1 / 60, G.player.x);
+        if (d.trig === 'tick') M.updateSkills(1 / 60);
         else if (d.trig !== 'passive') M.trig(d.trig, { x: e.x, y: e.y, e, h: { x: e.x, y: e.y, vx: 0, vy: 200 } });
         else if (id === 'swaegap') M.hitEnemy(e, 10);
         else if (id === 'biyeon') M.graze({ x: 180, y: 500, vx: 0, vy: 200 });
-        else if (id === 'chukgi') M.gainCharge(10);
-        else if (id === 'hoeseon') {
-          G.state.moveAcc = 999;
-          M.updateSkills(1 / 60, G.player.x - 20);
-        }
         M.updateSkillAnimations(0.12);
         M.draw();
         return {
@@ -136,20 +128,14 @@ try {
     const lifecycle = await page.evaluate(() => {
       resetArtCase();
       const { G } = M;
-      M.learn('hoegi');
-      G.player.hp = 3;
-      M.trig('blast');
-      M.updateSkillAnimations(0);
-      const fullHp = M.skillAnimationSnapshot().cues.some(c => c.id === 'hoegi');
-      resetArtCase();
       M.learn('art_cheonma');
       G.enemies = [];
-      M.updateSkills(1 / 60, G.player.x);
+      M.updateSkills(1 / 60);
       M.updateSkillAnimations(0);
       const noTarget = M.skillAnimationSnapshot().cues.length + G.strikes.length;
       resetArtCase();
       M.learn('art_cheolgap');
-      M.updateSkills(1 / 60, G.player.x);
+      M.updateSkills(1 / 60);
       M.updateSkillAnimations(0);
       const created = M.skillAnimationSnapshot().shield;
       M.damagePlayer();
@@ -157,14 +143,16 @@ try {
       const after = M.skillAnimationSnapshot();
       resetArtCase();
       M.learn('hoechun');
+      M.updateSkills(1 / 60);
       M.updateSkillAnimations(0);
+      const armed = M.skillAnimationSnapshot().negate;
       M.damagePlayer();
       M.updateSkillAnimations(0);
       const pill = M.skillAnimationSnapshot();
       M.clearSkillAnimations();
-      return { fullHp, noTarget, created, after, pill, reset: M.skillAnimationSnapshot() };
+      return { armed, noTarget, created, after, pill, reset: M.skillAnimationSnapshot() };
     });
-    assert.equal(lifecycle.fullHp, false);
+    assert.equal(lifecycle.armed, true, '회춘단 arms on its first period');
     assert.equal(lifecycle.noTarget, 0);
     assert.equal(lifecycle.created, true);
     assert.equal(lifecycle.after.shield, false);
@@ -187,7 +175,7 @@ try {
       return M.skillAnimationSnapshot().cues.map(c => c.size);
     });
     assert.ok(area.includes(300), 'area cue missing after a blast that hit six targets');
-    // 초식 이름: a new skill announces itself three times, then stays quiet until it is enhanced.
+    // 초식 이름: a new skill announces itself three times, then stays quiet.
     const names = await page.evaluate(() => {
       resetArtCase();
       const { G } = M;
@@ -206,51 +194,30 @@ try {
         }
         return shown;
       };
-      const first = fire(5);
-      skill.mod = 3;
-      M.resetCallout(skill);
-      shown = 0;
-      const enhanced = fire(1);
-      return { first, enhanced, sub: M.calloutSnapshot()[0]?.sub };
+      return { first: fire(5) };
     });
     assert.equal(names.first, 3, 'a new skill is called out exactly three times');
-    assert.equal(names.enhanced, 1, 'an enhanced skill is called out again');
-    assert.ok(names.sub.includes('★★'), 'the enhanced callout carries its grade');
-    for (const mod of [3, 6, 7]) {
-      const state = await page.evaluate(mod => {
-        resetArtCase();
-        const { G } = M;
-        M.learn('mancheon');
-        G.state.skills[0].mod = mod;
-        M.trig('step', { x: G.player.x });
-        M.updateSkillAnimations(0.1);
-        return {
-          shots: G.shots.map(s => s.skill),
-          strikes: G.strikes.map(s => s.skill),
-          cues: M.skillAnimationSnapshot().cues.map(c => c.id),
-          scope: M.visualSkill,
-        };
-      }, mod);
-      assert.ok(
-        [...state.shots, ...state.strikes, ...state.cues].includes(
-          { 3: 'art_dobeop', 6: 'art_cheolgap', 7: 'art_cheonma' }[mod],
-        ),
-      );
-      assert.ok(state.shots.includes('mancheon'));
-      assert.equal(state.scope, undefined);
-    }
     for (const hero of await page.evaluate(() => Object.keys(M.HEROES))) {
       await page.evaluate(hero => {
         resetArtCase();
-        M.G.state.formation = ['pungun', hero];
-        M.G.state.swapReady = 0;
-        M.swapHero();
+        // the vanguard falls and this hero enters: entry pose, entry skill and its look
+        const first = hero === 'pungun' ? 'hongryeon' : 'pungun';
+        for (const h of Object.values(M.G.state.heroHealth)) Object.assign(h, { hp: 1, maxHp: 1, fallen: false });
+        M.G.state.effect = null;
+        M.G.state.formation = [first, hero];
+        M.G.state.active = 0;
+        M.G.player.inv = 0;
+        M.G.state.hyper = 0;
+        M.G.player.hp = 1;
+        M.damagePlayer();
+        if (M.G.state.formation[M.G.state.active] !== hero || !M.G.state.effect)
+          throw new Error('no entry for ' + hero);
         M.updateSkillAnimations(0.12);
         M.draw();
       }, hero);
-      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/swap-${hero}.png` });
+      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/entry-${hero}.png` });
     }
-    console.log(`PASS ${reducedMotion}: 24 skills, 3 modifiers, 12 swaps, no-op guards, consumption and reset`);
+    console.log(`PASS ${reducedMotion}: 18 인연 skills, 12 entries, no-op guards, consumption and reset`);
     await context.close();
   }
   assert.deepEqual(failures, []);

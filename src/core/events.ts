@@ -1,4 +1,4 @@
-// Synchronous event bus (Observer). Combat code only reports what happened; 화두 (quest), 깨달음 (abilities)
+// Synchronous event bus (Observer). Combat code only reports what happened; 의뢰 (quest), 인연 skills (abilities)
 // and anything added later (meta progression, endless mode, analytics) subscribe without touching combat code.
 // Listeners run in registration order, so quest listeners are registered before ability listeners (see main.ts).
 
@@ -13,16 +13,10 @@ export interface GameEvents {
   nearKill: { e: any };
   /** any non-boss kill that is not from a blast or 무아지경 */
   kill: { e: any };
-  /** every 10th combo kill */
-  combo10: undefined;
   /** a full row cleared without any enemy slipping past */
   rowClear: undefined;
-  /** 내공 해방 (bomb) used */
+  /** 필살기 (bomb) used */
   blast: { killed: number };
-  /** 내공 gained (after multipliers) */
-  charge: { n: number };
-  /** 내공 reached its maximum */
-  fullCharge: undefined;
 }
 export type GameEvent = keyof GameEvents;
 type Listener<K extends GameEvent> = (data: GameEvents[K]) => void;

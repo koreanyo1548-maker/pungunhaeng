@@ -19,7 +19,9 @@ try {
     };
     await g.page.locator('#start').tap();
     await g.step(2);
-    await g.pick(1);
+    assert.equal(await g.choiceTitle(), '어디로 갈까');
+    await shot('stages');
+    await g.pick(3); // S4 부유암 (운해: left-right only)
     await g.step(2);
     const formation = await g.state(() => [...window.__g.state.formation]);
     const roster = g.page.locator('#choice button.card');
@@ -38,11 +40,11 @@ try {
     await shot('formation');
     await g.page.locator('#formationConfirm').tap();
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '대기');
+    assert.equal(await g.choiceTitle(), '후발');
     assert.equal(await roster.count(), 11, 'front hero excluded from rear roster');
     await g.pick(0);
     await g.step(2);
-    await g.act(0);
+    assert.equal(await g.mode(), 'play', 'play starts after the party is set');
     await g.eval(() => (window.__g.player.inv = 999)); // UI input checks do not depend on combat survival.
     await g.seconds(5);
     // A touch drag moves the player; tapping an action must not move it.
@@ -54,20 +56,22 @@ try {
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await g.step(10);
     assert.ok(await g.state(() => window.__g.player.target < 240), 'touch drag moves left');
-    await g.eval(() => window.__g.setSwap());
     const before = await g.state(() => ({
       active: window.__g.state.active,
       x: window.__g.player.target,
       bombs: window.__g.state.bombs,
     }));
-    await g.page.locator('#swap').tap();
+    // the swap button is gone from play: its place is kept invisible, and tapping there does nothing
+    assert.equal(
+      await g.eval(() => getComputedStyle(document.getElementById('swap')).visibility),
+      'hidden',
+      'swap slot is hidden',
+    );
+    const ult = await g.page.locator('#blast').boundingBox();
+    await g.page.touchscreen.tap(ult.x + ult.width / 2, ult.y - 40);
     await g.step(2);
-    assert.notEqual(await g.state(() => window.__g.state.active), before.active);
-    assert.equal(await g.state(() => window.__g.player.target), before.x, 'button tap does not drag');
-    const sw = await g.page.locator('#swap').boundingBox(),
-      ult = await g.page.locator('#blast').boundingBox();
-    assert.ok(sw.width >= 44 && ult.width >= 44, 'touch targets at least 44px');
-    assert.ok(sw.x + sw.width < ult.x || sw.y + sw.height <= ult.y, 'action targets do not overlap');
+    assert.equal(await g.state(() => window.__g.state.active), before.active, 'no manual swap');
+    assert.ok(ult.width >= 44, 'touch target at least 44px');
     assert.ok(ult.y + ult.height <= c.y + c.height, 'button stays inside game');
     await g.seconds(1);
     await shot('combat');
@@ -75,23 +79,37 @@ try {
     await g.page.waitForTimeout(400); // allow synthesized touch click: must not spend a second charge
     await g.step(2);
     assert.equal(await g.state(() => window.__g.state.bombs), before.bombs - 1);
+    // a 만남: the 인연 card and its two choices fit, and a choice is a tap
+    await g.eval(() => window.__g.meet('yakseon'));
+    await g.step(2);
+    assert.equal(await g.choiceTitle(), '인연');
+    assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover the 만남');
+    const acts = g.page.locator('#choice .act');
+    assert.equal(await acts.count(), 2);
+    assert.ok(
+      await acts.nth(1).evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return r.height >= 44 && r.bottom <= innerHeight;
+      }),
+      'both choices reachable, at least 44px',
+    );
+    await shot('encounter');
+    await acts.first().tap();
+    await g.step(2);
+    assert.equal(await g.mode(), 'play');
+    const count = await g.state(() => window.__g.state.skills.length);
     await g.eval(() => {
       const q = window.__g.state.quest;
       if (q.t === 'combo') window.__g.state.combo = 999;
       window.__g.questEvent(q.t, 999);
     });
-    await g.seconds(2);
-    assert.equal(await g.choiceTitle(), '기술 선택');
-    assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover reward title');
-    assert.ok(await g.page.locator('#choice.reward-screen').count());
-    await shot('dono');
-    const count = await g.state(() => window.__g.state.skills.length);
-    await g.page.locator('#choice button.card').first().tap();
     await g.step(2);
-    assert.equal(await g.state(() => window.__g.state.skills.length), count + 1);
+    assert.equal(await g.state(() => window.__g.state.skills.length), count + 1, 'the met 의뢰 teaches 1단계');
     assert.deepEqual(g.errors, []);
     await g.page.close();
-    console.log(`PASS ${viewport.width}: preview/confirm, touch drag, swap/blast, reward selection, no page errors`);
+    console.log(
+      `PASS ${viewport.width}: stage select, preview/confirm, touch drag, hidden swap slot, blast, 만남, no page errors`,
+    );
   }
 } finally {
   await browser.close();

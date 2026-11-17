@@ -15,7 +15,7 @@
 
 - 기존 `npm test`, `npm run test:ui`, 일반/단일 파일 빌드.
 - `node tests/e2e/refactor-regressions.mjs`: 실제 저장 코드 UI로 높은 기록을 불러오기, 낮은/높은 판 종료 후 저장과 화면 확인, 중첩 스킬 문맥의 예외 복구, 실제 재시작의 상태와 효과 초기화.
-- `node tests/e2e/skill-art.mjs`: 일반/동작 줄이기에서 24개 기술, 3개 보스 조합, 6명 교체와 무효 발동/소진/초기화.
+- `node tests/e2e/skill-art.mjs`: 일반/동작 줄이기에서 24개 기술, 3개 보스 조합, 영웅 등장과 무효 발동/소진/초기화.
 - 이전 HTML과 24개 기술을 장착한 같은 시드·입력의 두 코스 비교. `tests/equivalence/combat-layout.mjs`로 세 화면 크기의 전투 배치 비교.
 
 ## 남은 경계

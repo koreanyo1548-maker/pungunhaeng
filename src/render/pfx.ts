@@ -107,7 +107,7 @@ const DEFS = {
   },
   // pickups and swaps (palette given per call)
   collect: { id: 'pickups/collect-burst', opts: {}, box: [-44, -87, 51, 6], scale: 1, max: 5, cost: 160 },
-  // 내공 해방, 보스 격노 (palette given per call)
+  // 필살기, 보스 격노 (palette given per call)
   mana: { id: 'arcane/mana-burst', opts: {}, box: [-103, -135, 97, 47], scale: 2, max: 2, cost: 650, fps: 15 },
   // a boss goes down (palette given per call)
   plasma: {

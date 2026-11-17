@@ -4,8 +4,7 @@ import { $, H, W, canvas } from '../core/dom';
 import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { blast } from '../systems/combat';
-import { home, pause, resume, start } from '../systems/flow';
-import { swapHero } from '../systems/formation';
+import { home, pause, resume, skyStage, start } from '../systems/flow';
 
 // Touch actions respond on contact, independently of the browser's synthesized click.
 // Ignore that later touch click so one tap cannot spend two charges.
@@ -21,7 +20,6 @@ function bindAction(id: string, action: () => void) {
     action();
   });
 }
-bindAction('swap', swapHero);
 bindAction('blast', blast);
 $('start').addEventListener('click', start);
 $('retry').onclick = start;
@@ -42,7 +40,7 @@ canvas.addEventListener('pointermove', e => {
   if (G.mode !== 'play' || G.pointer?.id !== e.pointerId) return;
   const rect = canvas.getBoundingClientRect();
   G.player.target = clamp(G.pointer.start + (((e.clientX - G.pointer.x) * W) / rect.width) * 1.12, 24, W - 24);
-  if (G.state?.course === 'sky')
+  if (TUNE.freeFlight && skyStage())
     G.player.targetY = clamp(
       G.pointer.startY + (((e.clientY - G.pointer.y) * H) / rect.height) * 1.12,
       TUNE.skyMinY,
@@ -54,9 +52,7 @@ for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     if (G.pointer?.id === e.pointerId) G.pointer = null;
   });
 window.addEventListener('keydown', e => {
-  if (
-    ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Escape', 'a', 'd', 'w', 's', 'q', 'Shift'].includes(e.key)
-  )
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Escape', 'a', 'd', 'w', 's'].includes(e.key))
     e.preventDefault();
   if (e.key === 'Escape') {
     G.mode === 'play' ? pause() : resume();
@@ -64,7 +60,6 @@ window.addEventListener('keydown', e => {
   }
   if (G.mode !== 'play') return;
   if (e.key === ' ' && !e.repeat) blast();
-  if ((e.key.toLowerCase() === 'q' || e.key === 'Shift') && !e.repeat) swapHero();
   G.keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key);
 });
 window.addEventListener('keyup', e => G.keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key));

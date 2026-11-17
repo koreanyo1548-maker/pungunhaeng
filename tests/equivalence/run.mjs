@@ -1,7 +1,8 @@
 // Deterministic equivalence check: two builds get the same seeded Math.random, the same synthetic clock
 // (requestAnimationFrame / performance.now driven by __step) and the same scripted input.
 // Snapshots of game state are compared; any divergence means the builds do not behave identically.
-// usage: node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps] [course]
+// usage: node tests/equivalence/run.mjs <a.html> <b.html> [seed] [steps] [stage]
+// stage: index on the stage select (0 = S1 산길, 3 = S4 부유암, a 운해 stage)
 // env FRAME_MS (default 1000/60): display frame interval; each scripted step always covers 100 ms of game time.
 // FRAME_MS_B overrides it for build B, e.g. to compare 60 Hz against 120 Hz.
 import { createRequire } from 'module';
@@ -67,8 +68,7 @@ async function run(file, seed, steps, course, frameMs) {
       held = want;
     }
     if (k % 97 === 50) await page.keyboard.press(' ');
-    if (k % 151 === 80) await page.keyboard.press('q');
-    if (k % 23 === 11 && course === 1) await page.keyboard.press('ArrowUp');
+    if (k % 23 === 11 && course === 3) await page.keyboard.press('ArrowUp'); // ignored: no up-down movement
     await page.evaluate(n => window.__step(n), Math.round(100 / frameMs));
     if (k % 40 === 0)
       snaps.push(
@@ -85,15 +85,17 @@ async function run(file, seed, steps, course, frameMs) {
             coins: s.coins,
             hp: p.hp,
             bombs: s.bombs,
-            charge: Math.round(s.charge * 100),
+            gauge: Math.round(s.gauge * 100),
+            align: s.align,
+            encounters: s.encounters,
             combo: s.combo,
             x: Math.round(p.x * 100),
             y: Math.round(p.y * 100),
             active: s.active,
             enemies: g.enemies.length,
             quest: s.quest && [s.quest.npc, s.quest.t, Math.round(s.quest.prog), s.quest.done],
-            skills: s.skills.map(x => x.id + (x.mod || '')).join(','),
-            rel: JSON.stringify(s.rel),
+            skills: s.skills.map(x => x.id).join(','),
+            bond: JSON.stringify(s.bond),
             path: s.path.map(x => x.npc + x.mode + x.result).join('|'),
           };
         }),

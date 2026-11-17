@@ -7,9 +7,8 @@ import { clamp, fxRnd } from '../core/math';
 import { fxRandom } from '../core/rng';
 import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
-import { hasSkill } from '../systems/skill-state';
 import { region } from '../systems/flow';
-import { RAIN_SECONDS } from '../data/skills';
+import { rainSeconds } from '../data/skills';
 import { drawPfx, pfx, ramp, updatePfx } from './pfx';
 import { updateCallouts } from './callout';
 
@@ -276,7 +275,7 @@ export function drawFinisher() {
   ctx.restore();
 }
 export function drawSkillFX() {
-  if (G.state.rain > 0) drawSwordRain(G.state.rain, RAIN_SECONDS);
+  if (G.state.rain > 0) drawSwordRain(G.state.rain, rainSeconds());
   // Damage is still resolved instantly along the full column; the slim trail marks its reach.
   for (const s of G.strikes) {
     const t = s.life / s.total;
@@ -316,17 +315,4 @@ export function drawSkillFX() {
       drawVfxSprite(combatProjectileArt[7], s.x, H * 0.36, s.w * 3.2, 300, Math.PI, t);
     }
   }
-  if (hasSkill('hoeseon'))
-    for (let i = 0; i < G.state.orbs; i++) {
-      const a = G.state.orbAngle + (i * Math.PI * 2) / G.state.orbs;
-      drawSkillFrame(
-        'hoeseon',
-        reduced ? 2 : [1, 2, 3, 2][Math.floor(G.time * 8) % 4],
-        G.player.x + Math.cos(a) * 58,
-        G.player.y - 10 + Math.sin(a) * 58,
-        48,
-        0.9,
-        a + Math.PI,
-      );
-    }
 }

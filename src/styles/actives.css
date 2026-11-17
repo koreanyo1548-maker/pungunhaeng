@@ -227,3 +227,9 @@
 .active-btn.focus {
   box-shadow: 0 0 12px 2px var(--c);
 }
+
+/* The swap button is gone from play; its place is kept (invisible) so the 필살기 button stays where it was. */
+.slot-kept {
+  visibility: hidden;
+  pointer-events: none;
+}

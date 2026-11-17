@@ -7,6 +7,7 @@ import { pfx, ramp } from '../render/pfx';
 const COIN = ramp('#ffdf87'),
   POWER = ramp('#a7ffff');
 import { announce } from '../ui/hud';
+import { hyperItemScale } from '../systems/hero-effects';
 
 export function addPickup(kind, x, y) {
   G.pickups.push({ kind, x, y, r: kind === 'coin' ? 7 : 17, life: 10, phase: rnd(0, 6), vx: rnd(-35, 35) });
@@ -28,8 +29,8 @@ export function collect(p) {
     label('공격력 강화', G.player.x, G.player.y - 65, '#affff2', 22);
     chime();
   } else {
-    G.state.hyper = 4.2;
-    G.player.inv = 4.8;
+    G.state.hyper = Math.max(G.state.hyper, 4.2 * hyperItemScale());
+    G.player.inv = Math.max(G.player.inv, G.state.hyper + 0.6);
     G.hazards = [];
     G.flash = 0.22;
     ring(G.player.x, G.player.y, '#c5f9ff', 10, 200, 0.45);

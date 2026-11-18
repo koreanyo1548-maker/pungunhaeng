@@ -5,7 +5,7 @@ import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { updateBoss } from '../entities/boss';
 import { hitEnemy, kill, nearestEnemy, resolveRow } from '../entities/enemies';
-import { PICKUP_FALL, collect } from '../entities/pickups';
+import { PICKUP_FALL, PICKUP_REACH, collect } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { pfx } from '../render/pfx';
@@ -227,10 +227,20 @@ function updatePickups(dt: number): void {
     } else {
       p.vy = Math.min(PICKUP_FALL.max, p.vy + PICKUP_FALL.gravity * dt);
       p.y += p.vy * dt;
-      p.x = clamp(p.x + p.vx * dt, 12, W - 12);
-      p.vx *= Math.exp(-dt * 2);
+      // it stays on the screen: the top stops the rise, the sides throw it back
+      if (p.y < 30 && p.vy < 0) {
+        p.y = 30;
+        p.vy = 0;
+      }
+      p.x += p.vx * dt;
+      if (p.x < 18 || p.x > W - 18) {
+        p.x = clamp(p.x, 18, W - 18);
+        p.vx = -p.vx * 0.6;
+      }
+      p.vx *= Math.exp(-dt * 1.2);
     }
-    if (dist < (p.kind === 'coin' ? 25 : 35) || Math.hypot(G.player.x - p.x, G.player.y - p.y) < 23) collect(p);
+    const take = p.kind === 'coin' ? PICKUP_REACH.coin : PICKUP_REACH.item;
+    if (dist < take || Math.hypot(G.player.x - p.x, G.player.y - p.y) < take) collect(p);
   }
 }
 

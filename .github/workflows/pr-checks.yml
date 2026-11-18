@@ -83,7 +83,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           for args in "12345 2400 0" "777 2400 3"; do
-            result=$(node tests/equivalence/run.mjs test-results/base.html dist-single/index.html $args | tail -1 || true)
+            result=$(node tests/equivalence/run.mjs test-results/base.html dist-single/index.html $args | grep -oE '^(IDENTICAL|DIVERGED at snapshot [0-9]+)' | head -1 || true)
             echo "seed $args: $result"
             echo "- 시드 비교 (base → 이 PR) \`$args\`: **$result**" >> "$GITHUB_STEP_SUMMARY"
           done

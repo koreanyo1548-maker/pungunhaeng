@@ -92,7 +92,8 @@ try {
     M.G.player.hp = 1;
     M.G.state.coins = 42;
     Object.assign(M.G.state, {
-      align: 4,
+      good: 4,
+      evil: 2,
       unlocked: ['yakseon'],
       bond: { yakseon: 2 },
       gauge: 30,
@@ -111,7 +112,7 @@ try {
       cues: M.skillAnimationSnapshot().cues.length,
       auras: M.skillAnimationSnapshot().auras.length,
       run: [
-        M.G.state.align,
+        M.G.state.good + M.G.state.evil,
         M.G.state.unlocked.length,
         Object.keys(M.G.state.bond).length,
         M.G.state.gauge,

@@ -1,5 +1,6 @@
-// 인연 의뢰 (docs/ability-redesign-plan.md, 4.5). An 인연 comes to a 만남 with an 의뢰. Following it moves the
-// 선·악 저울 toward the 인연's side, defying it moves it the other way; the move happens when the choice is made.
+// 인연 의뢰 (docs/ability-redesign-plan.md, 4.5). An 인연 comes to a 만남 with an 의뢰. Following it adds a point to
+// the 인연's side (선 or 악), defying it a point to the other side; the point comes when the choice is made.
+// The target grows with each 의뢰 of the same 인연 in a run: 1/3, then 2/3, then the full count (data/npcs.ts `n`).
 // Met in time, a followed 의뢰 raises the 인연 one level (its next skill), and pays 엽전 once the 인연 is at level 3;
 // a defied one pays 엽전. The deadline is the next 만남: a full gauge fails an 의뢰 still running, and so does the end
 // of the run. Failing costs only the reward.
@@ -20,9 +21,12 @@ import { addBond } from '../core/profile';
 
 export const BOND_MAX = 3;
 
-/** a condition's target (the same on every stage) */
-export const questTarget = (c: { n: number }) => c.n;
-/** how far the scale moves when this 인연's 의뢰 is followed (+1 정파 / −1 사파) or defied (the other way) */
+/** share of the full target for the 1st, 2nd and 3rd (and later) 의뢰 of the same 인연 in a run */
+export const QUEST_STEPS = [1 / 3, 2 / 3, 1];
+/** a condition's target for the `met`-th 의뢰 (0 = the first) of its 인연 this run (the same on every stage) */
+export const questTarget = (c: { n: number }, met: number) =>
+  Math.max(1, Math.round(c.n * QUEST_STEPS[Math.min(met, QUEST_STEPS.length - 1)]));
+/** the point this 인연's 의뢰 gives when followed (+1 선 for 정파 / −1 = 악 +1 for 사파) or defied (the other side) */
 export const alignMove = (id: string, mode: string) =>
   (NPCS[id].side === 'good' ? 1 : -1) * (mode === 'follow' ? 1 : -1);
 /** What meeting an 의뢰 gives: the 인연's next level, or 엽전. */
@@ -104,7 +108,7 @@ export function acceptQuest(id, qmode) {
     npc: id,
     mode: qmode,
     t: c.t,
-    target: questTarget(c),
+    target: questTarget(c, met),
     prog: 0,
     br: COND[c.t].br,
     done: false,

@@ -1,5 +1,5 @@
 // 만남 (docs/ability-redesign-plan.md, 4.2–4.5): opened when the 처치 게이지 fills (systems/encounter.ts).
-// An 인연 who can come (unlocked by the 선·악 저울 and held as a card) brings an 의뢰; otherwise a passer-by comes.
+// An 인연 who can come (unlocked by 선·악 points) brings an 의뢰; otherwise a passer-by comes.
 import { ambientPictures } from '../core/ambient-art';
 import { G } from '../core/context';
 import { npcPictures } from '../core/assets';
@@ -45,13 +45,13 @@ function openBond(id: string) {
     level = bondLevel(id);
   const act = (label: string, c, mode: string) => ({
     color: BR[COND[c.t].br].color,
-    html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>저울 ${moveText(alignMove(id, mode))}${mode === 'follow' ? ' · 호감도 +1' : ''} · ${rewardText(id, mode)}</small>`,
+    html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c, met)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>${moveText(alignMove(id, mode))}${mode === 'follow' ? ' · 호감도 +1' : ''} · ${rewardText(id, mode)}</small>`,
     onPick: () => acceptQuest(id, mode),
   });
   openChoice({
     eyebrow: eyebrow(),
     title: '인연',
-    sub: `저울 <b>${alignText()}</b>. 의뢰는 다음 만남 전까지 이뤄야 한다. 실패하면 저울만 움직이고 보상은 없다.`,
+    sub: `<b>${alignText()}</b>. 의뢰는 다음 만남 전까지 이뤄야 한다. 실패해도 선·악은 오르지만 보상은 없다.`,
     cards: [
       {
         image: npcPictures[id],
@@ -73,7 +73,7 @@ function openPasser() {
   openChoice({
     eyebrow: eyebrow(),
     title: '행인',
-    sub: `저울 <b>${alignText()}</b>. 길에서 만날 인연이 아직 없다. 선·악 저울이 1·3·5에 닿으면 그쪽 인연이 열린다.`,
+    sub: `<b>${alignText()}</b>. 길에서 만날 인연이 아직 없다. 선·악이 1·3·5에 닿으면 그쪽 인연이 열린다. 판 끝에 선 1마다 점수, 악 1마다 엽전 +5%.`,
     cards: [
       {
         image: ambientPictures[who.art + '-neutral'],
@@ -87,7 +87,7 @@ function openPasser() {
           return {
             color: a.move > 0 ? '#ffd77a' : '#a6c8bf',
             html:
-              `<b>${a.label}</b>${a.cost ? ` · ${a.cost}냥` : ''}<small>저울 ${moveText(a.move)}</small>` +
+              `<b>${a.label}</b>${a.cost ? ` · ${a.cost}냥` : ''}<small>${moveText(a.move)}</small>` +
               (a.cost ? `<small>${off ? '엽전 부족 · ' : ''}지닌 엽전 ${G.state.coins}냥</small>` : ''),
             disabled: off,
             onPick: () => meetPasser(i),

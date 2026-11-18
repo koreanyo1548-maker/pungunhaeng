@@ -185,7 +185,7 @@ try {
     party('cheongwan', 'pungun');
     M.shoot();
     out.cheongwan = G.shots.every(s => s.pierceLeft === 1);
-    // 매설영: +50% coins, carried between kills (4 and 5)
+    // 매설영: +50% coins on one a kill, carried between kills (1 and 2)
     party('seolyeong', 'pungun');
     out.seolyeong = [M.coinsForKill(), M.coinsForKill(), M.coinsForKill(), M.coinsForKill()];
     // 한소운: the 무아지경 item lasts 50% longer
@@ -204,7 +204,7 @@ try {
     // 운학 (party): one more 필살기 at the start, even as second
     party('pungun', 'unhak');
     out.unhak = G.state.bombs;
-    // 황연청 (party): magnet even as second; off once she has fallen
+    // 황연청 (party): a magnet even as second; none once she has fallen (there is no magnet without her)
     party('pungun', 'yeoncheong');
     const second = M.magnetReach();
     party('yeoncheong', 'pungun');
@@ -225,13 +225,13 @@ try {
   assert.equal(traits.bicheonWaiting, 0, '비천 waiting: no sword');
   assert.ok(traits.hongryeon > 0.08 && traits.hongryeon < 0.24, 'about 15% crits: ' + traits.hongryeon);
   assert.equal(traits.cheongwan, true);
-  assert.deepEqual(traits.seolyeong, [4, 5, 4, 5]);
+  assert.deepEqual(traits.seolyeong, [1, 2, 1, 2]);
   assert.equal(traits.soun, 1.5);
   assert.equal(traits.ayeong, 1.2, '아영: attack +20% while she fights');
   assert.equal(traits.yoran, true);
   assert.equal(traits.yoranGauge, 1.5, '정요란: gauge +50% per kill');
   assert.equal(traits.unhak, 2, 'one 필살기 + 1');
-  assert.deepEqual(traits.yeoncheong, { second: 2, first: 2, afterFall: 1 });
+  assert.deepEqual(traits.yeoncheong, { second: 2, first: 2, afterFall: 0 });
   assert.deepEqual(traits.offWhileWaiting, { graze: 1.4, crit: false });
   console.log('PASS 12 traits, their scope (self / party), no road affinity, party trait off after a fall');
 

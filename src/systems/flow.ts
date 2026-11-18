@@ -7,11 +7,13 @@ import { G } from '../core/context';
 import { metaSnapshot, openNextStage, profile, saveProfile } from '../core/profile';
 import { chime, initAudio, tone } from '../core/audio';
 import { $, PLAYER_Y, W } from '../core/dom';
-import { clamp, fmt, josa, rnd } from '../core/math';
+import { clamp, fmt, josa } from '../core/math';
 import { settle } from '../data/meta';
 import { STAGES, STAGE_COUNT } from '../data/stages';
 import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
+import { VICTORY_SCORE, runBonus } from './score';
+import { VIRTUE_BONUS } from './alignment';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
 
@@ -61,7 +63,7 @@ export function start() {
   clearCallouts();
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();
-  G.state = createRunState(meta, rnd(48, 62));
+  G.state = createRunState(meta);
   G.player = createPlayer(W, PLAYER_Y, () => G.state.heroHealth[G.state.formation[G.state.active]]);
   $('toast').classList.remove('show');
   showBest();
@@ -92,19 +94,36 @@ export function end(victory = false) {
   G.mode = 'result';
   G.banner = null;
   G.state.victory = victory;
-  if (victory) G.state.score += 20000;
+  if (victory) G.state.score += VICTORY_SCORE;
   closeQuest();
+  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 최대 점수 add to the 엽전 left, which go to
+  // the bank with the clear bonus; beating the boss opens the next stage.
+  const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil);
+  G.state.score = Math.round(G.state.score * (1 + b.scoreBonus));
   const record = G.state.score > profile.best;
   if (record) profile.best = Math.floor(G.state.score);
-  // 정산: what is left of this run's 엽전 goes to the bank; beating the boss opens the next stage.
-  const banked = settle(G.state.coins, victory),
+  const kept = settle(G.state.coins, false, b.coinBonus),
+    banked = settle(G.state.coins, victory, b.coinBonus),
     opened = victory && openNextStage(G.state.stage),
-    r = region();
+    r = region(),
+    pct = (v: number) => Math.round(v * 100) + '%';
   profile.coins += banked;
   saveProfile();
   $('settle').innerHTML =
-    `남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
-    (banked > G.state.coins ? ` + 보스 처치 <b>${fmt(banked - G.state.coins)}냥</b>` : '') +
+    `최대 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
+    (b.scoreBonus ? ` · 선 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
+    `<br>남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
+    (b.coinBonus
+      ? ` + <b>${fmt(kept - G.state.coins)}냥</b> (` +
+        [
+          b.tier ? `달성 +${pct(b.tier)}` : '',
+          G.state.evil ? `악 ${G.state.evil} +${pct(G.state.evil * VIRTUE_BONUS)}` : '',
+        ]
+          .filter(Boolean)
+          .join(' · ') +
+        ')'
+      : '') +
+    (banked > kept ? ` + 보스 처치 <b>${fmt(banked - kept)}냥</b>` : '') +
     ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>`;
   $('resultTitle').textContent = victory ? r.name + ' 돌파' : '강호행 종료';
   $('resultEyebrow').textContent =

@@ -1,5 +1,5 @@
 // 행인 (passers-by, docs/ability-redesign-plan.md 4.4 and 7.8): who comes to a 만남 when no 인연 can. There is no
-// 의뢰; what the player does moves the 선·악 저울. A passer-by's level is how many the run has met: the first is
+// 의뢰; what the player does adds 선 or 악 points. A passer-by's level is how many the run has met: the first is
 // level 1 (help or ignore), every later one level 2 (give 엽전 or not). Portraits go in order (no randomness, so the
 // run's rolls are untouched); they are keyed by art in core/ambient-art.ts.
 import { ambientPictures } from '../core/ambient-art';
@@ -41,7 +41,7 @@ export function passerNow() {
   return { who: PASSERS[n % PASSERS.length], level: n === 0 ? 1 : 2 };
 }
 
-/** What each choice does: the scale move, and 엽전 paid (level 2 giving). */
+/** What each choice does: the points it adds (+ 선, − 악), and 엽전 paid (level 2 giving). */
 export const PASSER_ACTS = {
   1: [
     { kind: 'help', label: '돕는다', move: 1, cost: 0, result: '도움' },

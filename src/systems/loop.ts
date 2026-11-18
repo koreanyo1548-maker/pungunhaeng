@@ -5,7 +5,7 @@ import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { updateBoss } from '../entities/boss';
 import { hitEnemy, kill, nearestEnemy, resolveRow } from '../entities/enemies';
-import { collect } from '../entities/pickups';
+import { PICKUP_FALL, collect } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { pfx } from '../render/pfx';
@@ -14,6 +14,7 @@ import { updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
 import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
+import { RUN_SCORE, addScore, runSpeed } from './score';
 import { updateEncounter } from './encounter';
 import { bondFireRate, bondGraze } from '../data/skills';
 import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
@@ -29,11 +30,13 @@ export function update(dt) {
   G.time += dt;
   G.state.enteredStep = false;
   G.state.elapsed += dt;
-  G.state.distance += dt * (G.state.hyper > 0 ? 420 : 85 + Math.min(difficulty() * 12, 65));
-  G.state.score += dt * 8;
+  G.state.distance += dt * (G.state.hyper > 0 ? 420 : runSpeed(G.state.stage));
+  addScore(dt * RUN_SCORE);
   G.scroll +=
     dt * (G.state.hyper > 0 ? 1150 : G.state.phase === 'clear' ? 500 : 185 + Math.min(difficulty() * 24, 120));
   G.state.hyper = Math.max(0, G.state.hyper - dt);
+  G.state.magnet = Math.max(0, G.state.magnet - dt);
+  G.state.double = Math.max(0, G.state.double - dt);
   G.player.inv = Math.max(0, G.player.inv - dt);
   G.player.muzzle = Math.max(0, G.player.muzzle - dt);
   G.shake = Math.max(0, G.shake - realDt * 22);
@@ -209,6 +212,8 @@ function updateHazards(dt: number): boolean {
 function updatePickups(dt: number): void {
   for (const p of G.pickups) {
     p.life -= dt;
+    // no magnet by default: 황연청 in the party, the 자석 item or 무아지경 (엽전 only) pull pickups in; otherwise a
+    // pickup pops up from the kill and falls (entities/pickups.ts) and has to be caught
     const dx = G.player.x - p.x,
       dy = G.player.y - p.y,
       dist = Math.hypot(dx, dy),
@@ -218,10 +223,12 @@ function updatePickups(dt: number): void {
       const v = p.kind === 'coin' ? 600 : 260;
       p.x += (dx / Math.max(1, dist)) * Math.min(v * dt, dist);
       p.y += (dy / Math.max(1, dist)) * Math.min(v * dt, dist);
+      p.vy = Math.max(0, p.vy);
     } else {
-      p.y += dt * (p.kind === 'coin' ? 175 : 150);
-      p.x += p.vx * dt;
-      p.vx *= Math.exp(-dt * 4);
+      p.vy = Math.min(PICKUP_FALL.max, p.vy + PICKUP_FALL.gravity * dt);
+      p.y += p.vy * dt;
+      p.x = clamp(p.x + p.vx * dt, 12, W - 12);
+      p.vx *= Math.exp(-dt * 2);
     }
     if (dist < (p.kind === 'coin' ? 25 : 35) || Math.hypot(G.player.x - p.x, G.player.y - p.y) < 23) collect(p);
   }

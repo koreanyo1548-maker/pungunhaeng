@@ -54,16 +54,16 @@ try {
         return im?.complete && im.naturalWidth === 314;
       });
       await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
-      const before = await p.evaluate(() => ({ coins: M.G.state.coins, align: M.G.state.align }));
+      const before = await p.evaluate(() => ({ coins: M.G.state.coins, good: M.G.state.good }));
       await p.locator('#choice .act').first().click();
       const after = await p.evaluate(() => ({
         coins: M.G.state.coins,
-        align: M.G.state.align,
+        good: M.G.state.good,
         mode: M.G.mode,
         toast: document.querySelector('#toast img')?.getAttribute('src'),
       }));
       assert.equal(after.coins, before.coins - (n ? 20 : 0));
-      assert.equal(after.align, before.align + (n ? 2 : 1));
+      assert.equal(after.good, before.good + (n ? 2 : 1));
       assert.equal(after.mode, 'play');
       assert.ok(after.toast?.startsWith('data:image/png'));
       await p.waitForFunction(() => document.querySelector('#toast img')?.complete);

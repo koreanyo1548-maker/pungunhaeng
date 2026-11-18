@@ -47,6 +47,10 @@ if (location.hash.includes('debug'))
     get pickups() {
       return G.pickups;
     },
+    /** the floating score and combat labels on screen */
+    get labels() {
+      return G.labels;
+    },
     /** drop a pickup ('coin', 'hyper', 'magnet', 'double') at (x, y), as a kill would */
     addPickup,
     /** kill an enemy as a hit would (score, gauge, drops) */

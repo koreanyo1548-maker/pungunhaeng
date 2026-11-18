@@ -313,6 +313,8 @@ try {
       // it ends after its time, and a new run starts without it
       G.player.inv = 999;
       G.state.hyper = 0;
+      // no 만남 while it runs out: kills (and a 무아지경 item a magnet pulls in) could fill the gauge
+      G.state.gauge = -1e6;
       // a little extra: kills cause short hit-stops that slow game time
       run(r.total + 3, 1 / 20);
       r.ended = G.state.effect === null;

@@ -212,13 +212,13 @@ function updateHazards(dt: number): boolean {
 function updatePickups(dt: number): void {
   for (const p of G.pickups) {
     p.life -= dt;
-    // no magnet by default: 황연청 in the party, the 자석 item or 무아지경 (엽전 only) pull pickups in; otherwise a
+    // no magnet by default (not in 무아지경 either): only 황연청 in the party or the 자석 item pull pickups in; otherwise a
     // pickup pops up from the kill and falls (entities/pickups.ts) and has to be caught
     const dx = G.player.x - p.x,
       dy = G.player.y - p.y,
       dist = Math.hypot(dx, dy),
       reach = magnetReach(),
-      attract = p.kind === 'coin' ? dist < 150 * reach || G.state.hyper > 0 : dist < 65 * reach;
+      attract = reach > 0 && dist < (p.kind === 'coin' ? 150 : 65) * reach;
     if (attract) {
       const v = p.kind === 'coin' ? 600 : 260;
       p.x += (dx / Math.max(1, dist)) * Math.min(v * dt, dist);

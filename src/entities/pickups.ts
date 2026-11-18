@@ -1,7 +1,7 @@
 // Pickups: 엽전 and the in-play items (docs/combat-stats.md). They drop from kills: each pops up from where the enemy
 // was, slows, then falls (PICKUP_FALL) and leaves the screen unless it is caught; only a magnet (황연청, the 자석
-// item, 무아지경 for 엽전) pulls them in (systems/loop.ts). A kill drops one 엽전 and, each with ITEM_CHANCE, each item
-// (not a 무아지경 kill: that drops 엽전 only):
+// item) pulls them in (systems/loop.ts). A kill drops one 엽전 and, with ITEM_CHANCE, one item, each of the three as
+// likely (not a 무아지경 kill: that drops 엽전 only):
 //   hyper  무아지경: a moment of invincibility with fiercer attacks (as before)
 //   magnet 자석: pickups are pulled in for ITEM_SECONDS
 //   double 점수 두 배: score counts twice for ITEM_SECONDS (systems/score.ts addScore)
@@ -21,7 +21,7 @@ const COIN = ramp('#ffdf87');
 export type PickupKind = 'coin' | 'hyper' | 'magnet' | 'double';
 /** the items a kill can drop, in the order they are rolled */
 export const ITEMS: PickupKind[] = ['hyper', 'magnet', 'double'];
-/** chance of each item per kill */
+/** chance per kill that an item drops (then one of ITEMS, each as likely) */
 export const ITEM_CHANCE = 0.02;
 /** seconds the 자석 and 점수 두 배 items last */
 export const ITEM_SECONDS = 10;
@@ -43,15 +43,13 @@ export function addPickup(kind: PickupKind, x: number, y: number) {
     vy: -rnd(PICKUP_FALL.pop[0], PICKUP_FALL.pop[1]),
   });
 }
-/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, each item with ITEM_CHANCE. */
+/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, an item with ITEM_CHANCE. */
 export function dropLoot(x: number, y: number, coins: number, items = true) {
   for (let i = 0; i < coins; i++) addPickup('coin', x + rnd(-15, 15), y + rnd(-10, 10));
-  if (!items) return;
-  for (const kind of ITEMS)
-    if (random() < ITEM_CHANCE) {
-      addPickup(kind, x, y);
-      if (kind === 'hyper') G.state.hyperDrops++;
-    }
+  if (!items || random() >= ITEM_CHANCE) return;
+  const kind = ITEMS[Math.floor(random() * ITEMS.length)];
+  addPickup(kind, x, y);
+  if (kind === 'hyper') G.state.hyperDrops++;
 }
 export function collect(p) {
   p.dead = true;

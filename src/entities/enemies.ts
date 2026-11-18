@@ -109,7 +109,8 @@ export function kill(e, byHyper = false) {
   G.state.combo++;
   G.state.comboTimer = 2;
   const dy = G.player.y - e.y,
-    near = e.boss ? 1 : dy < TUNE.nearDy ? 3 : dy < 304 ? 2 : 1,
+    // 근접 × is for the player's own close kills: not the boss, not what 무아지경 cuts down by itself
+    near = e.boss || byHyper ? 1 : dy < TUNE.nearDy ? 3 : dy < 304 ? 2 : 1,
     mult = comboMult(G.state.combo);
   addScore((e.boss ? bossScore(G.state.stage) : killScore(e.rank)) * near * mult);
   const color = e.boss ? region().color : e.color;

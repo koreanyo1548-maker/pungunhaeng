@@ -1181,6 +1181,23 @@ async function scenarioH(browser, seed) {
     p0.vy < 0 && p0.y - p1.y > 60 && p2.vy > 0 && p2.y > p1.y && Math.abs(p2.x - p0.x) < 160,
     `a pickup pops up, then falls, not pulled in (${JSON.stringify([p0, p1, p2])})`,
   );
+  // no magnet in 무아지경 either
+  await g.eval(() => {
+    window.__g.pickups.length = 0;
+    window.__g.state.rowTimer = 99;
+    window.__g.state.hyper = 1;
+    const pl = window.__g.player;
+    window.__g.addPickup('coin', pl.x + 110, pl.y - 260);
+  });
+  const q0 = await P();
+  await g.step(30);
+  const q1 = await P();
+  await g.eval(() => (window.__g.state.hyper = 0));
+  check(
+    f,
+    q1 && Math.abs(q1.px + 110 - q1.x) < 60 && q1.y < q1.py - 100,
+    `무아지경 does not pull 엽전 in (${JSON.stringify([q0, q1])})`,
+  );
   // the 자석 item: 10 s, pickups within reach are pulled in
   await g.eval(() => {
     window.__g.pickups.length = 0;
@@ -1268,10 +1285,14 @@ async function scenarioH(browser, seed) {
     s.hyper = 2;
   });
   const k0 = await g.state(() => window.__g.state.kills);
-  const items = [];
+  // no 근접 × for what 무아지경 cuts down: no 근접 label while it runs
+  const items = [],
+    nearLabels = [];
   for (let i = 0; i < 12; i++) {
     await g.step(10);
     items.push(...(await g.state(() => window.__g.pickups.filter(p => p.kind !== 'coin').map(p => p.kind))));
+    if (i < 11)
+      nearLabels.push(...(await g.state(() => window.__g.labels.map(l => l.text).filter(t => t.startsWith('근접')))));
   }
   const h1 = await g.state(() => ({
     kills: window.__g.state.kills,
@@ -1285,8 +1306,10 @@ async function scenarioH(browser, seed) {
       h1.gauge === hyperKills &&
       h1.stats.nearKill >= 10 &&
       h1.stats.graze === h1.stats.nearKill &&
-      items.length === 0,
-    `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items (${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
+      items.length === 0 &&
+      nearLabels.length === 0,
+    `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items, no 근접 × (${nearLabels} ` +
+      `${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
   );
   // 최대 점수 of each stage: whole thousands, longer and harder stages give more
   const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.maxScore(n)));

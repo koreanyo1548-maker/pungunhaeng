@@ -1181,6 +1181,23 @@ async function scenarioH(browser, seed) {
     p0.vy < 0 && p0.y - p1.y > 60 && p2.vy > 0 && p2.y > p1.y && Math.abs(p2.x - p0.x) < 160,
     `a pickup pops up, then falls, not pulled in (${JSON.stringify([p0, p1, p2])})`,
   );
+  // no magnet in 무아지경 either
+  await g.eval(() => {
+    window.__g.pickups.length = 0;
+    window.__g.state.rowTimer = 99;
+    window.__g.state.hyper = 1;
+    const pl = window.__g.player;
+    window.__g.addPickup('coin', pl.x + 110, pl.y - 260);
+  });
+  const q0 = await P();
+  await g.step(30);
+  const q1 = await P();
+  await g.eval(() => (window.__g.state.hyper = 0));
+  check(
+    f,
+    q1 && Math.abs(q1.px + 110 - q1.x) < 60 && q1.y < q1.py - 100,
+    `무아지경 does not pull 엽전 in (${JSON.stringify([q0, q1])})`,
+  );
   // the 자석 item: 10 s, pickups within reach are pulled in
   await g.eval(() => {
     window.__g.pickups.length = 0;

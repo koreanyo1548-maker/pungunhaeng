@@ -1,6 +1,7 @@
 """Resize only images in the current Vite build; never write the original artwork."""
 import argparse
 import hashlib
+import io
 import json
 from pathlib import Path
 from PIL import Image, features
@@ -60,10 +61,30 @@ def target_size(size, profile):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Verify without writing files')
+    parser.add_argument('--bootstrap-new', action='store_true', help='Encode missing, explicitly profiled new assets before the first Vite build')
     args = parser.parse_args()
     if not features.check('webp'):
         raise RuntimeError('Pillow must include WebP support')
     profiles = json.loads(PROFILE.read_text(encoding='utf-8'))['images']
+    if args.bootstrap_new:
+        if args.check:
+            parser.error('--bootstrap-new cannot be combined with --check')
+        for key, profile in profiles.items():
+            target = RUNTIME / key
+            if target.exists():
+                continue
+            source = ORIGINALS / Path(key).with_suffix('.png')
+            with Image.open(source) as original:
+                rgba = original.convert('RGBA')
+                size = target_size(rgba.size, profile)
+                reference = rgba if size == rgba.size else rgba.resize(size, Image.Resampling.LANCZOS)
+                metadata = {k: original.info[k] for k in ('icc_profile', 'exif', 'xmp') if k in original.info}
+                target.parent.mkdir(parents=True, exist_ok=True)
+                reference.save(target, format='WEBP', lossless=True, quality=100, method=6, exact=True, **metadata)
+                verify(target, reference, metadata)
+                print(f'BOOTSTRAP: {key}', flush=True)
+        print('Run npm run build, then run this converter without --bootstrap-new to generate reports.')
+        return
     included = build_images()
     if included != set(profiles):
         raise RuntimeError(f'Build/profile mismatch; add explicit decisions for new assets: '
@@ -104,7 +125,14 @@ def main():
                     finally:
                         temporary.unlink(missing_ok=True)
             verify(target, reference, metadata)
-            previous = baseline_rows[runtime_path]
+            previous = baseline_rows.get(runtime_path)
+            if previous is None:
+                if key not in included:
+                    raise ValueError(f'New asset must be explicitly profiled and included in the build: {key}')
+                # New artwork has no historical full-size baseline. Compute that comparison deterministically.
+                fullsize = io.BytesIO()
+                rgba.save(fullsize, format='WEBP', lossless=True, quality=100, method=6, exact=True, **metadata)
+                previous = {'webpBytes': len(fullsize.getvalue())}
             if key not in included and digest(target) != previous['webpSha256']:
                 raise ValueError(f'Out-of-build image changed: {key}')
             row = {

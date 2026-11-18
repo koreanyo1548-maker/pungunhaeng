@@ -319,6 +319,30 @@
         1
       ],
       "reason": "배경 한 구간 너비 418px로 480px 전장보다 작아 유지"
+    },
+    "hero-shots/evolution-01.webp": {
+      "scale": 0.75,
+      "grid": [
+        3,
+        4
+      ],
+      "reason": "36종 기본탄의 금속 윤곽과 작은 장식 유지; 실제 표시 최대 약 50px"
+    },
+    "hero-shots/evolution-02.webp": {
+      "scale": 0.75,
+      "grid": [
+        3,
+        4
+      ],
+      "reason": "36종 기본탄의 금속 윤곽과 작은 장식 유지; 실제 표시 최대 약 50px"
+    },
+    "hero-shots/evolution-03.webp": {
+      "scale": 0.75,
+      "grid": [
+        3,
+        4
+      ],
+      "reason": "36종 기본탄의 금속 윤곽과 작은 장식 유지; 실제 표시 최대 약 50px"
     }
   }
 }

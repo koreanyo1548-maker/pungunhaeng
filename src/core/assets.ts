@@ -1,3 +1,4 @@
+import { loadHeroShotArt } from '../render/hero-shots';
 import imageDimensions from '../assets/image-dimensions.json';
 import { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
 export { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
@@ -247,7 +248,7 @@ export async function load() {
     await loadNewArt();
     await loadCombatArt();
     await loadPortraitProps();
-    await Promise.all([loadSkillArt(), loadAmbientArt()]);
+    await Promise.all([loadSkillArt(), loadAmbientArt(), loadHeroShotArt()]);
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

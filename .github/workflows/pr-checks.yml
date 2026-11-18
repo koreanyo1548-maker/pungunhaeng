@@ -54,6 +54,7 @@ jobs:
           npm run test:ui
       - name: Heroes, skills, art and regressions (dev server)
         run: |
+          node tests/e2e/hero-shot-art.mjs
           node tests/e2e/hero-kit.mjs
           node tests/e2e/hero-lives.mjs
           node tests/e2e/skill-art.mjs

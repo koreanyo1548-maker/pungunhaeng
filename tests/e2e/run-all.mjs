@@ -959,7 +959,7 @@ async function scenarioF(browser, seed) {
   const preview = await g.eval(() => document.querySelector('.formation-preview').textContent);
   check(
     f,
-    /성급 3/.test(preview) && /Lv 2 \/ 30/.test(preview) && /반경 100/.test(preview) && /시간 \+50%/.test(preview),
+    /성급 3/.test(preview) && /Lv 2\/30/.test(preview) && /반경 100/.test(preview) && /시간 \+50%/.test(preview),
     `풍운객 shows 성급 3, the stronger trait and the ★3 entry change (${preview})`,
   );
   await g.pick(0);

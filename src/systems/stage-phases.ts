@@ -12,7 +12,7 @@ import { chime } from '../core/audio';
 import { josa, rnd } from '../core/math';
 import { bossSpawn, createBoss } from '../entities/boss';
 import { meteor, spawnRow, spear } from '../entities/enemies';
-import { rowGap } from './score';
+import { HYPER_SPEED, rowGap, runSpeed } from './score';
 import { announce } from '../ui/hud';
 import { difficulty, region, stageDistance } from './flow';
 import { profile } from '../core/profile';
@@ -72,7 +72,9 @@ export function updatePhase(dt: number): boolean {
 
 function updateFlight(dt) {
   G.state.stageTime += dt;
-  G.state.rowTimer -= dt;
+  // rows come by distance in 무아지경: it runs HYPER_SPEED, so its rows come that much faster and it cuts through
+  // as many enemies a metre as running does (its kills fill the gauge, score and drop 엽전 as usual)
+  G.state.rowTimer -= dt * (G.state.hyper > 0 ? HYPER_SPEED / runSpeed(G.state.stage) : 1);
   G.state.meteorTimer -= dt;
   if (G.state.rowTimer <= 0) {
     spawnRow();

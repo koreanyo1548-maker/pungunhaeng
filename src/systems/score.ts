@@ -59,9 +59,6 @@ function slotScore(stage: number) {
   return rock * killScore(2) + (1 - rock) * enemy;
 }
 
-/** The average score of a kill on a stage (one weak slot and four others a row), before multipliers. */
-export const averageKillScore = (stage: number) => (killScore(0) + 4 * slotScore(stage)) / 5;
-
 /** 최대 점수 of a stage (see the top of this file), rounded to the nearest 1,000. */
 export function maxScore(stage: number) {
   const s = STAGES[stage - 1],
@@ -83,7 +80,7 @@ export function maxScore(stage: number) {
     }
   }
   // every kill in one unbroken chain: the k-th kill scores the average enemy × comboMult(k)
-  const enemy = averageKillScore(stage);
+  const enemy = (killScore(0) + 4 * slotScore(stage)) / 5;
   let kills = 0;
   for (let k = 1; k <= rows * 5; k++) kills += enemy * comboMult(k);
   const rest = rows * (ROW_CLEAR_SCORE + 5 * COIN_SCORE) + run + bossScore(stage) + VICTORY_SCORE;

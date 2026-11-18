@@ -15,7 +15,6 @@ import { graze, grazeEnemy } from './combat';
 import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
 import { HYPER_SPEED, RUN_SCORE, addScore, runSpeed } from './score';
-import { updateHyperRun } from './hyper-run';
 import { updateEncounter } from './encounter';
 import { bondFireRate, bondGraze } from '../data/skills';
 import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
@@ -32,7 +31,6 @@ export function update(dt) {
   G.state.enteredStep = false;
   G.state.elapsed += dt;
   G.state.distance += dt * (G.state.hyper > 0 ? HYPER_SPEED : runSpeed(G.state.stage));
-  updateHyperRun(dt);
   addScore(dt * RUN_SCORE);
   G.scroll +=
     dt * (G.state.hyper > 0 ? 1150 : G.state.phase === 'clear' ? 500 : 185 + Math.min(difficulty() * 24, 120));

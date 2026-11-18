@@ -55,6 +55,14 @@ export function questEvent(type, amount = 1) {
   if (type !== 'combo') q.tick = G.time;
 }
 
+/** A 무아지경 kill counts for the 의뢰: 연속 처치, 근접 처치 and 스침 each +1 (enemies die before they come close,
+ *  so these could not be met in it). 한 줄 전멸 counts as it is; 좌우 전환 still needs the player's own moves. */
+export function hyperQuestKill() {
+  questEvent('combo');
+  questEvent('nearKill');
+  questEvent('graze');
+}
+
 /** Raises an 인연 one level: they teach the skill of that level. */
 export function raiseBond(id: string) {
   if (bondLevel(id) >= BOND_MAX) return;

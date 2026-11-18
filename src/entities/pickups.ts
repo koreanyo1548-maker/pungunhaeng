@@ -1,6 +1,7 @@
 // Pickups: 엽전 and the in-play items (docs/combat-stats.md). They drop from kills: each pops up from where the enemy
 // was, slows, then falls (PICKUP_FALL) and leaves the screen unless it is caught; only a magnet (황연청, the 자석
-// item, 무아지경 for 엽전) pulls them in (systems/loop.ts). A kill drops one 엽전 and, each with ITEM_CHANCE, each item:
+// item, 무아지경 for 엽전) pulls them in (systems/loop.ts). A kill drops one 엽전 and, each with ITEM_CHANCE, each item
+// (not a 무아지경 kill: that drops 엽전 only):
 //   hyper  무아지경: a moment of invincibility with fiercer attacks (as before)
 //   magnet 자석: pickups are pulled in for ITEM_SECONDS
 //   double 점수 두 배: score counts twice for ITEM_SECONDS (systems/score.ts addScore)
@@ -39,9 +40,10 @@ export function addPickup(kind: PickupKind, x: number, y: number) {
     vy: -rnd(PICKUP_FALL.pop[0], PICKUP_FALL.pop[1]),
   });
 }
-/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, each with ITEM_CHANCE, each item. */
-export function dropLoot(x: number, y: number, coins: number) {
+/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, each item with ITEM_CHANCE. */
+export function dropLoot(x: number, y: number, coins: number, items = true) {
   for (let i = 0; i < coins; i++) addPickup('coin', x + rnd(-15, 15), y + rnd(-10, 10));
+  if (!items) return;
   for (const kind of ITEMS)
     if (random() < ITEM_CHANCE) {
       addPickup(kind, x, y);

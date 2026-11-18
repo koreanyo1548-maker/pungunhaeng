@@ -11,7 +11,7 @@ import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
 import { dropLoot } from './pickups';
-import { hyperQuestKill } from '../systems/hyper-run';
+import { hyperQuestKill } from '../systems/quest';
 import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
@@ -166,7 +166,8 @@ export function kill(e, byHyper = false) {
   } else {
     addKill(e);
     onComboKill();
-    dropLoot(e.x, e.y, coinsForKill());
+    // 무아지경 kills drop 엽전 only: an item from them could chain 무아지경 without end
+    dropLoot(e.x, e.y, coinsForKill(), !byHyper);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);
     if (G.state.combo % 10 === 0) {
@@ -180,7 +181,7 @@ export function kill(e, byHyper = false) {
       }
       emit('kill', { e });
     }
-    // a 무아지경 kill counts for the 연속 처치, 근접 처치 and 스침 의뢰 (systems/hyper-run.ts)
+    // a 무아지경 kill counts for the 연속 처치, 근접 처치 and 스침 의뢰 (systems/quest.ts)
     if (byHyper) hyperQuestKill();
   }
 }

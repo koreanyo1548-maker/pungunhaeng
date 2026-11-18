@@ -1268,10 +1268,14 @@ async function scenarioH(browser, seed) {
     s.hyper = 2;
   });
   const k0 = await g.state(() => window.__g.state.kills);
-  const items = [];
+  // no 근접 × for what 무아지경 cuts down: no 근접 label while it runs
+  const items = [],
+    nearLabels = [];
   for (let i = 0; i < 12; i++) {
     await g.step(10);
     items.push(...(await g.state(() => window.__g.pickups.filter(p => p.kind !== 'coin').map(p => p.kind))));
+    if (i < 11)
+      nearLabels.push(...(await g.state(() => window.__g.labels.map(l => l.text).filter(t => t.startsWith('근접')))));
   }
   const h1 = await g.state(() => ({
     kills: window.__g.state.kills,
@@ -1285,8 +1289,10 @@ async function scenarioH(browser, seed) {
       h1.gauge === hyperKills &&
       h1.stats.nearKill >= 10 &&
       h1.stats.graze === h1.stats.nearKill &&
-      items.length === 0,
-    `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items (${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
+      items.length === 0 &&
+      nearLabels.length === 0,
+    `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items, no 근접 × (${nearLabels} ` +
+      `${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
   );
   // 최대 점수 of each stage: whole thousands, longer and harder stages give more
   const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.maxScore(n)));

@@ -175,17 +175,21 @@ async function scenarioA(browser, stage, seed) {
       out = {};
     G.state.distance = 0;
     out.start = G.stats;
-    G.state.distance = 1e9;
-    out.end = G.stats;
+    G.state.distance = 10000;
+    out.at10km = G.stats;
     G.state.distance = d;
     return out;
   });
   check(
     f,
     JSON.stringify(stats.start) ===
-      JSON.stringify({ attack: 10, ranks: [5, 14, 25, 40], rock: stage === 0 ? 18 : 33, boss: 1088 }) &&
-      JSON.stringify(stats.end.ranks) === '[8,21,38,60]',
-    `attack 10, health from the stage table, × 1.5 by the boss (${JSON.stringify(stats)})`,
+      JSON.stringify({
+        attack: 10,
+        ranks: [5, 14, 25, 40],
+        rock: stage === 0 ? 18 : 33,
+        boss: stage === 0 ? 1160 : 1269,
+      }) && JSON.stringify(stats.at10km.ranks) === '[8,21,38,60]',
+    `attack 10, health from the stage table, +5% per 1,000 m (×1.5 at 10 km), the boss at the stage's distance (${JSON.stringify(stats)})`,
   );
   await g.seconds(3);
   const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));

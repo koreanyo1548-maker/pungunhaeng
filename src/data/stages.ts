@@ -26,21 +26,22 @@ export interface Stage {
 /**
  * Enemy health (docs/combat-stats.md). Applied in this order, rounded to a whole number at the end (at least 1):
  *   1. the stage's starting health (per enemy rank, rocks)
- *   2. × the distance multiplier: 1 at the start of the run, `distance` when the boss comes (straight line)
- *   3. × `boss` for the boss, on top of the rank 0 health at the boss's distance
+ *   2. × the distance multiplier: 1 at the start of the run, + `perKm` for every 1,000 m run (a longer stage gets
+ *      tougher enemies)
+ *   3. × `boss` for the boss, on top of the rank 0 health at the stage's distance
  * The player's basic attack is a whole number too (TUNE.attack); %-bonuses multiply it.
  */
 export interface StageHealth {
   /** starting health of enemy ranks 0 to 3 */
   ranks: number[];
   rock: number;
-  /** distance multiplier when the boss comes */
-  distance: number;
+  /** distance multiplier gained per 1,000 m run */
+  perKm: number;
   /** boss multiplier */
   boss: number;
 }
 /** Provisional: every stage starts the same until the stage table is set (later: per-stage start health, boss attack). */
-const HEALTH: StageHealth = { ranks: [5, 14, 25, 40], rock: 33, distance: 1.5, boss: 145 };
+const HEALTH: StageHealth = { ranks: [5, 14, 25, 40], rock: 33, perKm: 0.05, boss: 145 };
 /** S1 keeps its easier rocks (as before). */
 const FIRST_HEALTH: StageHealth = { ...HEALTH, rock: 18 };
 

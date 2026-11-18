@@ -1,7 +1,9 @@
 // Score and the end-of-run bonuses (docs/combat-stats.md).
 // - 점수 두 배 (an in-play item): while it runs, every score gained counts twice (the clear bonus does not).
-// - 최대 점수: what a stage gives when every row is cleared, every 엽전 is picked up and the boss is beaten, with no
-//   multiplier (근접 ×, 연속 ×, 점수 두 배). Worked out from the stage's distance, row spacing and enemy mix, rounded.
+// - 최대 점수: what a stage gives when every row is cleared, every 엽전 is picked up, the 연속 처치 chain never breaks
+//   (×1 → ×5, comboMult) and the boss is beaten. 근접 × and 점수 두 배 are left out, and the boss counts ×1 (the field
+//   is cleared before it comes, so the chain ends there). Worked out from the stage's distance, row spacing and enemy
+//   mix, rounded.
 // - 정산: the share of the 최대 점수 a run reached adds 10/20/30% to the 엽전 banked (ACHIEVE_TIERS); each 악 point
 //   adds 5% more. Each 선 point adds 5% to the final score.
 import { G } from '../core/context';
@@ -11,6 +13,8 @@ import { VIRTUE_BONUS } from './alignment';
 
 /** seconds a row takes at the start of a stage and at its end (the boss); the gap shrinks evenly with distance */
 export const ROW_GAP = { start: 2, end: 0.8 };
+/** the 연속 처치 multiplier of the `combo`-th kill in a chain: ×1, +1 every 10 kills, at most ×5 */
+export const comboMult = (combo: number) => Math.min(5, 1 + Math.floor(combo / 10));
 /** points for a kill of an enemy of this rank, before multipliers */
 export const killScore = (rank: number) => 100 + rank * 65;
 export const ROW_CLEAR_SCORE = 500;
@@ -73,8 +77,12 @@ export function maxScore(stage: number) {
       timer = rowGap(metres, s.distance);
     }
   }
-  const row = killScore(0) + 4 * slotScore(stage) + ROW_CLEAR_SCORE + 5 * COIN_SCORE;
-  return Math.round((rows * row + run + bossScore(stage) + VICTORY_SCORE) / 1000) * 1000;
+  // every kill in one unbroken chain: the k-th kill scores the average enemy × comboMult(k)
+  const enemy = (killScore(0) + 4 * slotScore(stage)) / 5;
+  let kills = 0;
+  for (let k = 1; k <= rows * 5; k++) kills += enemy * comboMult(k);
+  const rest = rows * (ROW_CLEAR_SCORE + 5 * COIN_SCORE) + run + bossScore(stage) + VICTORY_SCORE;
+  return Math.round((kills + rest) / 1000) * 1000;
 }
 
 /** The end-of-run bonuses for a score (before the 선 bonus) on a stage, with the run's 선 and 악 points. */

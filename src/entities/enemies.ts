@@ -11,7 +11,7 @@ import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
 import { dropLoot } from './pickups';
-import { ROW_CLEAR_SCORE, addScore, bossScore, killScore } from '../systems/score';
+import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
@@ -109,7 +109,7 @@ export function kill(e, byHyper = false) {
   G.state.comboTimer = 2;
   const dy = G.player.y - e.y,
     near = e.boss ? 1 : dy < TUNE.nearDy ? 3 : dy < 304 ? 2 : 1,
-    mult = Math.min(5, 1 + Math.floor(G.state.combo / 10));
+    mult = comboMult(G.state.combo);
   addScore((e.boss ? bossScore(G.state.stage) : killScore(e.rank)) * near * mult);
   const color = e.boss ? region().color : e.color;
   const art = enemyArt(e);

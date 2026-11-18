@@ -140,7 +140,12 @@ try {
               .join('')}</div></article>`,
         )
         .join('')}</main></html>`;
-      await writeFile('/workspace/artifacts/projectile-evolution-gallery.html', html);
+      await writeFile(
+        process.env.SCREENSHOT_DIR
+          ? `${out}/projectile-evolution-gallery.html`
+          : '/workspace/artifacts/projectile-evolution-gallery.html',
+        html,
+      );
       await page.setContent(html);
       await page.setViewportSize({ width: 1100, height: 900 });
       await page.screenshot({ path: out + '/all-36.png', fullPage: true });

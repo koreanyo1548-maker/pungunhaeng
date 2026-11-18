@@ -168,6 +168,34 @@ async function scenarioA(browser, stage, seed) {
     `stage box: gauge and distance (${hud})`,
   );
 
+  // attack and health are whole numbers, the same on every stage; enemies get tougher with distance only
+  const stats = await g.eval(() => {
+    const G = window.__g,
+      d = G.state.distance,
+      out = {};
+    G.state.distance = 0;
+    out.start = G.stats;
+    G.state.distance = 1e9;
+    out.end = G.stats;
+    G.state.distance = d;
+    return out;
+  });
+  check(
+    f,
+    JSON.stringify(stats.start) ===
+      JSON.stringify({ attack: 10, ranks: [5, 14, 25, 40], rock: stage === 0 ? 18 : 33, boss: 1088 }) &&
+      JSON.stringify(stats.end.ranks) === '[8,21,38,60]',
+    `attack 10, health from the stage table, × 1.5 by the boss (${JSON.stringify(stats)})`,
+  );
+  await g.seconds(3);
+  const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));
+  check(
+    f,
+    spawned.length > 0 && spawned.every(h => Number.isInteger(h)),
+    `spawned enemies have whole-number health (${spawned})`,
+  );
+  const shot = await g.eval(() => window.__g.shots.find(s => s.basic)?.damage);
+  check(f, shot === 10, `a basic shot hits for 10 (${shot})`);
   // movement is left-right on every stage: up does nothing
   await g.page.keyboard.down('ArrowUp');
   await g.seconds(0.5);

@@ -2,7 +2,6 @@ export const TUNE = {
   earlyWeak: 0.6,
   secondWeak: 0.4,
   earlyRock: 0.12,
-  earlyRockHp: 14,
   openingGap: 0.35,
   /** 근접 처치: a kill this close above the player (px). The same line gives the ×3 score (`근접 ×3`). */
   nearDy: 154,
@@ -11,6 +10,9 @@ export const TUNE = {
   skyMinY: 330,
   skyMaxY: 700,
   grazeRadius: 26,
-  bossHp: 870, // boss health before stage scaling (580 until skill projectiles were strengthened)
+  /** the basic attack: one basic shot hits for this much (whole number; hero levels will raise it) */
+  attack: 10,
+  /** a 필살기 hits the boss for this many basic attacks (everything else dies) */
+  blastBoss: 21,
   rockChance: 0.3,
 };

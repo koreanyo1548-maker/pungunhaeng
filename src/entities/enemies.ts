@@ -17,7 +17,7 @@ import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
 import { addKill } from '../systems/encounter';
 import { bondArmor } from '../data/skills';
-import { difficulty, region } from '../systems/flow';
+import { difficulty, enemyHealth, region } from '../systems/flow';
 import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero-effects';
 
 const ENRAGE = ramp('#ffa475');
@@ -34,13 +34,13 @@ export function spawnRow() {
             ? 0
             : Math.max(1, maxRank - (random() < 0.45 ? 1 : 0)),
       r = RANKS[rank],
-      hp = r.hp * (1 + 0.28 * difficulty()),
+      hp = enemyHealth(region().health.ranks[rank]),
       stagger = G.state.stage % 3 === 0 ? Math.abs(i - 2) * 22 : G.state.stage % 3 === 2 ? i * 16 : 0;
     const terrain = region().terrain,
       rockChance =
         terrain === 'rock' ? (G.state.stage === 1 ? TUNE.earlyRock : TUNE.rockChance) : terrain === 'gate' ? 0.15 : 0;
     if (i !== weak && random() < rockChance) {
-      const rh = (G.state.stage === 1 ? TUNE.earlyRockHp : 26) * (1 + 0.28 * difficulty());
+      const rh = enemyHealth(region().health.rock);
       G.enemies.push({
         x: 48 + i * 96,
         baseX: 48 + i * 96,

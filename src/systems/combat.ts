@@ -2,13 +2,13 @@ import { skillCue, skillBurst } from '../render/skill-animation';
 import { visualSkill } from '../core/skill-context';
 import { emit } from '../core/events';
 import { G } from '../core/context';
+import { TUNE } from '../data/tune';
 import { boom, chime, tone } from '../core/audio';
 import { BR } from '../data/branches';
 import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
-import { difficulty } from './flow';
 import { bondPower } from '../data/skills';
 import { notify, syncHUD } from '../ui/hud';
 
@@ -16,8 +16,9 @@ const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
 /** damage scale of one basic shot: the stage, and 녹림 의적 1단계 */
+/** one basic shot's damage: the attack (a whole number), times %-bonuses (녹림 의적 1단계) */
 export function shotPower() {
-  return 1.3 * (1 + 0.12 * difficulty()) * bondPower();
+  return TUNE.attack * bondPower();
 }
 export function blast() {
   if (G.mode !== 'play' || G.state.bombs <= 0 || ['clear', 'warning'].includes(G.state.phase)) return;
@@ -25,7 +26,7 @@ export function blast() {
   G.hazards = [];
   const before = G.state.kills;
   G.state.blasting = true;
-  for (const e of G.enemies) hitEnemy(e, e.boss ? 170 * (1 + 0.12 * difficulty()) : e.hp + 1);
+  for (const e of G.enemies) hitEnemy(e, e.boss ? TUNE.attack * TUNE.blastBoss : e.hp + 1);
   G.state.blasting = false;
   const killed = G.state.kills - before;
   if (killed > 0) {
@@ -49,7 +50,8 @@ export function blast() {
   notify('필살기', 0.8);
   syncHUD();
 }
-export const D = () => shotPower() * 1.8;
+/** the damage of one basic shot; skills hit for multiples of it */
+export const D = () => shotPower();
 export interface ShotOptions {
   kind?: string;
   art?: string;

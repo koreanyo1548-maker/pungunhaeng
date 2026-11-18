@@ -80,7 +80,7 @@ export function shoot() {
         y: G.player.y - 34,
         prevY: G.player.y - 34,
         vx: weapon === 3 ? x * 1.5 : 0,
-        damage: shotPower() * 1.8,
+        damage: shotPower(),
         r: 5,
         kind: weapon === 2 && x !== 0 ? 'knife' : weapon === 3 ? 'sword' : 'qi',
         phase: G.time,

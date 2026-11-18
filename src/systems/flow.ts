@@ -35,6 +35,19 @@ export function difficulty() {
 export function stageDistance() {
   return region().distance;
 }
+/** distance multiplier of enemy health: 1 at the start of the run, the stage's `distance` when the boss comes */
+export function healthScale() {
+  const h = region().health,
+    run = clamp(G.state.distance / stageDistance(), 0, 1);
+  return 1 + (h.distance - 1) * run;
+}
+/** an enemy's health: starting health × distance multiplier, rounded to a whole number (at least 1) */
+export const enemyHealth = (start: number) => Math.max(1, Math.round(start * healthScale()));
+/** the boss's health: rank 0 health at the boss's distance × the boss multiplier */
+export function bossHealth() {
+  const h = region().health;
+  return Math.max(1, Math.round(h.ranks[0] * h.distance * h.boss));
+}
 export function start() {
   if (!G.loaded) return;
   seedRun();

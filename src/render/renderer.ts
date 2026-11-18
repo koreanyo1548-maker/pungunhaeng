@@ -44,10 +44,8 @@ export function draw() {
   for (const h of G.hazards) {
     if (h.warn > 0 && h.kind === 'spear') {
       ctx.save();
-      ctx.fillStyle = '#6d281c3b';
-      ctx.fillRect(h.x - h.r, 0, h.r * 2, H);
-      ctx.globalAlpha = 0.85;
-      ctx.strokeStyle = '#ffca80';
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = '#c8f5b0';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 9]);
       ctx.beginPath();

@@ -133,8 +133,6 @@ export interface Shot {
   art?: string;
   skill?: string;
   basic?: boolean;
-  hero?: HeroId;
-  weaponStage?: number;
   color?: string;
   pierce?: boolean;
   w?: number;

@@ -39,11 +39,12 @@ try {
       }
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
-    // no 인연 card in this save: every 만남 is a passer-by, in portrait order; the first is level 1 (help), the
-    // rest level 2 (give 엽전)
+    // with nothing unlocked by the scale every 만남 is a passer-by, in portrait order; the first is level 1 (help),
+    // the rest level 2 (give 엽전). Helping unlocks 인연, so the unlocks are cleared before each 만남.
     for (let n = 0; n < 4; n++) {
       await p.evaluate(n => {
         M.G.state.passers = n;
+        M.G.state.unlocked = [];
         M.G.state.coins = 40;
         M.G.mode = 'play';
         M.openEncounter();
@@ -82,17 +83,8 @@ try {
       await p.evaluate(() => M.ambientPictures['hero-piece']),
     );
     await p.screenshot({ path: `${out}/${width}-hero-piece.png` });
-    await p.evaluate(() => {
-      Math.random = () => 0.9;
-    });
-    await p.locator('#drawOne').click();
-    assert.equal(
-      await p.locator('.piece-icon').getAttribute('src'),
-      await p.evaluate(() => M.ambientPictures['bond-piece']),
-    );
-    await p.screenshot({ path: `${out}/${width}-bond-piece.png` });
     assert.deepEqual(errors, []);
-    console.log(`PASS ${width}: four passer portraits + thanks, help then give (엽전, 저울), both piece types`);
+    console.log(`PASS ${width}: four passer portraits + thanks, help then give (엽전, 저울), hero piece icon`);
     await p.close();
   }
 } finally {

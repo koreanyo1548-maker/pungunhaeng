@@ -50,7 +50,6 @@ export interface RunState {
   phaseTimer: number;
   rowTimer: number;
   meteorTimer: number;
-  powerTimer: number;
   elapsed: number;
   cleared: number;
   trailTimer: number;
@@ -115,7 +114,6 @@ export interface Player {
   shield: number;
   inv: number;
   fire: number;
-  weapon: number;
   tilt: number;
   muzzle: number;
   step: number;

@@ -1,14 +1,20 @@
-// 영웅: who has joined and each hero's 성급. Opened from the title screen.
-// Read only: heroes join and rise in 성급 through pieces from 뽑기 (systems/gacha.ts).
+// 영웅: who has joined, each hero's 성급 and level. Opened from the title screen.
+// Heroes join and rise in 성급 through pieces from 뽑기 (systems/gacha.ts); each 성급 opens ten levels, raised here
+// with banked 엽전 (레벨업). A level raises the attack and, at 10 and 20, the shots per volley.
 import { heroPictures } from '../core/assets';
 import { $ } from '../core/dom';
-import { heroOwned, heroStars, profile } from '../core/profile';
+import { heroLevelCap, heroOwned, heroStars, levelUp, levelUpCost, profile } from '../core/profile';
+import { fmt } from '../core/math';
+import { showBank } from '../ui/hud';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, starText } from '../data/meta';
+import { HERO_IDS, LEVEL_MAX, LEVELS_PER_STAR, PIECE_STEPS, starText, weaponStage } from '../data/meta';
+import { TUNE } from '../data/tune';
 import type { HeroId } from '../data/meta';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
 import { LOCKED_HOW } from './setup';
+
+const attackAt = (level: number) => TUNE.attack + level - 1;
 
 /** [pieces held, pieces the next 성급 needs] (the last 성급 counts as full) */
 function toNext(id: HeroId): [number, number] {
@@ -27,7 +33,7 @@ function tile(id: HeroId): Tile {
     name: h.name,
     image: heroPictures[id],
     color: h.color,
-    grade: starText(heroStars(id)),
+    grade: `${starText(heroStars(id))} Lv ${profile.levels[id]}`,
     note: heroStars(id) >= LEVEL_MAX ? '최고 성급' : `조각 ${now} / ${goal}`,
     progress: [now, goal],
   };
@@ -39,7 +45,15 @@ function detail(id: HeroId): Detail {
     L = Math.max(0, stars - 1),
     caption = `${h.projectile} · ${h.trait.scope === 'party' ? '지원형 (특성이 편대 전체에)' : '특성은 싸우는 동안'}`;
   const seconds = h.entry.seconds(L);
+  const level = profile.levels[id],
+    cap = heroLevelCap(id);
   const sections = [
+    {
+      title: `레벨 ${level} / ${cap}`,
+      body:
+        `공격력 ${attackAt(level)} · 공격 단계 ${weaponStage(level)} (한 번에 ${weaponStage(level) + 1}발)` +
+        `<br>레벨마다 공격력 +1, 10레벨에 공격 단계 2, 20레벨에 3. 성급이 오를 때마다 최대 레벨 +${LEVELS_PER_STAR}.`,
+    },
     {
       title: `특성 「${h.trait.name}」`,
       body: h.trait.desc(L) + (h.trait.pending ? ` (${h.trait.pending})` : ''),
@@ -54,7 +68,7 @@ function detail(id: HeroId): Detail {
     steps: PIECE_STEPS.map((need, i) => ({
       label: `★${i + 1}`,
       text:
-        `조각 ${need}개 · ${i ? '' : '합류 · '}${h.trait.desc(i)}` +
+        `조각 ${need}개 · ${i ? '' : '합류 · '}최대 Lv ${(i + 1) * LEVELS_PER_STAR} · ${h.trait.desc(i)}` +
         (h.entry.seconds(i) ? ` · 등장 ${h.entry.seconds(i)}초` : '') +
         (i === 2 || i === 4 ? ` · ${h.entry.name} 강화` : ''),
       state: (i + 1 < stars ? 'done' : i + 1 === stars ? 'current' : 'next') as 'done' | 'current' | 'next',
@@ -87,6 +101,23 @@ function detail(id: HeroId): Detail {
     },
     sections,
     track,
+    actions: [levelAction(id)],
+  };
+}
+
+/** The 레벨업 button: the next level's price, or why it cannot go up. */
+function levelAction(id: HeroId) {
+  const cost = levelUpCost(id),
+    level = profile.levels[id];
+  if (cost === null)
+    return { label: '최대 레벨', note: heroStars(id) < LEVEL_MAX ? '성급을 올리면 열린다' : '', disabled: true };
+  return {
+    label: `레벨업 · ${fmt(cost)}냥`,
+    note: `Lv ${level} → ${level + 1} · 공격력 ${attackAt(level)} → ${attackAt(level + 1)} · 지닌 엽전 ${fmt(profile.coins)}냥`,
+    disabled: profile.coins < cost,
+    onClick: () => {
+      if (levelUp(id)) showBank();
+    },
   };
 }
 

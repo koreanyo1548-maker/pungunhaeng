@@ -5,7 +5,6 @@ import { G } from '../core/context';
 import { clamp } from '../core/math';
 import { NPCS } from '../data/npcs';
 import { NPC_IDS } from '../data/roster';
-import { hasCard } from './relationship';
 
 export const ALIGN_MAX = 9;
 
@@ -24,14 +23,14 @@ export function moveAlign(delta: number): string[] {
       reach = n.side === 'good' ? s.align : -s.align;
     if (reach >= n.unlock && !s.unlocked.includes(id)) {
       s.unlocked.push(id);
-      opened.push(n.name + (hasCard(id) ? '' : ' (카드 없음)'));
+      opened.push(n.name);
     }
   }
   return opened;
 }
 
-/** 인연 who can come to a 만남: unlocked by the scale and held as a card. */
-export const candidates = (): string[] => NPC_IDS.filter(id => G.state.unlocked.includes(id) && hasCard(id));
+/** 인연 who can come to a 만남: the ones the scale has unlocked (every 인연 can come; no card needed). */
+export const candidates = (): string[] => NPC_IDS.filter(id => G.state.unlocked.includes(id));
 
 /** "인연이 열렸다 · 떠돌이 약선" for the 인연 a move unlocked, or '' */
 export const openedText = (names: string[]) => (names.length ? '인연이 열렸다 · ' + names.join(', ') : '');

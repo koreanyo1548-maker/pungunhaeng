@@ -19,7 +19,31 @@ export interface Stage {
   distance: number;
   /** kills that fill the 처치 게이지 (a 만남): set from the bot's kills per stage so a run has about 6 (provisional) */
   gauge: number;
+  /** enemy health on this stage, in whole numbers (see `HEALTH` below) */
+  health: StageHealth;
 }
+
+/**
+ * Enemy health (docs/combat-stats.md). Applied in this order, rounded to a whole number at the end (at least 1):
+ *   1. the stage's starting health (per enemy rank, rocks)
+ *   2. × the distance multiplier: 1 at the start of the run, + `perKm` for every 1,000 m run (a longer stage gets
+ *      tougher enemies)
+ *   3. × `boss` for the boss, on top of the rank 0 health at the stage's distance
+ * The player's basic attack is a whole number too (TUNE.attack); %-bonuses multiply it.
+ */
+export interface StageHealth {
+  /** starting health of enemy ranks 0 to 3 */
+  ranks: number[];
+  rock: number;
+  /** distance multiplier gained per 1,000 m run */
+  perKm: number;
+  /** boss multiplier */
+  boss: number;
+}
+/** Provisional: every stage starts the same until the stage table is set (later: per-stage start health, boss attack). */
+const HEALTH: StageHealth = { ranks: [5, 14, 25, 40], rock: 33, perKm: 0.05, boss: 145 };
+/** S1 keeps its easier rocks (as before). */
+const FIRST_HEALTH: StageHealth = { ...HEALTH, rock: 18 };
 
 export const STAGES: Stage[] = [
   {
@@ -33,6 +57,7 @@ export const STAGES: Stage[] = [
     patterns: ['fan', 'dive', 'lanes'],
     distance: 12000,
     gauge: 90,
+    health: FIRST_HEALTH,
   },
   {
     name: '청죽림',
@@ -45,6 +70,7 @@ export const STAGES: Stage[] = [
     patterns: ['lanes', 'fan', 'dive'],
     distance: 13000,
     gauge: 75,
+    health: HEALTH,
   },
   {
     name: '폐사',
@@ -57,6 +83,7 @@ export const STAGES: Stage[] = [
     patterns: ['dive', 'lanes', 'fan'],
     distance: 14000,
     gauge: 65,
+    health: HEALTH,
   },
   {
     name: '부유암',
@@ -69,6 +96,7 @@ export const STAGES: Stage[] = [
     patterns: ['fan', 'dive', 'lanes'],
     distance: 15000,
     gauge: 55,
+    health: HEALTH,
   },
   {
     name: '유운봉',
@@ -82,6 +110,7 @@ export const STAGES: Stage[] = [
     patterns: ['lanes', 'fan', 'dive'],
     distance: 16000,
     gauge: 60,
+    health: HEALTH,
   },
   {
     name: '천마성',
@@ -94,6 +123,7 @@ export const STAGES: Stage[] = [
     patterns: ['dive', 'lanes', 'fan'],
     distance: 17000,
     gauge: 60,
+    health: HEALTH,
   },
 ];
 export const STAGE_COUNT = STAGES.length;

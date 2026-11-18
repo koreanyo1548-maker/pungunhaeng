@@ -12,7 +12,7 @@ import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
-import { basicShotOptions, cloneOffsets, unbowedHit, weaponBonus } from '../systems/hero-effects';
+import { basicShotOptions, cloneOffsets, heroWeapon, unbowedHit } from '../systems/hero-effects';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
@@ -69,8 +69,9 @@ export function shoot() {
   G.player.swing = 1;
   G.player.swingCount++;
   if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
-  // Every hero shoots the same; traits and entry skills add aim, piercing, erasing, a higher level or clones.
-  const weapon = Math.min(3, G.player.weapon + weaponBonus()),
+  // Every hero shoots the same; the hero's level sets the shots per volley; traits and entry skills add aim,
+  // piercing, erasing or clones.
+  const weapon = heroWeapon(),
     offsets = weapon === 1 ? [-9, 9] : weapon === 2 ? [-18, 0, 18] : [-27, -9, 9, 27],
     extra = basicShotOptions();
   for (const from of [0, ...cloneOffsets()])
@@ -80,7 +81,7 @@ export function shoot() {
         y: G.player.y - 34,
         prevY: G.player.y - 34,
         vx: weapon === 3 ? x * 1.5 : 0,
-        damage: shotPower() * 1.8,
+        damage: shotPower(),
         r: 5,
         kind: weapon === 2 && x !== 0 ? 'knife' : weapon === 3 ? 'sword' : 'qi',
         phase: G.time,

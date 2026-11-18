@@ -4,8 +4,7 @@ import { rnd } from '../core/math';
 import { burst, impact, label, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 
-const COIN = ramp('#ffdf87'),
-  POWER = ramp('#a7ffff');
+const COIN = ramp('#ffdf87');
 import { announce } from '../ui/hud';
 import { hyperItemScale } from '../systems/hero-effects';
 
@@ -19,15 +18,6 @@ export function collect(p) {
     G.state.score += 10;
     if (G.state.coins % 3 === 0) tone(1400 + (G.state.coins % 5) * 100, 0.045, 'sine', 0.045, 1800);
     if (!pfx('collect', p.x, p.y + 40, { palette: COIN })) burst(p.x, p.y, '#ffdf87', 3, 60);
-  } else if (p.kind === 'power') {
-    G.player.weapon = Math.min(3, G.player.weapon + 1);
-    G.state.score += 150;
-    if (!pfx('collect', G.player.x, G.player.y + 40, { palette: POWER })) {
-      ring(G.player.x, G.player.y, '#a7ffff', 5, 100, 0.5);
-      impact(G.player.x, G.player.y, '#cafff3', 70);
-    }
-    label('공격력 강화', G.player.x, G.player.y - 65, '#affff2', 22);
-    chime();
   } else {
     G.state.hyper = Math.max(G.state.hyper, 4.2 * hyperItemScale());
     G.player.inv = Math.max(G.player.inv, G.state.hyper + 0.6);

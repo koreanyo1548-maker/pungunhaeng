@@ -36,7 +36,7 @@ export function openChoice(o) {
     confirm.disabled = !!c.locked;
     confirm.textContent = c.locked ? '아직 합류하지 않은 영웅' : o.confirm;
     preview.classList.toggle('locked', !!c.locked);
-    preview.innerHTML = `${artImage(c.fullArt, 'formation-body')}<div><span class="preview-caption">${c.tag}</span><h3>${c.title}</h3><p>${c.detail}</p></div>`;
+    preview.innerHTML = `${artImage(c.fullArt, 'formation-body')}<div><span class="preview-caption">${c.tag}</span><h3>${c.heading ?? c.title}</h3><p>${c.detail}</p></div>`;
   }
   confirm.onclick = () => {
     if (G.mode !== 'choice' || selected.locked) return;

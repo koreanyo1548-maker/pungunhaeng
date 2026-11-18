@@ -6,7 +6,8 @@ import { G } from '../core/context';
 import { heroPictures, heroAnimations } from '../core/assets';
 import { STAGES } from '../data/stages';
 import { fmt } from '../core/math';
-import { heroOwned, profile } from '../core/profile';
+import { heroLevelCap, heroOwned, profile } from '../core/profile';
+import { TUNE } from '../data/tune';
 import { HEROES } from '../data/heroes';
 import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
@@ -39,6 +40,9 @@ export function starLine(id: HeroId) {
   const next = stars >= LEVEL_MAX ? '최고 성급' : `다음 성급까지 조각 ${PIECE_STEPS[stars] - pieces}개`;
   return `<span class="mastery"><i class="stars">${starText(stars)}</i> 성급 ${stars} · ${next}</span>`;
 }
+/** "Lv 7/20" for a hero's level (raised with 엽전, capped by 성급). It sits beside the name, so the formation
+ *  preview keeps its height; the 영웅 screen shows the attack and the attack stage. */
+export const levelTag = (id: HeroId) => `Lv ${profile.levels[id]}/${heroLevelCap(id)}`;
 export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
 /** "특성 「질풍」 근접 처치 시 …" with its scope; a trait that waits for a later step says so. */
 export function traitText(id: HeroId, L: number) {
@@ -74,6 +78,7 @@ export function heroCard(id: HeroId, slot: number) {
     color: h.color,
     tag: h.projectile + ' · 특성 ' + scopeLabel(id),
     title: h.name,
+    heading: `${h.name} · ${levelTag(id)}`,
     desc: `<span class="hero-role"><img alt="" src="${h.trait.scope === 'party' ? energy : strike}">${h.trait.scope === 'party' ? '지원' : '특성'}</span>${h.trait.desc(level)}`,
     fullArt: heroAnimations[id][0].toDataURL(),
     detail: `${starLine(id)}${traitText(id, level)}<br>${entryText(id, level)}`,

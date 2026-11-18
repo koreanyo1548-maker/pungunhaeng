@@ -5,7 +5,7 @@ import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { damagePlayer } from './player';
 import { label, paintFX, ring } from '../render/fx';
-import { difficulty, region } from '../systems/flow';
+import { bossHealth, difficulty, region } from '../systems/flow';
 
 /** warning phase: clear the field and show the boss intro (entered via setPhase('warning')) */
 export function bossSpawn() {
@@ -23,8 +23,7 @@ export function bossSpawn() {
 }
 /** boss phase: spawn the stage's boss (entered via setPhase('boss')) */
 export function createBoss() {
-  const hp = TUNE.bossHp * (1 + 0.36 * difficulty());
-  G.player.weapon = 3;
+  const hp = bossHealth();
   G.enemies.push({
     x: 240,
     y: -140,

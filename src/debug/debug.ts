@@ -8,7 +8,8 @@ import { damagePlayer } from '../entities/player';
 import { questEvent, raiseBond } from '../systems/quest';
 import { moveAlign } from '../systems/alignment';
 import { go } from '../systems/scene-flow';
-import { stageDistance } from '../systems/flow';
+import { bossHealth, enemyHealth, region, stageDistance } from '../systems/flow';
+import { shotPower } from '../systems/combat';
 
 if (location.hash.includes('debug'))
   window.__g = {
@@ -64,6 +65,11 @@ if (location.hash.includes('debug'))
     meet(id?: string) {
       if (id) G.state.forceNpc = id;
       go('encounter');
+    },
+    /** attack and enemy health at the current distance (docs/combat-stats.md) */
+    get stats() {
+      const h = region().health;
+      return { attack: shotPower(), ranks: h.ranks.map(enemyHealth), rock: enemyHealth(h.rock), boss: bossHealth() };
     },
     /** move the 선·악 저울 (unlocks as play would) */
     moveAlign,

@@ -276,13 +276,15 @@ export const HEROES: Record<HeroId, Hero> = {
     trait: {
       name: '명궁',
       scope: 'self',
-      value: () => 1,
-      desc: () => '공격 단계 +1 (최대 3)',
+      value: L => 0.2 + 0.05 * L,
+      desc: L => `공격력 +${pct(0.2 + 0.05 * L)}`,
     },
     entry: {
       name: '매의 눈',
       desc: L =>
-        '기본 공격이 가까운 적을 자동 조준' + (star3(L) ? ' · 화살 관통' : '') + (star5(L) ? ' · 공격 단계 +1' : ''),
+        '기본 공격이 가까운 적을 자동 조준' +
+        (star3(L) ? ' · 화살 관통' : '') +
+        (star5(L) ? ' · 특성 공격력 +10% 추가' : ''),
       seconds: time(12),
     },
   },

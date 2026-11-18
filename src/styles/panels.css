@@ -575,6 +575,16 @@ button:disabled {
   gap: 6px;
   margin-bottom: 8px;
 }
+.detail-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 6px 0;
+  background: #102421;
+}
+.detail-track summary {
+  cursor: pointer;
+  color: #eed8a7;
+}
 .detail-actions small {
   display: block;
   font-size: 11px;
@@ -596,4 +606,40 @@ button:disabled {
   height: 22px;
   object-fit: contain;
   flex: 0 0 auto;
+}
+
+.expedition {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #112e29;
+  border: 1px solid #bc9f6555;
+  border-radius: 10px;
+}
+.expedition label {
+  text-align: left;
+  color: #dec99b;
+  font-size: 12px;
+}
+.expedition select {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  background: #10201f;
+  color: #fff4d7;
+  border: 1px solid #746c54;
+  border-radius: 5px;
+}
+.expedition button {
+  grid-column: 1/-1;
+}
+#settings {
+  margin: auto;
+  max-width: min(90vw, 400px);
+  color: #fff1ce;
+}
+#settings::backdrop {
+  background: #071610b8;
 }

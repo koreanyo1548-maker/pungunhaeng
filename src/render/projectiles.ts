@@ -61,12 +61,18 @@ export function drawMartialHazard(h) {
   ctx.restore();
 }
 
+const ITEM_TINT = {
+  magnet: { line: '#8fe3b0', fill: '#10322adc', glyph: '磁' },
+  double: { line: '#ffd36e', fill: '#3a2a08dc', glyph: '倍' },
+};
 export function drawPickup(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
-  const coin = p.kind === 'coin';
-  ctx.strokeStyle = coin ? '#ffdf80' : '#c9c0ff';
-  ctx.fillStyle = coin ? '#37280be0' : '#201e48dc';
+  const coin = p.kind === 'coin',
+    // 자석 and 점수 두 배 are drawn with a placeholder glyph until their own art comes (Codex hand-off)
+    tint = ITEM_TINT[p.kind];
+  ctx.strokeStyle = coin ? '#ffdf80' : (tint?.line ?? '#c9c0ff');
+  ctx.fillStyle = coin ? '#37280be0' : (tint?.fill ?? '#201e48dc');
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.arc(0, 0, coin ? 10 : 25, 0, Math.PI * 2);
@@ -82,10 +88,16 @@ export function drawPickup(p) {
   if (p.kind === 'coin') {
     ctx.scale(Math.max(0.22, Math.abs(Math.cos(G.time * 6 + p.phase))), 1);
     drawVfxSprite(propArt[3], 0, 0, 18, 18);
+  } else if (tint) {
+    ctx.rotate(Math.sin(G.time * 3 + p.phase) * 0.08);
+    ctx.fillStyle = tint.line;
+    ctx.font = 'bold 26px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tint.glyph, 0, 1);
   } else {
     ctx.rotate(Math.sin(G.time * 3 + p.phase) * 0.08);
-    const idx = p.kind === 'power' ? 4 : 5;
-    drawVfxSprite(propArt[idx], 0, 0, 44, 44);
+    drawVfxSprite(propArt[5], 0, 0, 44, 44);
   }
   ctx.restore();
 }

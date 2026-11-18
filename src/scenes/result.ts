@@ -11,7 +11,7 @@ import { bondLevel } from '../systems/relationship';
 // Run results are stored as 성취 / 미달 / 진행 중; shown in plain words.
 const RESULT_TEXT = { 성취: '성공', 미달: '실패' };
 
-/** The road so far (pause and result screens): party, 저울, the 만남 in order, 인연 levels and their skills. */
+/** The road so far (pause and result screens): party, 선·악, the 만남 in order, 인연 levels and their skills. */
 export function runSummary() {
   if (!G.state) return '';
   const path =
@@ -30,5 +30,5 @@ export function runSummary() {
     G.state.skills.map(s => `<b style="color:${BR[SKILLS[s.id].br].color}">${SKILLS[s.id].name}</b>`).join(', ') ||
     '없음';
   const form = G.state.formation.map((id, i) => (i ? '후발 ' : '선봉 ') + HEROES[id].name).join(' · ');
-  return `<span class="h">S${G.state.stage} ${region().name} · 편대</span>${form} · 저울 ${alignText()} · 엽전 사용 ${G.state.spent || 0}냥<span class="h">지나온 길</span>${path}<span class="h">인연</span>${bonds}<span class="h">기술</span>${sk}`;
+  return `<span class="h">S${G.state.stage} ${region().name} · 편대</span>${form} · ${alignText()} · 엽전 사용 ${G.state.spent || 0}냥<span class="h">지나온 길</span>${path}<span class="h">인연</span>${bonds}<span class="h">기술</span>${sk}`;
 }

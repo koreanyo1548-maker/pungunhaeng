@@ -65,7 +65,8 @@ export const emptyMeta = (): Meta => ({
   cards: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Meta['cards'],
 });
 
-/** 엽전 a run adds to the bank: what is left plus the clear bonus. */
-export function settle(coins: number, victory: boolean): number {
-  return Math.floor(coins + (victory ? CLEAR_BONUS : 0));
+/** 엽전 a run adds to the bank: what is left, + `bonus` of it (악 and the share of the 최대 점수, systems/score.ts),
+ *  plus the clear bonus. */
+export function settle(coins: number, victory: boolean, bonus = 0): number {
+  return Math.floor(coins * (1 + bonus) + (victory ? CLEAR_BONUS : 0));
 }

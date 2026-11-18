@@ -2,7 +2,7 @@ import { createHeroHealth, BASE_HEALTH } from './hero-health';
 import type { Meta } from '../data/meta';
 import type { RunState, Player, Enemy, Shot, HeroHealth } from './state-types';
 
-export function createRunState(meta: Meta, hyperCooldown: number): RunState {
+export function createRunState(meta: Meta): RunState {
   return {
     heroHealth: createHeroHealth(),
     score: 0,
@@ -12,7 +12,9 @@ export function createRunState(meta: Meta, hyperCooldown: number): RunState {
     /** 필살기: one at the start of a run, no maximum (운학 and 혈마 밀사 add more) */
     bombs: 1,
     hyper: 0,
-    hyperCooldown: hyperCooldown,
+    /** seconds left of 자석 and 점수 두 배 (in-play items) */
+    magnet: 0,
+    double: 0,
     hyperDrops: 0,
     combo: 0,
     comboTimer: 0,
@@ -45,7 +47,8 @@ export function createRunState(meta: Meta, hyperCooldown: number): RunState {
     effect: null,
     lastHurt: -9,
     forceNpc: null,
-    align: 0,
+    good: 0,
+    evil: 0,
     unlocked: [],
     bond: {},
     gauge: 0,

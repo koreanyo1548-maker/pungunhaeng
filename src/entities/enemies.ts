@@ -10,7 +10,9 @@ import { W, reduced } from '../core/dom';
 import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
-import { addPickup } from './pickups';
+import { dropLoot } from './pickups';
+import { hyperQuestKill } from '../systems/quest';
+import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
@@ -88,8 +90,9 @@ export function resolveRow(e, missed = false) {
   row.remaining--;
   if (row.remaining === 0) {
     if (!row.missed) {
-      G.state.score += 500;
-      if (!G.state.blasting) label('한 줄 전멸 +500', W / 2, 270, '#a3ffe0', 18);
+      addScore(ROW_CLEAR_SCORE);
+      if (!G.state.blasting)
+        label(`한 줄 전멸 +${ROW_CLEAR_SCORE * (G.state.double > 0 ? 2 : 1)}`, W / 2, 270, '#a3ffe0', 18);
       ring(240, 270, '#a3ffe0', 10, 160, 0.42);
       tone(880, 0.12, 'sine', 0.12, 1320);
       if (!G.state.blasting) {
@@ -107,8 +110,8 @@ export function kill(e, byHyper = false) {
   G.state.comboTimer = 2;
   const dy = G.player.y - e.y,
     near = e.boss ? 1 : dy < TUNE.nearDy ? 3 : dy < 304 ? 2 : 1,
-    mult = Math.min(5, 1 + Math.floor(G.state.combo / 10));
-  G.state.score += (e.boss ? 5000 + G.state.stage * 1000 : 100 + e.rank * 65) * near * mult;
+    mult = comboMult(G.state.combo);
+  addScore((e.boss ? bossScore(G.state.stage) : killScore(e.rank)) * near * mult);
   const color = e.boss ? region().color : e.color;
   const art = enemyArt(e);
   G.wrecks.push({
@@ -163,7 +166,8 @@ export function kill(e, byHyper = false) {
   } else {
     addKill(e);
     onComboKill();
-    for (let i = 0, n = coinsForKill(); i < n; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
+    // 무아지경 kills drop 엽전 only: an item from them could chain 무아지경 without end
+    dropLoot(e.x, e.y, coinsForKill(), !byHyper);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);
     if (G.state.combo % 10 === 0) {
@@ -177,6 +181,8 @@ export function kill(e, byHyper = false) {
       }
       emit('kill', { e });
     }
+    // a 무아지경 kill counts for the 연속 처치, 근접 처치 and 스침 의뢰 (systems/quest.ts)
+    if (byHyper) hyperQuestKill();
   }
 }
 export function hitEnemy(e, damage, skill?: string) {

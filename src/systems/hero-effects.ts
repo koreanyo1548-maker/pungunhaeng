@@ -38,8 +38,11 @@ export function traitValue(id: HeroId): number | undefined {
 
 /** 묵영: graze reach multiplier. */
 export const grazeReach = () => traitValue('mukyoung') ?? 1;
-/** 황연청: pickup attraction multiplier. */
-export const magnetReach = () => traitValue('yeoncheong') ?? 1;
+/** reach of the 자석 item (the same scale as 황연청's trait: 엽전 within 150 px × reach, items within 65 px × reach) */
+export const MAGNET_ITEM_REACH = 2;
+/** How far pickups are pulled in: 0 without a magnet. 황연청 in the party is a magnet of her own; the 자석 item is
+ *  another (the larger counts). */
+export const magnetReach = () => Math.max(traitValue('yeoncheong') ?? 0, G.state.magnet > 0 ? MAGNET_ITEM_REACH : 0);
 /** 한소운: 무아지경 item duration multiplier. */
 export const hyperItemScale = () => 1 + (traitValue('soun') ?? 0);
 /** The fighting hero's level, as the run started with it (core/profile.ts levels). */
@@ -67,15 +70,17 @@ export function applyStartTraits() {
   }
 }
 
-/** 매설영: how many coins a kill drops (3, plus the bonus share carried between kills). */
+/** 엽전 a kill drops: one */
+export const KILL_COINS = 1;
+/** 매설영: how many coins a kill drops (one, plus the bonus share carried between kills). */
 export function coinsForKill(): number {
   const bonus = traitValue('seolyeong');
-  if (bonus === undefined) return 3;
+  if (bonus === undefined) return KILL_COINS;
   const s = G.state;
-  s.coinFrac = (s.coinFrac ?? 0) + 3 * bonus;
+  s.coinFrac = (s.coinFrac ?? 0) + KILL_COINS * bonus;
   const extra = Math.floor(s.coinFrac + 1e-9);
   s.coinFrac -= extra;
-  return 3 + extra;
+  return KILL_COINS + extra;
 }
 
 /** 비천: every Nth kill of a combo sends a flying sword at the nearest enemy. A broken combo starts over. */

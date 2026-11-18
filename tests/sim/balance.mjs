@@ -109,8 +109,9 @@ async function oneRun(browser, stage, seed) {
       title: document.getElementById('resultTitle').textContent,
       path: s.path.map(p => p.result),
       skills: s.skills.map(k => k.id),
-      align: s.align,
+      align: `선${s.good}·악${s.evil}`,
       score: Math.round(s.score),
+      max: window.__g.maxScore(s.stage),
     };
   });
   r.wall = Date.now() - t0;
@@ -135,7 +136,7 @@ for (const r of results) {
   const s = r.sim.stages[r.course] || {};
   console.log(
     `S${r.course} seed ${r.seed}: ${won(r) ? '돌파' : `사망 ${r.phase}`} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) ` +
-      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 저울 ${r.align} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
+      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
       ` (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
   );
 }

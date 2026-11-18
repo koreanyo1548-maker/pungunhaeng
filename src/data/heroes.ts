@@ -178,7 +178,7 @@ export const HEROES: Record<HeroId, Hero> = {
       name: '영민',
       scope: 'party',
       value: L => 2 + 0.2 * L,
-      desc: L => `자석: 엽전·아이템 끌어당김 거리 ×${(2 + 0.2 * L).toFixed(1)} (편대 전체)`,
+      desc: L => `자석: 엽전·아이템을 끌어당긴다 (거리 ×${(2 + 0.2 * L).toFixed(1)}, 편대 전체)`,
     },
     entry: {
       name: '은침 비',

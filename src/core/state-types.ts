@@ -40,7 +40,10 @@ export interface RunState {
   kills: number;
   bombs: number;
   hyper: number;
-  hyperCooldown: number;
+  /** seconds left of the 자석 item: 엽전 and items are pulled in */
+  magnet: number;
+  /** seconds left of the 점수 두 배 item */
+  double: number;
   hyperDrops: number;
   combo: number;
   comboTimer: number;
@@ -82,9 +85,11 @@ export interface RunState {
   meta: Meta;
   /** debug: the 인연 the next 만남 brings */
   forceNpc: string | null;
-  /** 선·악 저울, −9 (악) to +9 (선) (systems/alignment.ts) */
-  align: number;
-  /** 인연 the scale has unlocked this run (kept when it swings back) */
+  /** 선 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
+  good: number;
+  /** 악 points this run: only grow; each adds 5% to the 엽전 banked */
+  evil: number;
+  /** 인연 the points have unlocked this run */
   unlocked: string[];
   /** each 인연's level this run, 0 to 3 */
   bond: Record<string, number>;

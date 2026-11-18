@@ -1,12 +1,15 @@
 import { syncHUD } from '../ui/hud';
 import { runSeed } from '../core/rng';
 import { G } from '../core/context';
-import { hitEnemy } from '../entities/enemies';
+import { hitEnemy, kill } from '../entities/enemies';
+import { NPCS } from '../data/npcs';
 import { loadProfile, profile } from '../core/profile';
 import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
 import { questEvent, raiseBond } from '../systems/quest';
 import { moveAlign } from '../systems/alignment';
+import { maxScore, rowGap } from '../systems/score';
+import { addPickup } from '../entities/pickups';
 import { go } from '../systems/scene-flow';
 import { bossHealth, enemyHealth, region, stageDistance } from '../systems/flow';
 import { shotPower } from '../systems/combat';
@@ -41,6 +44,17 @@ if (location.hash.includes('debug'))
     get hazards() {
       return G.hazards;
     },
+    get pickups() {
+      return G.pickups;
+    },
+    /** drop a pickup ('coin', 'hyper', 'magnet', 'double') at (x, y), as a kill would */
+    addPickup,
+    /** kill an enemy as a hit would (score, gauge, drops) */
+    kill,
+    /** the 인연 data (data/npcs.ts) */
+    npcs: NPCS,
+    /** the row gap (seconds) at a distance into a stage of a length (systems/score.ts) */
+    rowGap,
     questEvent,
     learn,
     /** fire the skills bound to a trigger, as combat would (tests count what they shoot) */
@@ -71,8 +85,10 @@ if (location.hash.includes('debug'))
       const h = region().health;
       return { attack: shotPower(), ranks: h.ranks.map(enemyHealth), rock: enemyHealth(h.rock), boss: bossHealth() };
     },
-    /** move the 선·악 저울 (unlocks as play would) */
+    /** add 선 (positive) or 악 (negative) points (unlocks as play would) */
     moveAlign,
+    /** a stage's 최대 점수 (systems/score.ts) */
+    maxScore,
     /** raise an 인연 one level (teaches the skill), as a met 의뢰 would */
     raiseBond,
     killBoss() {

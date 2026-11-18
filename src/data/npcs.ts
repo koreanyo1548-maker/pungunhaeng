@@ -1,7 +1,8 @@
 import type { Cell, NpcId } from './roster';
 
-// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). Each 인연 belongs to a side of the 선·악 저울 (정파 good, 사파
-// evil) and is unlocked when the scale reaches `unlock` on that side. Meeting them brings an 의뢰; following it
+// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). Each 인연 belongs to a side (정파 good, 사파 evil) and is unlocked
+// when the run's points of that side (선 or 악) reach `unlock`. An 의뢰's `n` is the full target, asked from the third
+// 의뢰 of the same 인연 in a run (1/3 and 2/3 before; systems/quest.ts `questTarget`). Meeting them brings an 의뢰; following it
 // and succeeding raises the 인연 one level (1단계 a number, 2단계 a projectile skill, 3단계 their signature skill).
 // `levels` are the skill ids of those levels (data/skills.ts). `br` only colours their screens.
 export type Side = 'good' | 'evil';

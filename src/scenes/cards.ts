@@ -58,8 +58,8 @@ function detail(id: NpcId): Detail {
     },
     sections: [
       {
-        title: `${SIDE_NAME[n.side]} · 저울 ${n.side === 'good' ? '선' : '악'} ${n.unlock}에서 열림`,
-        body: '판에서 선·악 저울이 이 값에 닿으면 만남에 나온다. 그 판에서 의뢰를 따라 이루면 한 단계씩 오른다(3단계 뒤에는 엽전).',
+        title: `${SIDE_NAME[n.side]} · ${n.side === 'good' ? '선' : '악'} ${n.unlock}에서 열림`,
+        body: `판에서 쌓은 ${n.side === 'good' ? '선' : '악'}이 이 값에 닿으면 만남에 나온다. 그 판에서 의뢰를 따라 이루면 한 단계씩 오른다(3단계 뒤에는 엽전). 같은 인연의 의뢰는 만날수록 목표가 늘어난다(1/3 · 2/3 · 전부).`,
       },
       ...n.levels.map((skill, i) => ({
         title: `${i + 1}단계 「${SKILLS[skill].name}」`,

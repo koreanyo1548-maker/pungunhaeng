@@ -191,11 +191,9 @@ try {
     // 한소운: the 무아지경 item lasts 50% longer
     party('soun', 'pungun');
     out.soun = M.hyperItemScale();
-    // 아영: one more attack level
+    // 아영: attack +20% while she fights (her trait; it used to be one more attack level)
     party('ayeong', 'pungun');
-    G.player.weapon = 1;
-    M.shoot();
-    out.ayeong = G.shots.length;
+    out.ayeong = Math.round((M.shotPower() / 10) * 100) / 100;
     // 정요란: waits for the kill gauge (step 2): no effect yet, nothing breaks
     party('yoran', 'pungun');
     out.yoran = M.traitActive('yoran');
@@ -229,7 +227,7 @@ try {
   assert.equal(traits.cheongwan, true);
   assert.deepEqual(traits.seolyeong, [4, 5, 4, 5]);
   assert.equal(traits.soun, 1.5);
-  assert.equal(traits.ayeong, 3, 'level 1 + 1 = three shots');
+  assert.equal(traits.ayeong, 1.2, '아영: attack +20% while she fights');
   assert.equal(traits.yoran, true);
   assert.equal(traits.yoranGauge, 1.5, '정요란: gauge +50% per kill');
   assert.equal(traits.unhak, 2, 'one 필살기 + 1');
@@ -262,7 +260,6 @@ try {
           break;
         }
         case 'mukyoung':
-          G.player.weapon = 1;
           M.shoot();
           r.check = G.shots.length; // 2 shots + 2 from one clone
           break;
@@ -365,7 +362,6 @@ try {
       at(pieces);
       party('pungun', 'mukyoung');
       fell();
-      G.player.weapon = 1;
       G.shots = [];
       M.shoot();
       const clones = G.shots.length / 2 - 1;

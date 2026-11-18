@@ -24,7 +24,6 @@ export function bossSpawn() {
 /** boss phase: spawn the stage's boss (entered via setPhase('boss')) */
 export function createBoss() {
   const hp = bossHealth();
-  G.player.weapon = 3;
   G.enemies.push({
     x: 240,
     y: -140,

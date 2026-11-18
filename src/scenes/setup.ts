@@ -6,9 +6,10 @@ import { G } from '../core/context';
 import { heroPictures, heroAnimations } from '../core/assets';
 import { STAGES } from '../data/stages';
 import { fmt } from '../core/math';
-import { heroOwned, profile } from '../core/profile';
+import { heroLevelCap, heroOwned, profile } from '../core/profile';
+import { TUNE } from '../data/tune';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText } from '../data/meta';
+import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText, weaponStage } from '../data/meta';
 import type { HeroId } from '../data/meta';
 import { openChoice } from './choice';
 
@@ -31,6 +32,11 @@ export function openStageSelect() {
       };
     }),
   });
+}
+/** "Lv 7 / 20 · 공격력 16 · 공격 단계 1" for a hero's level (raised with 엽전, capped by 성급). */
+export function levelLine(id: HeroId) {
+  const level = profile.levels[id];
+  return `<span class="mastery">Lv ${level} / ${heroLevelCap(id)} · 공격력 ${TUNE.attack + level - 1} · 공격 단계 ${weaponStage(level)}</span>`;
 }
 /** "★★☆☆☆ 성급 2 · 다음 성급까지 조각 2개" for a hero's 성급 (raised by pieces from 뽑기). */
 export function starLine(id: HeroId) {
@@ -76,7 +82,7 @@ export function heroCard(id: HeroId, slot: number) {
     title: h.name,
     desc: `<span class="hero-role"><img alt="" src="${h.trait.scope === 'party' ? energy : strike}">${h.trait.scope === 'party' ? '지원' : '특성'}</span>${h.trait.desc(level)}`,
     fullArt: heroAnimations[id][0].toDataURL(),
-    detail: `${starLine(id)}${traitText(id, level)}<br>${entryText(id, level)}`,
+    detail: `${starLine(id)}${levelLine(id)}${traitText(id, level)}<br>${entryText(id, level)}`,
     onPick: () => {
       G.state.formation[slot] = id;
       if (slot === 1) G.state.active = 0;

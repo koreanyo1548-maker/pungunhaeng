@@ -16,6 +16,7 @@ import { announce, notify, syncHUD } from '../ui/hud';
 import { learn } from './abilities';
 import { moveAlign, moveText, openedText } from './alignment';
 import { bondLevel } from './relationship';
+import { addBond } from '../core/profile';
 
 export const BOND_MAX = 3;
 
@@ -96,6 +97,8 @@ export function acceptQuest(id, qmode) {
     c = qmode === 'follow' ? q.follow : q.defy,
     move = alignMove(id, qmode);
   G.state.met[id] = met + 1;
+  // following raises the 인연's 호감도 at once (kept between runs; it takes effect from the next run)
+  if (qmode === 'follow') addBond(id);
   const opened = moveAlign(move);
   G.state.quest = {
     npc: id,

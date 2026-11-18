@@ -10,15 +10,16 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
 import { bondPower } from '../data/skills';
+import { attackBonus, heroAttack } from './hero-effects';
 import { notify, syncHUD } from '../ui/hud';
 
 const BLAST = ramp('#7fe6cf'),
   GRAZE = ramp(BR.yu.color);
 
 /** damage scale of one basic shot: the stage, and 녹림 의적 1단계 */
-/** one basic shot's damage: the attack (a whole number), times %-bonuses (녹림 의적 1단계) */
+/** one basic shot's damage: the fighting hero's attack (a whole number), times %-bonuses (녹림 의적 1단계, 아영) */
 export function shotPower() {
-  return TUNE.attack * bondPower();
+  return heroAttack() * bondPower() * (1 + attackBonus());
 }
 export function blast() {
   if (G.mode !== 'play' || G.state.bombs <= 0 || ['clear', 'warning'].includes(G.state.phase)) return;

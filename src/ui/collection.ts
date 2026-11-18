@@ -1,4 +1,4 @@
-// Collection screens (영웅, 인연 카드): a grid of tiles, and a detail popup for the tile that is tapped.
+// Collection screens (영웅, 인연): a grid of tiles, and a detail popup for the tile that is tapped.
 // The screens only describe their entries (tiles and details); this module lays them out. Later growth
 // systems (level-ups, 초월) plug into the same detail shape: a progress bar, a track of steps, and actions.
 import { $ } from '../core/dom';

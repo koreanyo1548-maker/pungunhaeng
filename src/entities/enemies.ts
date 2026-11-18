@@ -164,8 +164,6 @@ export function kill(e, byHyper = false) {
     addKill(e);
     onComboKill();
     for (let i = 0, n = coinsForKill(); i < n; i++) addPickup('coin', e.x + rnd(-15, 15), e.y + rnd(-10, 10));
-    if (G.state.kills % 18 === 0 && G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power'))
-      addPickup('power', e.x, e.y);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);
     if (G.state.combo % 10 === 0) {

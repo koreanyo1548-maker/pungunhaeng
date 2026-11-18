@@ -33,10 +33,10 @@ export function showBank() {
   $('bankCoins').textContent = fmt(profile.coins) + '냥';
   // the three ways in on the title: how far each one has come, and a mark on 뽑기 when a draw can be paid for
   const heroes = HERO_IDS.filter(id => profile.heroes[id] > 0).length,
-    cards = NPC_IDS.filter(id => profile.cards[id] > 0).length,
+    bonds = NPC_IDS.reduce((a, id) => a + profile.bonds[id], 0),
     canDraw = profile.coins >= DRAW_COST;
   $('hubHeroes').textContent = `${heroes} / ${HERO_IDS.length}`;
-  $('hubCards').textContent = `카드 ${cards} / ${NPC_IDS.length}`;
+  $('hubCards').textContent = `호감도 ${bonds}`;
   $('hubDraw').textContent = canDraw ? '뽑기 가능' : `1회 ${DRAW_COST}냥`;
   $('hubBadge').classList.toggle('hidden', !canDraw);
   $('openGacha').classList.toggle('ready', canDraw);

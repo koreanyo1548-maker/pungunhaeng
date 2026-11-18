@@ -76,7 +76,6 @@ function updateFlight(dt) {
   G.state.stageTime += dt;
   G.state.rowTimer -= dt;
   G.state.meteorTimer -= dt;
-  G.state.powerTimer -= dt;
   G.state.hyperCooldown -= dt;
   if (G.state.rowTimer <= 0) {
     spawnRow();
@@ -97,10 +96,6 @@ function updateFlight(dt) {
     }
   }
   if (terrain === 'cloud' && G.state.rowTimer > 0.5) G.state.rowTimer -= dt * 0.25;
-  if (G.state.powerTimer <= 0) {
-    if (G.player.weapon < 3 && !G.pickups.some(p => p.kind === 'power')) addPickup('power', G.player.x, -20);
-    G.state.powerTimer = 14;
-  }
   if (
     G.state.hyperCooldown <= 0 &&
     G.state.hyper <= 0 &&

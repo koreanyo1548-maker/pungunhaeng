@@ -45,7 +45,7 @@ function openBond(id: string) {
     level = bondLevel(id);
   const act = (label: string, c, mode: string) => ({
     color: BR[COND[c.t].br].color,
-    html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>저울 ${moveText(alignMove(id, mode))} · ${rewardText(id, mode)}</small>`,
+    html: `<b>${label}</b> · ${COND[c.t].label} ${questTarget(c)}${c.say ? `<small>“${c.say}”</small>` : ''}<small>저울 ${moveText(alignMove(id, mode))}${mode === 'follow' ? ' · 호감도 +1' : ''} · ${rewardText(id, mode)}</small>`,
     onPick: () => acceptQuest(id, mode),
   });
   openChoice({
@@ -73,7 +73,7 @@ function openPasser() {
   openChoice({
     eyebrow: eyebrow(),
     title: '행인',
-    sub: `저울 <b>${alignText()}</b>. 길에서 만날 인연이 아직 없다. 선·악 저울이 1·3·5에 닿으면 그쪽 인연이 열린다(인연 카드가 있어야 나온다).`,
+    sub: `저울 <b>${alignText()}</b>. 길에서 만날 인연이 아직 없다. 선·악 저울이 1·3·5에 닿으면 그쪽 인연이 열린다.`,
     cards: [
       {
         image: ambientPictures[who.art + '-neutral'],

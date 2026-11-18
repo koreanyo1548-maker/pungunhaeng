@@ -1,37 +1,22 @@
 import { ambientPictures } from '../core/ambient-art';
-// 뽑기 screen: draw once or ten times with banked 엽전, and see what came out. Opened from the title and the
+// 뽑기 screen: draw hero pieces once or ten times with banked 엽전, and see what came out. Opened from the title and the
 // result screen. Also holds the save code (export / import), which lived in the old 수련 screen.
-import { heroPictures, npcPictures } from '../core/assets';
+import { heroPictures } from '../core/assets';
 import { chime, tone } from '../core/audio';
 import { $ } from '../core/dom';
 import { fmt } from '../core/math';
 import { exportCode, importCode, profile } from '../core/profile';
-import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
-import { DRAW_COST, DRAW_TEN_COST, HERO_SHARE, PIECE_STEPS, pipText, starText } from '../data/meta';
-import { NPCS } from '../data/npcs';
+import { DRAW_COST, DRAW_TEN_COST, PIECE_STEPS, starText } from '../data/meta';
 import { draw, drawable } from '../systems/gacha';
 import type { Drawn } from '../systems/gacha';
 import { showBank, showBest } from '../ui/hud';
 
 function result(d: Drawn) {
-  const hero = d.kind === 'hero',
-    name = hero ? HEROES[d.id].name : NPCS[d.id].name,
-    image = hero ? heroPictures[d.id] : npcPictures[d.id],
-    color = hero ? HEROES[d.id].color : BR[NPCS[d.id].br].color,
+  const h = HEROES[d.id],
     next = PIECE_STEPS[d.to];
-  const what =
-    d.from === 0
-      ? hero
-        ? '새 영웅 합류'
-        : '새 인연 카드'
-      : d.to > d.from
-        ? hero
-          ? `★${d.to} 달성`
-          : `${d.to}단계 달성`
-        : '조각 +1';
-  const grade = hero ? starText(d.to) : pipText(d.to);
-  return `<div class="tile draw-result${d.to > d.from ? ' up' : ''}" style="--c:${color}"><span class="tile-art"><img alt="" src="${image}" draggable="false"></span><b>${name}</b><span class="tile-grade">${grade}</span><small class="draw-what">${what}</small><small class="piece-count"><img class="piece-icon" src="${ambientPictures[hero ? 'hero-piece' : 'bond-piece']}" alt="" draggable="false">${hero ? '영웅' : '인연'} 조각 ${d.pieces}${next ? ' / ' + next : ''}</small></div>`;
+  const what = d.from === 0 ? '새 영웅 합류' : d.to > d.from ? `★${d.to} 달성` : '조각 +1';
+  return `<div class="tile draw-result${d.to > d.from ? ' up' : ''}" style="--c:${h.color}"><span class="tile-art"><img alt="" src="${heroPictures[d.id]}" draggable="false"></span><b>${h.name}</b><span class="tile-grade">${starText(d.to)}</span><small class="draw-what">${what}</small><small class="piece-count"><img class="piece-icon" src="${ambientPictures['hero-piece']}" alt="" draggable="false">영웅 조각 ${d.pieces}${next ? ' / ' + next : ''}</small></div>`;
 }
 
 function render() {
@@ -58,7 +43,7 @@ export function openGacha() {
   $('gachaResults').innerHTML = '';
   $('gachaResults').classList.add('hidden');
   $('gachaRates').textContent =
-    `영웅 조각 ${Math.round(HERO_SHARE * 100)}% · 인연 카드 조각 ${Math.round((1 - HERO_SHARE) * 100)}% · 다 모은 것은 나오지 않음`;
+    '영웅 조각만 나옴 · 최고 성급(★5)인 영웅은 나오지 않음 · 인연은 판에서 의뢰를 따르면 호감도가 오른다';
   $('drawOne').innerHTML = `1회 뽑기<small>${fmt(DRAW_COST)}냥</small>`;
   $('drawTen').innerHTML = `10회 뽑기<small>${fmt(DRAW_TEN_COST)}냥</small>`;
   render();

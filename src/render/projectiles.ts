@@ -70,34 +70,40 @@ export function drawPickup(p) {
   ctx.translate(p.x, p.y);
   const coin = p.kind === 'coin',
     // 자석 and 점수 두 배 are drawn with a placeholder glyph until their own art comes (Codex hand-off)
-    tint = ITEM_TINT[p.kind];
+    tint = ITEM_TINT[p.kind],
+    // it springs out of the kill (small to full in 0.15 s) and leans with its throw
+    grow = Math.min(1, 0.55 + (10 - p.life) * 3),
+    lean = Math.max(-0.5, Math.min(0.5, (p.vx || 0) / 340));
+  ctx.scale(grow, grow);
   ctx.strokeStyle = coin ? '#ffdf80' : (tint?.line ?? '#c9c0ff');
   ctx.fillStyle = coin ? '#37280be0' : (tint?.fill ?? '#201e48dc');
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = coin ? 2 : 2.5;
   ctx.beginPath();
-  ctx.arc(0, 0, coin ? 10 : 25, 0, Math.PI * 2);
+  ctx.arc(0, 0, coin ? 17 : 32, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
   if (!coin) {
-    const light = ctx.createLinearGradient(0, -75, 0, 0);
+    const light = ctx.createLinearGradient(0, -95, 0, 0);
     light.addColorStop(0, '#b3a1ff00');
     light.addColorStop(1, '#b3a1ff55');
     ctx.fillStyle = light;
-    ctx.fillRect(-12, -75, 24, 65);
+    ctx.fillRect(-15, -95, 30, 82);
   }
-  if (p.kind === 'coin') {
-    ctx.scale(Math.max(0.22, Math.abs(Math.cos(G.time * 6 + p.phase))), 1);
-    drawVfxSprite(propArt[3], 0, 0, 18, 18);
+  if (coin) {
+    // spins fast while it flies up, slower as it falls
+    ctx.rotate(lean);
+    ctx.scale(Math.max(0.2, Math.abs(Math.cos(G.time * (p.vy < 0 ? 16 : 8) + p.phase))), 1);
+    drawVfxSprite(propArt[3], 0, 0, 30, 30);
   } else if (tint) {
-    ctx.rotate(Math.sin(G.time * 3 + p.phase) * 0.08);
+    ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
     ctx.fillStyle = tint.line;
-    ctx.font = 'bold 26px serif';
+    ctx.font = 'bold 36px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(tint.glyph, 0, 1);
+    ctx.fillText(tint.glyph, 0, 2);
   } else {
-    ctx.rotate(Math.sin(G.time * 3 + p.phase) * 0.08);
-    drawVfxSprite(propArt[5], 0, 0, 44, 44);
+    ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
+    drawVfxSprite(propArt[5], 0, 0, 58, 58);
   }
   ctx.restore();
 }

@@ -25,15 +25,18 @@ export const ITEMS: PickupKind[] = ['hyper', 'magnet', 'double'];
 export const ITEM_CHANCE = 0.02;
 /** seconds the 자석 and 점수 두 배 items last */
 export const ITEM_SECONDS = 10;
-/** how a pickup moves: it pops up at `pop` px/s, gravity pulls it down to `max` px/s */
-export const PICKUP_FALL = { pop: [220, 290], spread: 70, gravity: 640, max: 250 };
+/** how a pickup moves: it is thrown up at `pop` px/s (it rises about 120-200 px), sideways up to `spread` px/s
+ *  (it bounces off the screen's sides), and gravity pulls it down to `max` px/s */
+export const PICKUP_FALL = { pop: [560, 720], spread: 170, gravity: 1250, max: 380 };
+/** how close the hero has to come to take a pickup (px from its centre) */
+export const PICKUP_REACH = { coin: 34, item: 44 };
 
 export function addPickup(kind: PickupKind, x: number, y: number) {
   G.pickups.push({
     kind,
     x,
     y,
-    r: kind === 'coin' ? 7 : 17,
+    r: kind === 'coin' ? 12 : 24,
     life: 10,
     phase: rnd(0, 6),
     vx: rnd(-PICKUP_FALL.spread, PICKUP_FALL.spread),

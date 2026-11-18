@@ -1178,7 +1178,7 @@ async function scenarioH(browser, seed) {
   const p2 = await P();
   check(
     f,
-    p0.vy < 0 && p1.y < p0.y && p2.vy > 0 && p2.y > p1.y && Math.abs(p2.x - p0.x) < 75,
+    p0.vy < 0 && p0.y - p1.y > 60 && p2.vy > 0 && p2.y > p1.y && Math.abs(p2.x - p0.x) < 160,
     `a pickup pops up, then falls, not pulled in (${JSON.stringify([p0, p1, p2])})`,
   );
   // the 자석 item: 10 s, pickups within reach are pulled in

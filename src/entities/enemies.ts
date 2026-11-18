@@ -11,6 +11,7 @@ import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
 import { dropLoot } from './pickups';
+import { hyperQuestKill } from '../systems/hyper-run';
 import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
@@ -179,6 +180,8 @@ export function kill(e, byHyper = false) {
       }
       emit('kill', { e });
     }
+    // a 무아지경 kill counts for the 연속 처치, 근접 처치 and 스침 의뢰 (systems/hyper-run.ts)
+    if (byHyper) hyperQuestKill();
   }
 }
 export function hitEnemy(e, damage, skill?: string) {

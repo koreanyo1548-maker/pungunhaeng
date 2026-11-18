@@ -1120,7 +1120,7 @@ async function scenarioG(browser, seed) {
 
 // Scenario H: 의뢰 targets grow with each 의뢰 of the same 인연 (1/3, 2/3, all), the row gap (2 s → 0.8 s with
 // distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (10 s, retaken = full time), one
-// 엽전 a kill, and the 최대 점수 of every stage.
+// 엽전 a kill, 무아지경 counting the kills of its extra metres, and the 최대 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
@@ -1254,6 +1254,36 @@ async function scenarioH(browser, seed) {
     f,
     drops.every(n => n === 1),
     `a kill drops one 엽전 (${drops})`,
+  );
+  // 무아지경: the metres it runs beyond the normal speed count as kills (gauge, score, 의뢰), with no 엽전
+  await g.eval(() => {
+    const s = window.__g.state;
+    window.__g.enemies.length = 0;
+    window.__g.pickups.length = 0;
+    s.rowTimer = 99;
+    s.gauge = 0;
+    s.double = 0;
+    s.stats = {};
+    s.hyper = 1;
+  });
+  const h0 = await g.state(() => ({ ...window.__g.state, stats: undefined }));
+  await g.step(60);
+  const h1 = await g.state(() => ({
+    gauge: window.__g.state.gauge,
+    score: window.__g.state.score,
+    coins: window.__g.state.coins,
+    pickups: window.__g.pickups.length,
+    stats: window.__g.state.stats,
+  }));
+  check(
+    f,
+    h1.gauge >= 8 &&
+      h1.score - h0.score > h1.gauge * 100 &&
+      h1.coins === h0.coins &&
+      h1.pickups === 0 &&
+      h1.stats.nearKill === h1.gauge &&
+      h1.stats.graze === h1.gauge,
+    `1 s of 무아지경 counts kills: gauge, score, 근접·스침 의뢰, no 엽전 (${JSON.stringify(h1)})`,
   );
   // 최대 점수 of each stage: whole thousands, longer and harder stages give more
   const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.maxScore(n)));

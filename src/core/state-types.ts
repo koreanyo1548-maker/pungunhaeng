@@ -40,6 +40,10 @@ export interface RunState {
   kills: number;
   bombs: number;
   hyper: number;
+  /** 무아지경: kills counted for the metres run beyond the normal speed, not yet whole (systems/hyper-run.ts) */
+  hyperKills: number;
+  /** 무아지경: counted kills so far (every 5 is a 한 줄 전멸) */
+  hyperRowKills: number;
   /** seconds left of the 자석 item: 엽전 and items are pulled in */
   magnet: number;
   /** seconds left of the 점수 두 배 item */

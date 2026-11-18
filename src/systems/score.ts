@@ -37,6 +37,8 @@ export function rowGap(metres: number, length: number) {
 }
 /** stage difficulty: 0 on S1 (the running speed and the enemy mix follow it) */
 export const stageDifficulty = (stage: number) => Math.log2(stage + 1) - 1;
+/** metres a second in 무아지경 */
+export const HYPER_SPEED = 420;
 /** metres a second while running (not in 무아지경) */
 export const runSpeed = (stage: number) => 85 + Math.min(stageDifficulty(stage) * 12, 65);
 
@@ -56,6 +58,9 @@ function slotScore(stage: number) {
   // a rock scores as rank 2
   return rock * killScore(2) + (1 - rock) * enemy;
 }
+
+/** The average score of a kill on a stage (one weak slot and four others a row), before multipliers. */
+export const averageKillScore = (stage: number) => (killScore(0) + 4 * slotScore(stage)) / 5;
 
 /** 최대 점수 of a stage (see the top of this file), rounded to the nearest 1,000. */
 export function maxScore(stage: number) {
@@ -78,7 +83,7 @@ export function maxScore(stage: number) {
     }
   }
   // every kill in one unbroken chain: the k-th kill scores the average enemy × comboMult(k)
-  const enemy = (killScore(0) + 4 * slotScore(stage)) / 5;
+  const enemy = averageKillScore(stage);
   let kills = 0;
   for (let k = 1; k <= rows * 5; k++) kills += enemy * comboMult(k);
   const rest = rows * (ROW_CLEAR_SCORE + 5 * COIN_SCORE) + run + bossScore(stage) + VICTORY_SCORE;

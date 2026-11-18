@@ -13,6 +13,8 @@ export function createRunState(meta: Meta): RunState {
     bombs: 1,
     hyper: 0,
     /** seconds left of 자석 and 점수 두 배 (in-play items) */
+    hyperKills: 0,
+    hyperRowKills: 0,
     magnet: 0,
     double: 0,
     hyperDrops: 0,

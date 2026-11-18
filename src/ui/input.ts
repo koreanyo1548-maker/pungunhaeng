@@ -52,7 +52,6 @@ for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     if (G.pointer?.id === e.pointerId) G.pointer = null;
   });
 window.addEventListener('keydown', e => {
-  if ($('settings').open) return;
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Escape', 'a', 'd', 'w', 's'].includes(e.key))
     e.preventDefault();
   if (e.key === 'Escape') {

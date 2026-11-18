@@ -33,12 +33,12 @@ try {
     M.loadProfile({ best: 99999 });
     window.highCode = M.exportCode();
     M.loadProfile({ best: 0 });
-    document.getElementById('openSettings').click();
+    M.openGacha();
     document.getElementById('saveCode').value = highCode;
     document.getElementById('saveLoad').click();
   });
   assert.equal(await p.locator('#introBest').textContent(), '최고 기록 99,999');
-  await p.locator('#settingsClose').click();
+  await p.locator('#gachaClose').click();
   const begin = () =>
     p.evaluate(() => {
       M.start();

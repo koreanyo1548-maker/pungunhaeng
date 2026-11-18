@@ -132,4 +132,3 @@ const ROSTER: Collection = {
 
 export const openRoster = () => openCollection(ROSTER);
 $('openRoster').onclick = openRoster;
-$('resultRoster').onclick = openRoster;

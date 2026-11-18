@@ -87,6 +87,8 @@ export function shoot() {
         phase: G.time,
         skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
         basic: true,
+        hero: activeHeroId(),
+        weaponStage: weapon,
         ...extra,
       });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);

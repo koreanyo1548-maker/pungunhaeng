@@ -769,7 +769,7 @@ async function scenarioE(browser, seed) {
   ]);
   check(f, /\/ 12/.test(hub[0]) && /호감도 0/.test(hub[1]), `the title shows the new counts (${hub})`);
   // save code: export, wipe, import
-  await g.eval(() => document.getElementById('openGacha').click());
+  await g.eval(() => document.getElementById('openSettings').click());
   const code = await g.eval(() => document.getElementById('saveCode').value);
   check(f, code.startsWith('PUNGUN2:'), 'save code has the new prefix');
   await g.eval(() => window.__g.loadProfile({}));
@@ -784,7 +784,7 @@ async function scenarioE(browser, seed) {
     document.getElementById('saveLoad').click();
   });
   check(f, JSON.stringify(await P()) === JSON.stringify(p), 'a wrong code changes nothing');
-  await g.eval(() => document.getElementById('gachaClose').click());
+  await g.eval(() => document.getElementById('settingsClose').click());
   // repair: pieces capped at 15, the starters keep their first piece, junk becomes 0
   await g.eval(() =>
     window.__g.loadProfile({

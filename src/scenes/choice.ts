@@ -14,6 +14,7 @@ export function openChoice(o) {
   $('choiceSub').innerHTML = o.sub || '';
   const box = $('choiceCards');
   box.innerHTML = '';
+  $('choice').querySelector('.expedition')?.remove();
   $('choice').querySelector('.formation-preview')?.remove();
   $('choice').querySelector('#formationConfirm')?.remove();
   $('choice').classList.toggle('formation-screen', !!o.confirm);

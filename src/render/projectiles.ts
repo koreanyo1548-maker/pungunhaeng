@@ -1,3 +1,4 @@
+import { drawHeroShot } from './hero-shots';
 import { drawSkillShot } from '../render/skill-animation';
 import { G } from '../core/context';
 import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
@@ -9,6 +10,10 @@ export function blade(x, y, angle, length, color) {
 }
 export function drawMartialShots() {
   for (const s of G.shots) {
+    if (s.basic && s.hero && s.weaponStage) {
+      drawHeroShot(s.hero, s.weaponStage, s.x, s.y, Math.atan2(s.vx, s.vy ?? 900), G.time - s.phase);
+      continue;
+    }
     if (drawSkillShot(s)) continue;
     // Positive vx rotates upward-facing art clockwise.
     const rot = Math.atan2(s.vx, s.vy ?? 900),
@@ -49,8 +54,41 @@ export function drawMartialHazard(h) {
   ctx.shadowColor = '#ff503b';
   ctx.shadowBlur = 3;
   if (h.kind === 'spear') {
-    if (h.skin === 'wind') drawVfxSprite(projectileArt[7], h.x, h.y, r * 3.5, r * 5, angle + Math.PI);
-    else drawVfxSprite(propArt[2], h.x, h.y, r * 2.2, r * 6, angle);
+    if (h.skin === 'wind') drawVfxSprite(projectileArt[7], h.x, h.y, 42, 62, angle + Math.PI);
+    else {
+      ctx.translate(h.x, h.y);
+      ctx.rotate(angle);
+      // Broad bamboo shaft behind the collision centre, with its bevel centred on the danger point.
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#332719';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.fillStyle = '#bdc56b';
+      ctx.beginPath();
+      ctx.moveTo(-8, -48);
+      ctx.lineTo(8, -48);
+      ctx.lineTo(9, -6);
+      ctx.lineTo(0, 11);
+      ctx.lineTo(-9, -6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#60763c';
+      ctx.fillRect(-6, -46, 5, 38);
+      for (const y of [-36, -20]) {
+        ctx.fillStyle = '#424a27';
+        ctx.fillRect(-9, y, 18, 5);
+        ctx.fillStyle = '#f1d78e';
+        ctx.fillRect(-9, y, 18, 2);
+      }
+      ctx.fillStyle = '#fff1c4';
+      ctx.beginPath();
+      ctx.moveTo(-8, -7);
+      ctx.lineTo(7, -12);
+      ctx.lineTo(0, 9);
+      ctx.closePath();
+      ctx.fill();
+    }
   } else if (h.kind === 'meteor') {
     drawVfxSprite(combatProjectileArt[4], h.x, h.y, r * 2.7, r * 2.7, angle);
   } else {

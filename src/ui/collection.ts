@@ -77,7 +77,7 @@ function renderDetail() {
     (p ? `<div class="detail-progress"><span><b>${p.label}</b>${p.text}</span>${bar(p.now, p.goal)}</div>` : '') +
     (d.sections ?? []).map(s => `<div class="detail-section"><b>${s.title}</b><p>${s.body}</p></div>`).join('') +
     (t
-      ? `<div class="detail-track"><b>${t.title}</b><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
+      ? `<details class="detail-track"><summary>${t.title}</summary><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></details>`
       : '');
   const box = $('detailActions');
   box.innerHTML = '';

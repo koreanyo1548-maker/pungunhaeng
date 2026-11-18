@@ -42,8 +42,7 @@ export function openGacha() {
   $('saveMsg').textContent = '';
   $('gachaResults').innerHTML = '';
   $('gachaResults').classList.add('hidden');
-  $('gachaRates').textContent =
-    '영웅 조각만 나옴 · 최고 성급(★5)인 영웅은 나오지 않음 · 인연은 판에서 의뢰를 따르면 호감도가 오른다';
+  $('gachaRates').textContent = '영웅 조각 획득 · ★5 영웅 제외';
   $('drawOne').innerHTML = `1회 뽑기<small>${fmt(DRAW_COST)}냥</small>`;
   $('drawTen').innerHTML = `10회 뽑기<small>${fmt(DRAW_TEN_COST)}냥</small>`;
   render();
@@ -55,6 +54,12 @@ function closeGacha() {
   showBank();
 }
 
+$('openSettings').onclick = () => {
+  $('saveCode').value = exportCode();
+  $('saveMsg').textContent = '';
+  $('settings').showModal();
+};
+$('settingsClose').onclick = () => $('settings').close();
 $('drawOne').onclick = () => show(draw(1));
 $('drawTen').onclick = () => show(draw(10, DRAW_TEN_COST));
 $('openGacha').onclick = openGacha;

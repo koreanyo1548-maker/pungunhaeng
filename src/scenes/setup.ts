@@ -2,6 +2,7 @@ import strike from '../assets/icons/strike.svg';
 import dodge from '../assets/icons/dodge.svg';
 import energy from '../assets/icons/energy.svg';
 import { done } from '../systems/scene-flow';
+import { $ } from '../core/dom';
 import { G } from '../core/context';
 import { heroPictures, heroAnimations } from '../core/assets';
 import { STAGES } from '../data/stages';
@@ -18,7 +19,7 @@ export function openStageSelect() {
   openChoice({
     eyebrow: '스테이지',
     title: '어디로 갈까',
-    sub: '보스를 잡으면 다음 스테이지가 열린다. 적을 처치해 게이지를 채우면 인연이나 행인을 만난다.',
+    sub: '편대를 골라 출전하거나, 아래 스테이지를 눌러 영웅을 자세히 살펴보세요.',
     cards: STAGES.map((st, i) => {
       const n = i + 1,
         locked = n > profile.stages;
@@ -32,6 +33,47 @@ export function openStageSelect() {
       };
     }),
   });
+  const form = document.createElement('form');
+  form.className = 'expedition';
+  const heroes = HERO_IDS.filter(heroOwned);
+  function field(label: string, items: [string, string][]) {
+    const wrap = document.createElement('label');
+    wrap.textContent = label;
+    const select = document.createElement('select');
+    for (const [value, name] of items) select.add(new Option(name, value));
+    wrap.append(select);
+    form.append(wrap);
+    return select;
+  }
+  const stage = field(
+    '행선지',
+    STAGES.slice(0, profile.stages).map((st, i) => [String(i + 1), st.name]),
+  );
+  const options: [string, string][] = heroes.map(id => [id, HEROES[id].name]);
+  const front = field('선봉', options),
+    rear = field('후발', options);
+  function updateRear() {
+    for (const opt of Array.from(rear.options)) opt.disabled = opt.value === front.value;
+    if (rear.value === front.value) rear.value = heroes.find(id => id !== front.value)!;
+  }
+  front.onchange = updateRear;
+  updateRear();
+  const launch = document.createElement('button');
+  launch.className = 'primary';
+  launch.textContent = '출전';
+  form.append(launch);
+  form.onsubmit = event => {
+    event.preventDefault();
+    const a = heroes.find(id => id === front.value),
+      b = heroes.find(id => id === rear.value);
+    if (G.scene !== 'stageSelect' || !a || !b || a === b) return;
+    G.state.stage = Number(stage.value);
+    G.state.formation = [a, b];
+    G.state.active = 0;
+    form.remove();
+    done('formation', 1);
+  };
+  $('choiceCards').before(form);
 }
 /** "★★☆☆☆ 성급 2 · 다음 성급까지 조각 2개" for a hero's 성급 (raised by pieces from 뽑기). */
 export function starLine(id: HeroId) {

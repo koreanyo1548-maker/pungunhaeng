@@ -105,6 +105,18 @@ try {
     });
     await g.step(2);
     assert.equal(await g.state(() => window.__g.state.skills.length), count + 1, 'the met 의뢰 teaches 1단계');
+    await g.eval(() => document.getElementById('restartPause').click());
+    const prep = g.page.locator('.expedition');
+    await prep.getByLabel('행선지').selectOption('2');
+    await prep.getByLabel('선봉').selectOption('unhak');
+    await prep.getByLabel('후발').selectOption('bicheon');
+    await prep.getByRole('button', { name: '출전' }).tap();
+    assert.equal(await g.mode(), 'play');
+    assert.deepEqual(await g.state(() => [window.__g.state.stage, ...window.__g.state.formation]), [
+      2,
+      'unhak',
+      'bicheon',
+    ]);
     assert.deepEqual(g.errors, []);
     await g.page.close();
     console.log(

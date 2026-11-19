@@ -1,6 +1,7 @@
 // Balance simulation: a simple bot plays whole stages (no invincibility) on the synthetic clock with fixed seeds,
 // and reports survival, hits taken, stage length, kills, 만남 count, coins and 의뢰 results per stage.
-// The bot is deliberately plain (aims at the weakest enemy of the nearest row, sidesteps warned hazards,
+// The bot is deliberately plain (aims at the weakest enemy of the nearest row, waits in a row's gap while it passes,
+// sidesteps warned hazards,
 // never uses 필살기 on purpose, always follows an 인연 and helps or gives to passers-by, ignores the 의뢰), so the
 // numbers are a floor, not a skilled player.
 // usage: node tests/sim/balance.mjs [build.html] [--runs N] [--parallel P] [--seed S] [--stages 1,6] [--god]
@@ -36,8 +37,19 @@ const botScript = () => {
     const boss = g.enemies.find(e => e.boss && !e.dead);
     if (boss) tx = boss.x;
     else {
-      const es = g.enemies.filter(e => !e.dead && !e.boss && e.y < P.y - 60).sort((a, b) => b.y - a.y);
-      if (es[0]) tx = es.filter(e => e.row === es[0].row).sort((a, b) => a.hp - b.hp)[0].x;
+      // a row about to reach the hero: stay in (or move to) its nearest gap until it has passed
+      const near = g.enemies.filter(e => !e.dead && !e.boss && e.y > P.y - 170 && e.y < P.y + 50);
+      if (near.length) {
+        const lanes = [0, 1, 2, 3, 4].map(i => 48 + i * 96),
+          open = lanes.filter(x => !near.some(e => Math.abs(e.x - x) < 40));
+        const pick = (open.length ? open : [near.sort((a, b) => a.hp - b.hp)[0].x]).sort(
+          (a, b) => Math.abs(a - P.x) - Math.abs(b - P.x),
+        )[0];
+        tx = pick;
+      } else {
+        const es = g.enemies.filter(e => !e.dead && !e.boss && e.y < P.y - 60).sort((a, b) => b.y - a.y);
+        if (es[0]) tx = es.filter(e => e.row === es[0].row).sort((a, b) => a.hp - b.hp)[0].x;
+      }
     }
     const hz = g.hazards || [];
     const danger = x =>
@@ -112,6 +124,9 @@ async function oneRun(browser, stage, seed) {
       align: `선${s.good}·악${s.evil}`,
       score: Math.round(s.score),
       max: window.__g.maxScore(s.stage),
+      drops: s.drops,
+      kills: s.kills,
+      time: s.elapsed,
     };
   });
   r.wall = Date.now() - t0;
@@ -136,7 +151,7 @@ for (const r of results) {
   const s = r.sim.stages[r.course] || {};
   console.log(
     `S${r.course} seed ${r.seed}: ${won(r) ? '돌파' : `사망 ${r.phase}`} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) ` +
-      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
+      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 드롭 ${JSON.stringify(r.drops)} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
       ` (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
   );
 }

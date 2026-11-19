@@ -10,6 +10,8 @@ import { $, PLAYER_Y, W } from '../core/dom';
 import { clamp, fmt, josa } from '../core/math';
 import { settle } from '../data/meta';
 import { STAGES, STAGE_COUNT } from '../data/stages';
+import { BASELINE, tierHealth } from '../data/baseline';
+import { TUNE } from '../data/tune';
 import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
 import { VICTORY_SCORE, runBonus } from './score';
@@ -38,16 +40,12 @@ export function difficulty() {
 export function stageDistance() {
   return region().distance;
 }
-/** distance multiplier of enemy health at `metres` run: 1 at the start, + `perKm` per 1,000 m */
-export function healthScale(metres = G.state.distance) {
-  return 1 + (region().health.perKm * Math.max(0, metres)) / 1000;
-}
-/** an enemy's health: starting health × distance multiplier, rounded to a whole number (at least 1) */
-export const enemyHealth = (start: number) => Math.max(1, Math.round(start * healthScale()));
-/** the boss's health: rank 0 health at the stage's distance × the boss multiplier */
+/** health of an enemy tier (1 to 6): the shots of the reference growth (Lv1, no 인연) × its attack. No distance
+ *  multiplier: health grows only with the tier ladder (systems/ladder.ts). */
+export const enemyHealth = (tier: number) => tierHealth(tier, TUNE.attack);
+/** the boss's health: BASELINE.bossSeconds of the reference basic attack (2 shots a volley) */
 export function bossHealth() {
-  const h = region().health;
-  return Math.max(1, Math.round(h.ranks[0] * healthScale(stageDistance()) * h.boss));
+  return Math.round((BASELINE.bossSeconds * TUNE.attack * 2) / BASELINE.fireInterval);
 }
 export function start() {
   if (!G.loaded) return;

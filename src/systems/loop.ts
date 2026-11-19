@@ -4,8 +4,8 @@ import { H, W } from '../core/dom';
 import { clamp } from '../core/math';
 import { TUNE } from '../data/tune';
 import { updateBoss } from '../entities/boss';
-import { hitEnemy, kill, nearestEnemy, resolveRow } from '../entities/enemies';
-import { PICKUP_FALL, PICKUP_REACH, collect } from '../entities/pickups';
+import { hitEnemy, hyperFinish, kill, nearestEnemy, resolveRow } from '../entities/enemies';
+import { PICKUP_FALL, PICKUP_REACH, collect, isCoinLike } from '../entities/pickups';
 import { damagePlayer, shoot, updateMartialMotion } from '../entities/player';
 import { burst, effects, impact } from '../render/fx';
 import { pfx } from '../render/pfx';
@@ -14,7 +14,10 @@ import { updateSkills } from './abilities';
 import { graze, grazeEnemy } from './combat';
 import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
-import { HYPER_SPEED, RUN_SCORE, addScore, runSpeed } from './score';
+import { RUN_SCORE, addScore, runSpeed } from './score';
+import { speedFactor } from './ladder';
+import { BASELINE } from '../data/baseline';
+
 import { updateEncounter } from './encounter';
 import { bondFireRate, bondGraze } from '../data/skills';
 import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
@@ -30,11 +33,15 @@ export function update(dt) {
   G.time += dt;
   G.state.enteredStep = false;
   G.state.elapsed += dt;
-  G.state.distance += dt * (G.state.hyper > 0 ? HYPER_SPEED : runSpeed(G.state.stage));
+  // the run speeds up with the stage's progress (systems/ladder.ts); 무아지경 runs BASELINE.hyper.speed times faster
+  const pace = speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
+  G.state.distance += dt * runSpeed(G.state.stage) * pace;
   addScore(dt * RUN_SCORE);
-  G.scroll +=
-    dt * (G.state.hyper > 0 ? 1150 : G.state.phase === 'clear' ? 500 : 185 + Math.min(difficulty() * 24, 120));
+  G.scroll += dt * (G.state.phase === 'clear' ? 500 : (185 + Math.min(difficulty() * 24, 120)) * Math.min(pace, 6));
+  const hyperBefore = G.state.hyper;
   G.state.hyper = Math.max(0, G.state.hyper - dt);
+  // 무아지경 ends with the whole screen bursting: the enemies left turn into 엽전
+  if (hyperBefore > 0 && G.state.hyper <= 0) hyperFinish();
   G.state.magnet = Math.max(0, G.state.magnet - dt);
   G.state.double = Math.max(0, G.state.double - dt);
   G.player.inv = Math.max(0, G.player.inv - dt);
@@ -81,7 +88,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += 0.148 / bondFireRate();
+    G.player.fire += BASELINE.fireInterval / bondFireRate();
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -149,7 +156,8 @@ function updateEnemies(dt: number): boolean {
       if (G.mode !== 'play') return false;
       continue;
     }
-    e.y += dt * (G.state.hyper > 0 ? 670 : 190 + Math.min(difficulty() * 22 + G.state.stageTime, 130)) * enemySpeed();
+    // rows come down at BASELINE.descent px/s, as much faster as the run (systems/ladder.ts)
+    e.y += dt * BASELINE.descent * speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);
@@ -218,14 +226,19 @@ function updatePickups(dt: number): void {
       dy = G.player.y - p.y,
       dist = Math.hypot(dx, dy),
       reach = magnetReach(),
-      attract = reach > 0 && dist < (p.kind === 'coin' ? 150 : 65) * reach;
+      coinLike = isCoinLike(p.kind),
+      attract = reach > 0 && dist < (coinLike ? 150 : 65) * reach;
     if (attract) {
-      const v = p.kind === 'coin' ? 600 : 260;
+      const v = coinLike ? 600 : 260;
       p.x += (dx / Math.max(1, dist)) * Math.min(v * dt, dist);
       p.y += (dy / Math.max(1, dist)) * Math.min(v * dt, dist);
       p.vy = Math.max(0, p.vy);
     } else {
-      p.vy = Math.min(PICKUP_FALL.max, p.vy + PICKUP_FALL.gravity * dt);
+      // an item hangs at the top of its pop (BASELINE.itemHang) before it falls
+      if (p.hang > 0 && p.vy >= 0) {
+        p.hang -= dt;
+        p.vy = 0;
+      } else p.vy = Math.min(PICKUP_FALL.max, p.vy + PICKUP_FALL.gravity * dt);
       p.y += p.vy * dt;
       // it stays on the screen: the top stops the rise, the sides throw it back
       if (p.y < 30 && p.vy < 0) {
@@ -239,7 +252,7 @@ function updatePickups(dt: number): void {
       }
       p.vx *= Math.exp(-dt * 1.2);
     }
-    const take = p.kind === 'coin' ? PICKUP_REACH.coin : PICKUP_REACH.item;
+    const take = coinLike ? PICKUP_REACH.coin : PICKUP_REACH.item;
     if (dist < take || Math.hypot(G.player.x - p.x, G.player.y - p.y) < take) collect(p);
   }
 }

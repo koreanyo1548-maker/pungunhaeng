@@ -1,5 +1,6 @@
 import { emit } from '../core/events';
 import { G } from '../core/context';
+import { BASELINE } from '../data/baseline';
 import { boom, chime, tone } from '../core/audio';
 import { reduced } from '../core/dom';
 import { fxRnd } from '../core/math';
@@ -81,6 +82,8 @@ export function shoot() {
         y: G.player.y - 34,
         prevY: G.player.y - 34,
         vx: weapon === 3 ? x * 1.5 : 0,
+        // BASELINE.shotSpeed: about 2.2 screen heights a second (docs/balance-baseline.md)
+        vy: BASELINE.shotSpeed,
         damage: shotPower(),
         r: 5,
         kind: weapon === 2 && x !== 0 ? 'knife' : weapon === 3 ? 'sword' : 'qi',

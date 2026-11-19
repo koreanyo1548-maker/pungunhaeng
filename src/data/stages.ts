@@ -2,7 +2,8 @@
 // party runs `distance` metres through the stage's background, then its boss comes.
 // `world` picks the background and how the hero is drawn (0 산길, 1 대숲, 2 운해). Movement is left-right on
 // every stage; the free up-down flight of 운해 is kept in the code but off (TUNE.freeFlight).
-// `terrain` keeps each place's own rule: rock (바위), bamboo (죽창), cloud (느린 줄).
+// `terrain` keeps each place's own rule: rock (바위, not on S1), bamboo (죽창), cloud (느린 줄).
+import { stageLength } from './baseline';
 
 export interface Stage {
   name: string;
@@ -15,35 +16,14 @@ export interface Stage {
   skin?: string;
   hint: string;
   patterns: string[];
-  /** metres to run before the boss comes */
+  /** metres to run before the boss comes (data/baseline.ts `stageLength`: about 3 minutes with 무아지경) */
   distance: number;
   /** kills that fill the 처치 게이지 (a 만남): set from the bot's kills per stage so a run has about 6 (provisional) */
   gauge: number;
-  /** enemy health on this stage, in whole numbers (see `HEALTH` below) */
-  health: StageHealth;
 }
 
-/**
- * Enemy health (docs/combat-stats.md). Applied in this order, rounded to a whole number at the end (at least 1):
- *   1. the stage's starting health (per enemy rank, rocks)
- *   2. × the distance multiplier: 1 at the start of the run, + `perKm` for every 1,000 m run (a longer stage gets
- *      tougher enemies)
- *   3. × `boss` for the boss, on top of the rank 0 health at the stage's distance
- * The player's basic attack is a whole number too (TUNE.attack); %-bonuses multiply it.
- */
-export interface StageHealth {
-  /** starting health of enemy ranks 0 to 3 */
-  ranks: number[];
-  rock: number;
-  /** distance multiplier gained per 1,000 m run */
-  perKm: number;
-  /** boss multiplier */
-  boss: number;
-}
-/** Provisional: every stage starts the same until the stage table is set (later: per-stage start health, boss attack). */
-const HEALTH: StageHealth = { ranks: [5, 14, 25, 40], rock: 33, perKm: 0.05, boss: 145 };
-/** S1 keeps its easier rocks (as before). */
-const FIRST_HEALTH: StageHealth = { ...HEALTH, rock: 18 };
+/** Enemy health comes from the tier ladder (data/baseline.ts `tierHealth`, systems/ladder.ts): the same tiers on
+ *  every stage for now; per-stage reference growth comes later (docs/balance-baseline.md). */
 
 export const STAGES: Stage[] = [
   {
@@ -53,11 +33,10 @@ export const STAGES: Stage[] = [
     color: '#ffc179',
     terrain: 'rock',
     world: 0,
-    hint: '바위가 길을 막는다 · 부수며 나아가라',
+    hint: '갈수록 거세진다 · 약한 틈을 찾아 뚫어라',
     patterns: ['fan', 'dive', 'lanes'],
-    distance: 12000,
+    distance: stageLength(1),
     gauge: 90,
-    health: FIRST_HEALTH,
   },
   {
     name: '청죽림',
@@ -68,9 +47,8 @@ export const STAGES: Stage[] = [
     world: 1,
     hint: '죽창이 쏟아진다 · 스치며 흘려라',
     patterns: ['lanes', 'fan', 'dive'],
-    distance: 13000,
+    distance: stageLength(2),
     gauge: 75,
-    health: HEALTH,
   },
   {
     name: '폐사',
@@ -81,9 +59,8 @@ export const STAGES: Stage[] = [
     world: 0,
     hint: '향로의 연기가 짙다 · 적이 느리게 몰려온다',
     patterns: ['dive', 'lanes', 'fan'],
-    distance: 14000,
+    distance: stageLength(3),
     gauge: 65,
-    health: HEALTH,
   },
   {
     name: '부유암',
@@ -94,9 +71,8 @@ export const STAGES: Stage[] = [
     world: 2,
     hint: '떠다니는 바위섬 · 부수며 나아가라',
     patterns: ['fan', 'dive', 'lanes'],
-    distance: 15000,
+    distance: stageLength(4),
     gauge: 55,
-    health: HEALTH,
   },
   {
     name: '유운봉',
@@ -108,9 +84,8 @@ export const STAGES: Stage[] = [
     world: 2,
     hint: '바람 칼날이 떨어진다 · 스치며 흘려라',
     patterns: ['lanes', 'fan', 'dive'],
-    distance: 16000,
+    distance: stageLength(5),
     gauge: 60,
-    health: HEALTH,
   },
   {
     name: '천마성',
@@ -121,9 +96,8 @@ export const STAGES: Stage[] = [
     world: 2,
     hint: '기류가 거세다 · 적이 느리게 몰려온다',
     patterns: ['dive', 'lanes', 'fan'],
-    distance: 17000,
+    distance: stageLength(6),
     gauge: 60,
-    health: HEALTH,
   },
 ];
 export const STAGE_COUNT = STAGES.length;

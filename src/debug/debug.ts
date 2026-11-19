@@ -84,10 +84,13 @@ if (location.hash.includes('debug'))
       if (id) G.state.forceNpc = id;
       go('encounter');
     },
-    /** attack and enemy health at the current distance (docs/combat-stats.md) */
+    /** metres to the boss on this stage */
+    get stageDistance() {
+      return stageDistance();
+    },
+    /** attack, tier health (tiers 1 to 6) and the boss's health (docs/balance-baseline.md) */
     get stats() {
-      const h = region().health;
-      return { attack: shotPower(), ranks: h.ranks.map(enemyHealth), rock: enemyHealth(h.rock), boss: bossHealth() };
+      return { attack: shotPower(), tiers: [1, 2, 3, 4, 5, 6].map(enemyHealth), boss: bossHealth() };
     },
     /** add 선 (positive) or 악 (negative) points (unlocks as play would) */
     moveAlign,

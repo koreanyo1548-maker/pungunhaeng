@@ -45,6 +45,7 @@ export interface RunState {
   /** seconds left of the 점수 두 배 item */
   double: number;
   hyperDrops: number;
+  drops: { hyper: number; magnet: number; double: number; chest: number };
   combo: number;
   comboTimer: number;
   stage: number;
@@ -163,6 +164,10 @@ export interface Enemy {
   dead: boolean;
   baseX?: number;
   rank?: number;
+  /** tier 1 to 6 on the ladder (rank = tier − 1; systems/ladder.ts) */
+  tier?: number;
+  /** a 보물상자: bursts into 보석 */
+  chest?: boolean;
   rock?: boolean;
   color?: string;
   row?: number;

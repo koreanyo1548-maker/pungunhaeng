@@ -169,7 +169,7 @@ async function scenarioA(browser, stage, seed) {
     `stage box: gauge and distance (${hud})`,
   );
 
-  // attack and health are whole numbers, the same on every stage; enemies get tougher with distance only
+  // attack and health are whole numbers from the tier ladder (docs/balance-baseline.md): no distance multiplier
   const stats = await g.eval(() => {
     const G = window.__g,
       d = G.state.distance,
@@ -183,14 +183,9 @@ async function scenarioA(browser, stage, seed) {
   });
   check(
     f,
-    JSON.stringify(stats.start) ===
-      JSON.stringify({
-        attack: 10,
-        ranks: [5, 14, 25, 40],
-        rock: stage === 0 ? 18 : 33,
-        boss: stage === 0 ? 1160 : 1269,
-      }) && JSON.stringify(stats.at10km.ranks) === '[8,21,38,60]',
-    `attack 10, health from the stage table, +5% per 1,000 m (×1.5 at 10 km), the boss at the stage's distance (${JSON.stringify(stats)})`,
+    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 100, 180, 320, 580, 1050], boss: 4800 }) &&
+      JSON.stringify(stats.at10km) === JSON.stringify(stats.start),
+    `attack 10, tier health 1·10·18·32·58·105 shots, boss 30 s, no distance multiplier (${JSON.stringify(stats)})`,
   );
   await g.seconds(3);
   const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));
@@ -1149,14 +1144,14 @@ async function scenarioH(browser, seed) {
   );
   // row gap: 2 s at the start, 0.8 s at the boss, even in between; the real timer follows it
   const gaps = await g.eval(() => [0, 6000, 12000, 20000].map(m => window.__g.rowGap(m, 12000)));
-  check(f, gaps.join() === '2,1.4,0.8,0.8', `row gap 2 → 0.8 s with distance (${gaps})`);
+  check(f, gaps.join() === '1.7,1.575,1.45,1.45', `row gap 1.7 → 1.45 s with the stage's progress (${gaps})`);
   await g.eval(() => {
-    window.__g.state.distance = 6000;
+    window.__g.state.distance = window.__g.stageDistance / 2;
     window.__g.state.rowTimer = 0;
   });
   await g.step(1);
   const rowTimer = await g.state(() => window.__g.state.rowTimer);
-  check(f, Math.abs(rowTimer - 1.4) < 0.02, `the row timer at 6,000 m of 12,000 m is 1.4 s (${rowTimer})`);
+  check(f, Math.abs(rowTimer - 1.575) < 0.02, `the row timer half way through the stage is 1.575 s (${rowTimer})`);
   // pickups: no magnet by default; a pickup pops up, then falls, and is not pulled toward the hero
   const P = () =>
     g.state(() => {
@@ -1319,6 +1314,154 @@ async function scenarioH(browser, seed) {
   return { name: `H seed ${seed}`, failures: f, log: [`최대 점수 ${max.join(' · ')}`] };
 }
 
+// Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
+// (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 1.4 s ending in a screen burst that turns
+// the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
+// the 운석 warned 2 s ahead.
+async function scenarioI(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed });
+  await setup(g, 0);
+  await g.eval(() => window.__g.god());
+  const rows = async p =>
+    g.eval(async p => {
+      const G = window.__g;
+      G.state.distance = p * G.stageDistance;
+      G.state.gauge = -1e6;
+      G.enemies.length = 0;
+      G.state.rowTimer = 0;
+      return null;
+    }, p);
+  // the ladder: step 1 has tiers 1 to 3 with the weak slot at tier 1; step 6 has the weak slot at tier 6
+  const sample = async p => {
+    const seen = { weak: new Set(), all: new Set() };
+    for (let i = 0; i < 6; i++) {
+      await rows(p);
+      await g.step(1);
+      const es = await g.state(() => window.__g.enemies.filter(e => !e.chest).map(e => ({ t: e.tier, w: e.weak })));
+      for (const e of es) {
+        seen.all.add(e.t);
+        if (e.w) seen.weak.add(e.t);
+      }
+    }
+    return { weak: [...seen.weak].sort().join(), all: [...seen.all].sort().join() };
+  };
+  const first = await sample(0.03),
+    last = await sample(0.97);
+  check(
+    f,
+    first.weak === '1' &&
+      [...first.all].every(t => t === ',' || '123'.includes(t)) &&
+      last.weak === '6' &&
+      last.all === '6',
+    `tier ladder: step 1 weak 1 (tiers ${first.all}), step 6 weak 6 (tiers ${last.all})`,
+  );
+  // speed: rows come down twice as fast at the boss as at the start
+  const fall = async p => {
+    await rows(p);
+    // no shots: a kill's hit-stop would slow the clock
+    await g.eval(() => (window.__g.player.fire = 1e9));
+    await g.step(1);
+    const a = await g.state(() => ({ y: window.__g.enemies[0]?.y, t: window.__g.state.elapsed }));
+    await g.step(30);
+    const b = await g.state(() => ({ y: window.__g.enemies[0]?.y, t: window.__g.state.elapsed }));
+    return (b.y - a.y) / (b.t - a.t);
+  };
+  const v0 = await fall(0),
+    v1 = await fall(0.995);
+  await g.eval(() => (window.__g.player.fire = 0));
+  check(
+    f,
+    Math.abs(v0 - 592) < 20 && Math.abs(v1 / v0 - 2) < 0.05,
+    `descent ${Math.round(v0)} → ${Math.round(v1)} px/s`,
+  );
+  // 무아지경: 1.4 s, then the screen bursts: every enemy on it turns into 엽전
+  await rows(0.5);
+  await g.step(2);
+  await g.eval(() => {
+    const pl = window.__g.player;
+    window.__g.addPickup('hyper', pl.x, pl.y);
+  });
+  await g.step(1);
+  const hyper = await g.state(() => window.__g.state.hyper);
+  await g.eval(() => (window.__g.state.rowTimer = 99));
+  await g.eval(() => {
+    // a row just entering the screen when 무아지경 ends
+    window.__g.state.hyper = 0.02;
+    for (const e of window.__g.enemies) e.y = 120;
+  });
+  const before = await g.state(() => window.__g.enemies.filter(e => !e.dead).length);
+  await g.step(3);
+  const after = await g.state(() => ({
+    alive: window.__g.enemies.filter(e => !e.dead && !e.boss && e.y > -40).length,
+    coins: window.__g.pickups.filter(p => p.kind === 'coin').length,
+  }));
+  check(
+    f,
+    Math.abs(hyper - 1.4) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
+    `무아지경 1.4 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
+  );
+  // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
+  await g.eval(() => {
+    const G = window.__g;
+    G.enemies.length = 0;
+    G.pickups.length = 0;
+    const e = {
+      x: 240,
+      y: 200,
+      hp: 1,
+      maxHp: 1,
+      type: 0,
+      rank: 1,
+      chest: true,
+      r: 28,
+      row: -1,
+      dead: false,
+      size: 88,
+      color: '#fff',
+      phase: 0,
+      hit: 0,
+    };
+    G.enemies.push(e);
+    G.kill(e);
+  });
+  const gems = await g.state(() => window.__g.pickups.filter(p => p.kind === 'gem').length);
+  const c0 = await g.state(() => window.__g.state.coins);
+  await g.eval(() => {
+    const pl = window.__g.player;
+    window.__g.pickups.length = 0;
+    window.__g.addPickup('gem', pl.x, pl.y);
+  });
+  await g.step(1);
+  const c1 = await g.state(() => window.__g.state.coins);
+  check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
+  // items hang at the top of their pop before they fall; 엽전 do not
+  await g.eval(() => {
+    window.__g.pickups.length = 0;
+    window.__g.addPickup('double', 60, 400);
+    window.__g.addPickup('coin', 420, 400);
+  });
+  let hang = 0;
+  for (let i = 0; i < 90; i++) {
+    await g.step(1);
+    const vy = await g.state(() => window.__g.pickups.find(p => p.kind === 'double')?.vy);
+    if (vy === 0) hang++;
+  }
+  check(f, hang >= 24 && hang <= 30, `an item hangs about 0.45 s at the top (${hang} frames)`);
+  // 운석: warned 2 s ahead
+  const warn = await g.eval(() => {
+    window.__g.state.meteorTimer = 0;
+    window.__g.hazards.length = 0;
+    return null;
+  });
+  await g.step(1);
+  const meteor = await g.state(() => window.__g.hazards.find(h => h.kind === 'meteor')?.warn);
+  check(f, warn === null && meteor > 1.9 && meteor <= 2, `운석 warned 2 s ahead (${meteor})`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return { name: `I seed ${seed}`, failures: f, log: [`descent ${Math.round(v0)} → ${Math.round(v1)} px/s`] };
+}
+
 /** Opens the detail popup of the i-th tile on the open collection screen, reads it, and closes it. */
 async function detailOf(g, i) {
   await g.eval(i => document.querySelectorAll('#collectionGrid .tile')[i].click(), i);
@@ -1344,6 +1487,7 @@ results.push(await scenarioE(browser, 606));
 results.push(await scenarioF(browser, 707));
 results.push(await scenarioG(browser, 808));
 results.push(await scenarioH(browser, 909));
+results.push(await scenarioI(browser, 1010));
 await browser.close();
 
 let failed = 0;

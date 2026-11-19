@@ -1,7 +1,7 @@
 // Glows behind the important things in play (docs/visual-direction.md): a jade laser trail behind 죽창, a fire tail
-// behind 운석, gold rays behind 엽전 and rays in each item's colour behind 무아지경, 자석 and 점수 두 배.
+// behind 운석 and rays in each item's colour behind 무아지경, 자석 and 점수 두 배 (none behind 엽전: too busy).
 // They are looping pixelfx effects (src/vendor/pixelfx, MIT). Simulating one live per object would cost too much
-// with many 엽전 and 죽창 on screen, so each look is rendered once into a strip of frames (prepareGlows, at the
+// with many 죽창 on screen, so each look is rendered once into a strip of frames (prepareGlows, at the
 // start of a stage) and play only draws pictures. A frame is colour and light composited over black and drawn with
 // 'lighter', so it adds light onto what is behind (dark smoke drops out). Cosmetic only: no gameplay random, no
 // state; off with reduced motion or #legacyfx (pfxOn).
@@ -26,7 +26,7 @@ const DEFS = {
   spear: { id: 'projectiles/laser-bolt', options: { palette: JADE }, fps: 20 },
   /** 운석: a fire tail */
   meteor: { id: 'fire/fireball', fps: 20 },
-  /** 엽전 and 점수 두 배: gold rays */
+  /** 점수 두 배: gold rays */
   gold: { id: 'holy/sunburst', fps: 8 },
   /** 무아지경: sky-blue rays */
   cyan: { id: 'holy/sunburst', options: { palette: CYAN }, fps: 8 },

@@ -94,15 +94,8 @@ export function drawPickup(p) {
     grow = Math.min(1, 0.55 + (10 - p.life) * 3),
     lean = Math.max(-0.5, Math.min(0.5, (p.vx || 0) / 340));
   ctx.scale(grow, grow);
-  // rays behind it: gold for 엽전 and 점수 두 배, sky blue for 무아지경, jade for 자석 (render/glows.ts)
-  drawGlow(
-    coin || p.kind === 'double' ? 'gold' : p.kind === 'magnet' ? 'jade' : 'cyan',
-    0,
-    0,
-    coin ? 0.69 : 1.28,
-    0,
-    p.phase,
-  );
+  // rays behind an item: gold for 점수 두 배, sky blue for 무아지경, jade for 자석 (render/glows.ts); none behind 엽전
+  if (!coin) drawGlow(p.kind === 'double' ? 'gold' : p.kind === 'magnet' ? 'jade' : 'cyan', 0, 0, 1.28, 0, p.phase);
   ctx.strokeStyle = coin ? '#ffdf80' : (tint?.line ?? '#c9c0ff');
   ctx.fillStyle = coin ? '#37280be0' : (tint?.fill ?? '#201e48dc');
   ctx.lineWidth = coin ? 2 : 2.5;

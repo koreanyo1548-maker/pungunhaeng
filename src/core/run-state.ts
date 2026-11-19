@@ -16,6 +16,8 @@ export function createRunState(meta: Meta): RunState {
     magnet: 0,
     double: 0,
     hyperDrops: 0,
+    /** items and 보물상자 that came this run (for the balance measurements) */
+    drops: { hyper: 0, magnet: 0, double: 0, chest: 0 },
     combo: 0,
     comboTimer: 0,
     stage: 1,
@@ -23,7 +25,8 @@ export function createRunState(meta: Meta): RunState {
     phase: 'flight',
     phaseTimer: 0,
     rowTimer: 0.8,
-    meteorTimer: 8,
+    /** the first 운석 (then BASELINE.meteor.every) */
+    meteorTimer: 25,
     elapsed: 0,
     cleared: 0,
     trailTimer: 0,
@@ -52,6 +55,10 @@ export function createRunState(meta: Meta): RunState {
     unlocked: [],
     bond: {},
     gauge: 0,
+    /** all the gauge this run's kills gave (for the balance measurements) */
+    gaugeEarned: 0,
+    /** the score at the end of the run before the 선 bonus (for the measurements) */
+    baseScore: 0,
     meetReady: false,
     encounters: 0,
     passers: 0,

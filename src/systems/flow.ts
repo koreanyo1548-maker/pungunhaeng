@@ -10,6 +10,8 @@ import { $, PLAYER_Y, W } from '../core/dom';
 import { clamp, fmt, josa } from '../core/math';
 import { settle } from '../data/meta';
 import { STAGES, STAGE_COUNT } from '../data/stages';
+import { BASELINE, tierHealth } from '../data/baseline';
+import { TUNE } from '../data/tune';
 import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
 import { VICTORY_SCORE, runBonus } from './score';
@@ -38,16 +40,12 @@ export function difficulty() {
 export function stageDistance() {
   return region().distance;
 }
-/** distance multiplier of enemy health at `metres` run: 1 at the start, + `perKm` per 1,000 m */
-export function healthScale(metres = G.state.distance) {
-  return 1 + (region().health.perKm * Math.max(0, metres)) / 1000;
-}
-/** an enemy's health: starting health × distance multiplier, rounded to a whole number (at least 1) */
-export const enemyHealth = (start: number) => Math.max(1, Math.round(start * healthScale()));
-/** the boss's health: rank 0 health at the stage's distance × the boss multiplier */
+/** health of an enemy tier (1 to 6): the shots of the reference growth (Lv1, no 인연) × its attack. No distance
+ *  multiplier: health grows only with the tier ladder (systems/ladder.ts). */
+export const enemyHealth = (tier: number) => tierHealth(tier, TUNE.attack);
+/** the boss's health: BASELINE.bossSeconds of the reference basic attack (2 shots a volley) */
 export function bossHealth() {
-  const h = region().health;
-  return Math.max(1, Math.round(h.ranks[0] * healthScale(stageDistance()) * h.boss));
+  return Math.round((BASELINE.bossSeconds * TUNE.attack * 2) / BASELINE.fireInterval);
 }
 export function start() {
   if (!G.loaded) return;
@@ -97,8 +95,9 @@ export function end(victory = false) {
   G.state.victory = victory;
   if (victory) G.state.score += VICTORY_SCORE;
   closeQuest();
-  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 최대 점수 add to the 엽전 left, which go to
+  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 기준 점수 add to the 엽전 left, which go to
   // the bank with the clear bonus; beating the boss opens the next stage.
+  G.state.baseScore = Math.round(G.state.score);
   const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil);
   G.state.score = Math.round(G.state.score * (1 + b.scoreBonus));
   const record = G.state.score > profile.best;
@@ -111,7 +110,7 @@ export function end(victory = false) {
   profile.coins += banked;
   saveProfile();
   $('settle').innerHTML =
-    `최대 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
+    `기준 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
     (b.scoreBonus ? ` · 선 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
     `<br>남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
     (b.coinBonus

@@ -10,7 +10,7 @@ import { W, reduced } from '../core/dom';
 import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
-import { dropLoot } from './pickups';
+import { dropGems, dropLoot } from './pickups';
 import { hyperQuestKill } from '../systems/quest';
 import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
@@ -20,29 +20,53 @@ import { hasSkill } from '../systems/skill-state';
 import { addKill } from '../systems/encounter';
 import { bondArmor } from '../data/skills';
 import { difficulty, enemyHealth, region } from '../systems/flow';
+import { slotTier, strongTier, weakTier } from '../systems/ladder';
+import { BASELINE } from '../data/baseline';
 import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero-effects';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
+  // the tier ladder (systems/ladder.ts): the weak slot is the step's tier, the others k, k+1 or k+2; now and then a
+  // slot holds a 보물상자 instead (as strong as the step's strong tier, it bursts into 보석)
   const id = ++G.rowId,
     weak = Math.floor(rnd(0, 5)),
-    maxRank = Math.min(3, G.state.stage);
+    chestSlot = random() < BASELINE.chest.perRow ? (weak + 1 + Math.floor(rnd(0, 4))) % 5 : -1;
   G.rows.set(id, { remaining: 5, missed: false });
+  if (chestSlot >= 0) G.state.drops.chest++;
   for (let i = 0; i < 5; i++) {
-    const rank =
-        i === weak
-          ? 0
-          : random() < (G.state.stage === 1 ? TUNE.earlyWeak : G.state.stage === 2 ? TUNE.secondWeak : 0.25)
-            ? 0
-            : Math.max(1, maxRank - (random() < 0.45 ? 1 : 0)),
+    const tier = i === weak ? weakTier() : slotTier(),
+      rank = tier - 1,
       r = RANKS[rank],
-      hp = enemyHealth(region().health.ranks[rank]),
+      hp = enemyHealth(tier),
       stagger = G.state.stage % 3 === 0 ? Math.abs(i - 2) * 22 : G.state.stage % 3 === 2 ? i * 16 : 0;
+    if (i === chestSlot) {
+      const ch = enemyHealth(strongTier());
+      G.enemies.push({
+        x: 48 + i * 96,
+        baseX: 48 + i * 96,
+        y: -70 - stagger,
+        hp: ch,
+        maxHp: ch,
+        type: 0,
+        rank: strongTier() - 1,
+        tier: strongTier(),
+        chest: true,
+        size: 88,
+        r: 28,
+        color: '#e8b45a',
+        phase: rnd(0, 6.28),
+        hit: 0,
+        row: id,
+        weak: false,
+        dead: false,
+      });
+      continue;
+    }
+    // 바위 (산길 terrain, not on S1) and 관문 stones: as strong as the step's strong tier
     const terrain = region().terrain,
-      rockChance =
-        terrain === 'rock' ? (G.state.stage === 1 ? TUNE.earlyRock : TUNE.rockChance) : terrain === 'gate' ? 0.15 : 0;
+      rockChance = G.state.stage === 1 ? 0 : terrain === 'rock' ? TUNE.rockChance : terrain === 'gate' ? 0.15 : 0;
     if (i !== weak && random() < rockChance) {
-      const rh = enemyHealth(region().health.rock);
+      const rh = enemyHealth(strongTier());
       G.enemies.push({
         x: 48 + i * 96,
         baseX: 48 + i * 96,
@@ -51,6 +75,7 @@ export function spawnRow() {
         maxHp: rh,
         type: 0,
         rank: 2,
+        tier: strongTier(),
         rock: true,
         size: 74,
         r: 27,
@@ -72,6 +97,7 @@ export function spawnRow() {
       maxHp: hp,
       type: r.type,
       rank,
+      tier,
       size: r.size,
       r: r.r,
       color: r.color,
@@ -82,6 +108,15 @@ export function spawnRow() {
       dead: false,
     });
   }
+}
+/** The end of 무아지경: the whole screen bursts, and every enemy on it (not the boss) turns into 엽전. */
+export function hyperFinish() {
+  if (G.mode !== 'play') return;
+  for (const e of G.enemies) if (!e.dead && !e.boss && e.y > -40) kill(e, true);
+  G.flash = Math.max(G.flash, 0.35);
+  G.shake = Math.max(G.shake, 8);
+  ring(G.player.x, G.player.y, '#fff2b0', 20, 520, 0.55);
+  tone(120, 0.5, 'sawtooth', 0.16, 600);
 }
 export function resolveRow(e, missed = false) {
   const row = G.rows.get(e.row);
@@ -168,7 +203,8 @@ export function kill(e, byHyper = false) {
     addKill(e);
     onComboKill();
     // 무아지경 kills drop 엽전 only: an item from them could chain 무아지경 without end
-    dropLoot(e.x, e.y, coinsForKill(), !byHyper);
+    if (e.chest) dropGems(e.x, e.y);
+    else dropLoot(e.x, e.y, coinsForKill(), !byHyper);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);
     if (G.state.combo % 10 === 0) {
@@ -213,10 +249,10 @@ export function hitEnemy(e, damage, skill?: string) {
 }
 export function meteor() {
   const x = clamp(G.player.x + rnd(-28, 28), 30, W - 30);
-  G.hazards.push({ kind: 'meteor', x, y: -70, warn: 1.05, r: 23, vy: 620 });
+  G.hazards.push({ kind: 'meteor', x, y: -70, warn: BASELINE.meteor.warn, r: 23, vy: 620 });
   if (G.state.stage >= 2) {
     const other = x < W / 2 ? W - 65 : 65;
-    G.hazards.push({ kind: 'meteor', x: other, y: -100, warn: 1.4, r: 23, vy: 620 });
+    G.hazards.push({ kind: 'meteor', x: other, y: -100, warn: BASELINE.meteor.warn + 0.35, r: 23, vy: 620 });
   }
   tone(340, 0.14, 'triangle', 0.14, 280);
 }

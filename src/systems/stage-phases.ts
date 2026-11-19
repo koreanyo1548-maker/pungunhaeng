@@ -12,9 +12,10 @@ import { chime } from '../core/audio';
 import { josa, rnd } from '../core/math';
 import { bossSpawn, createBoss } from '../entities/boss';
 import { meteor, spawnRow, spear } from '../entities/enemies';
-import { HYPER_SPEED, rowGap, runSpeed } from './score';
+import { rowGap } from './score';
+import { BASELINE } from '../data/baseline';
 import { announce } from '../ui/hud';
-import { difficulty, region, stageDistance } from './flow';
+import { region, stageDistance } from './flow';
 import { profile } from '../core/profile';
 import { STAGES, STAGE_COUNT } from '../data/stages';
 import { done } from './scene-flow';
@@ -72,18 +73,19 @@ export function updatePhase(dt: number): boolean {
 
 function updateFlight(dt) {
   G.state.stageTime += dt;
-  // rows come by distance in 무아지경: it runs HYPER_SPEED, so its rows come that much faster and it cuts through
-  // as many enemies a metre as running does (its kills fill the gauge, score and drop 엽전 as usual)
-  G.state.rowTimer -= dt * (G.state.hyper > 0 ? HYPER_SPEED / runSpeed(G.state.stage) : 1);
+  // rows come by distance in 무아지경: it runs BASELINE.hyper.speed times faster, so its rows come that much faster
+  // and it cuts through as many enemies a metre as running does (its kills fill the gauge, score and drop 엽전)
+  G.state.rowTimer -= dt * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
   G.state.meteorTimer -= dt;
   if (G.state.rowTimer <= 0) {
     spawnRow();
-    // 2 s a row at the start, 0.8 s at the boss: the rows come faster the farther the run gets
+    // BASELINE.rowGap: 1.7 s a row at the start, 1.45 s at the boss
     G.state.rowTimer = rowGap(G.state.distance, stageDistance());
   }
   if (G.state.hyper <= 0 && G.state.meteorTimer <= 0) {
+    // 운석 is an event: a random wait of BASELINE.meteor.every seconds (about 30 on average)
     meteor();
-    G.state.meteorTimer = Math.max(3.7, 6 - difficulty() * 0.28);
+    G.state.meteorTimer = rnd(BASELINE.meteor.every[0], BASELINE.meteor.every[1]);
   }
   const terrain = region().terrain;
   if ((terrain === 'bamboo' || terrain === 'gate') && G.state.hyper <= 0) {

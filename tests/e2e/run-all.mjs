@@ -169,7 +169,7 @@ async function scenarioA(browser, stage, seed) {
     `stage box: gauge and distance (${hud})`,
   );
 
-  // attack and health are whole numbers, the same on every stage; enemies get tougher with distance only
+  // attack and health are whole numbers from the tier ladder (docs/balance-baseline.md): no distance multiplier
   const stats = await g.eval(() => {
     const G = window.__g,
       d = G.state.distance,
@@ -183,14 +183,9 @@ async function scenarioA(browser, stage, seed) {
   });
   check(
     f,
-    JSON.stringify(stats.start) ===
-      JSON.stringify({
-        attack: 10,
-        ranks: [5, 14, 25, 40],
-        rock: stage === 0 ? 18 : 33,
-        boss: stage === 0 ? 1160 : 1269,
-      }) && JSON.stringify(stats.at10km.ranks) === '[8,21,38,60]',
-    `attack 10, health from the stage table, +5% per 1,000 m (×1.5 at 10 km), the boss at the stage's distance (${JSON.stringify(stats)})`,
+    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 100, 180, 320, 580, 1050], boss: 4800 }) &&
+      JSON.stringify(stats.at10km) === JSON.stringify(stats.start),
+    `attack 10, tier health 1·10·18·32·58·105 shots, boss 30 s, no distance multiplier (${JSON.stringify(stats)})`,
   );
   await g.seconds(3);
   const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));
@@ -495,20 +490,20 @@ async function scenarioD(browser, seed) {
   const g = await openGame(file, { browser, seed });
   await setup(g, 0);
   await g.eval(() => window.__g.god());
-  // a 필살기 that kills 300 at once (S1 gauge 90): one 만남 waits, the carry stops below full
+  // a 필살기 that kills 300 at once (S1 gauge 36): one 만남 waits, the carry stops below full
   await g.eval(() => {
     window.__g.state.gauge = 0;
   });
   await blastKills(g, 300);
   let s = await g.state(S);
-  check(f, s.meetReady && s.gauge === 89, `one 만남 waits, the carry stays below full (gauge ${s.gauge})`);
+  check(f, s.meetReady && s.gauge === 35, `one 만남 waits, the carry stays below full (gauge ${s.gauge})`);
   check(f, s.bombs === 0, `필살기 used: count 1 → 0, no charge (${s.bombs})`);
   await g.step(2);
   check(f, (await g.mode()) === 'choice', 'the waiting 만남 opens at the end of the step');
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
-  check(f, s.gauge === 89 && !s.meetReady, `the carry is kept for the next gauge (${s.gauge})`);
+  check(f, s.gauge === 35 && !s.meetReady, `the carry is kept for the next gauge (${s.gauge})`);
   // 정요란 fills it 1.5× while she fights
   await g.eval(() => {
     const st = window.__g.state;
@@ -728,7 +723,7 @@ async function scenarioE(browser, seed) {
   check(f, first === '행인', `nothing unlocked yet: the first 만남 is a passer-by (${first})`);
   await g.act(0);
   await g.step(2);
-  // 선 1 (the help) and 악 2: the score gets +5%, the 엽전 banked +10% (a short run reaches no 최대 점수 tier)
+  // 선 1 (the help) and 악 2: the score gets +5%, the 엽전 banked +10% (a short run reaches no 기준 점수 tier)
   await g.eval(() => {
     window.__g.state.evil = 2;
     window.__g.state.coins = 700;
@@ -736,16 +731,22 @@ async function scenarioE(browser, seed) {
     window.__g.player.inv = 0;
   });
   await waitForDeath(g);
-  const left = await g.state(() => window.__g.state.coins);
+  // the 만남 answered while dying may add 선 or 악: read the points the run ended with
+  const end = await g.state(() => ({
+    coins: window.__g.state.coins,
+    good: window.__g.state.good,
+    evil: window.__g.state.evil,
+  }));
+  const left = end.coins;
   p = await P();
   const settleText = await g.eval(() => document.getElementById('settle').textContent);
   check(
     f,
-    p.coins === Math.floor(left * 1.1) &&
+    p.coins === Math.floor(left * (1 + 0.05 * end.evil)) &&
       left >= 700 &&
-      /선 1 점수 \+5%/.test(settleText) &&
-      /악 2 \+10%/.test(settleText),
-    `엽전 left at the end is banked with 악 +10%, the score gets 선 +5% (${left} → bank ${p.coins}; ${settleText})`,
+      new RegExp(`선 ${end.good} 점수 \\+${end.good * 5}%`).test(settleText) &&
+      new RegExp(`악 ${end.evil} \\+${end.evil * 5}%`).test(settleText),
+    `엽전 left at the end is banked with 악 +5% each, the score gets 선 +5% each (${JSON.stringify(end)} → bank ${p.coins}; ${settleText})`,
   );
   // 뽑기 from the result screen: one draw, then ten
   await g.eval(() => document.getElementById('resultGacha').click());
@@ -1120,7 +1121,7 @@ async function scenarioG(browser, seed) {
 
 // Scenario H: 의뢰 targets grow with each 의뢰 of the same 인연 (1/3, 2/3, all), the row gap (2 s → 0.8 s with
 // distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (10 s, retaken = full time), one
-// 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 최대 점수 of every stage.
+// 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 기준 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
@@ -1149,14 +1150,14 @@ async function scenarioH(browser, seed) {
   );
   // row gap: 2 s at the start, 0.8 s at the boss, even in between; the real timer follows it
   const gaps = await g.eval(() => [0, 6000, 12000, 20000].map(m => window.__g.rowGap(m, 12000)));
-  check(f, gaps.join() === '2,1.4,0.8,0.8', `row gap 2 → 0.8 s with distance (${gaps})`);
+  check(f, gaps.join() === '1.7,1.575,1.45,1.45', `row gap 1.7 → 1.45 s with the stage's progress (${gaps})`);
   await g.eval(() => {
-    window.__g.state.distance = 6000;
+    window.__g.state.distance = window.__g.stageDistance / 2;
     window.__g.state.rowTimer = 0;
   });
   await g.step(1);
   const rowTimer = await g.state(() => window.__g.state.rowTimer);
-  check(f, Math.abs(rowTimer - 1.4) < 0.02, `the row timer at 6,000 m of 12,000 m is 1.4 s (${rowTimer})`);
+  check(f, Math.abs(rowTimer - 1.575) < 0.02, `the row timer half way through the stage is 1.575 s (${rowTimer})`);
   // pickups: no magnet by default; a pickup pops up, then falls, and is not pulled toward the hero
   const P = () =>
     g.state(() => {
@@ -1281,6 +1282,7 @@ async function scenarioH(browser, seed) {
     s.distance = 3000;
     s.rowTimer = 0;
     s.gauge = 0;
+    s.gaugeEarned = 0;
     s.stats = {};
     s.hyper = 2;
   });
@@ -1296,14 +1298,14 @@ async function scenarioH(browser, seed) {
   }
   const h1 = await g.state(() => ({
     kills: window.__g.state.kills,
-    gauge: window.__g.state.gauge,
+    gauge: window.__g.state.gaugeEarned,
     stats: window.__g.state.stats,
   }));
   const hyperKills = h1.kills - k0;
   check(
     f,
     hyperKills >= 15 &&
-      h1.gauge === hyperKills &&
+      h1.gauge >= hyperKills &&
       h1.stats.nearKill >= 10 &&
       h1.stats.graze === h1.stats.nearKill &&
       items.length === 0 &&
@@ -1311,12 +1313,195 @@ async function scenarioH(browser, seed) {
     `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items, no 근접 × (${nearLabels} ` +
       `${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
   );
-  // 최대 점수 of each stage: whole thousands, longer and harder stages give more
-  const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.maxScore(n)));
-  check(f, max.every(m => m > 0 && m % 1000 === 0) && max[5] > max[0], `최대 점수 per stage (${max})`);
+  // 기준 점수 of each stage: whole thousands
+  const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.referenceScore(n)));
+  check(
+    f,
+    max.every(m => m > 0 && m % 1000 === 0),
+    `기준 점수 per stage (${max})`,
+  );
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   await g.page.close();
-  return { name: `H seed ${seed}`, failures: f, log: [`최대 점수 ${max.join(' · ')}`] };
+  return { name: `H seed ${seed}`, failures: f, log: [`기준 점수 ${max.join(' · ')}`] };
+}
+
+// Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
+// (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 1.4 s ending in a screen burst that turns
+// the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
+// the 운석 warned 2 s ahead, and the gauge filled by the kill's tier.
+async function scenarioI(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed });
+  await setup(g, 0);
+  await g.eval(() => window.__g.god());
+  const rows = async p =>
+    g.eval(async p => {
+      const G = window.__g;
+      G.state.distance = p * G.stageDistance;
+      G.state.gauge = -1e6;
+      G.enemies.length = 0;
+      G.state.rowTimer = 0;
+      return null;
+    }, p);
+  // the ladder: step 1 has tiers 1 to 3 with the weak slot at tier 1; step 6 has the weak slot at tier 6
+  const sample = async p => {
+    const seen = { weak: new Set(), all: new Set() };
+    for (let i = 0; i < 6; i++) {
+      await rows(p);
+      await g.step(1);
+      const es = await g.state(() => window.__g.enemies.filter(e => !e.chest).map(e => ({ t: e.tier, w: e.weak })));
+      for (const e of es) {
+        seen.all.add(e.t);
+        if (e.w) seen.weak.add(e.t);
+      }
+    }
+    return { weak: [...seen.weak].sort().join(), all: [...seen.all].sort().join() };
+  };
+  const first = await sample(0.03),
+    last = await sample(0.97);
+  check(
+    f,
+    first.weak === '1' &&
+      [...first.all].every(t => t === ',' || '123'.includes(t)) &&
+      last.weak === '6' &&
+      last.all === '6',
+    `tier ladder: step 1 weak 1 (tiers ${first.all}), step 6 weak 6 (tiers ${last.all})`,
+  );
+  // speed: rows come down twice as fast at the boss as at the start
+  const fall = async p => {
+    await rows(p);
+    // no shots: a kill's hit-stop would slow the clock
+    await g.eval(() => (window.__g.player.fire = 1e9));
+    await g.step(1);
+    const a = await g.state(() => ({ y: window.__g.enemies[0]?.y, t: window.__g.state.elapsed }));
+    await g.step(30);
+    const b = await g.state(() => ({ y: window.__g.enemies[0]?.y, t: window.__g.state.elapsed }));
+    return (b.y - a.y) / (b.t - a.t);
+  };
+  const v0 = await fall(0),
+    v1 = await fall(0.995);
+  await g.eval(() => (window.__g.player.fire = 0));
+  check(
+    f,
+    Math.abs(v0 - 592) < 20 && Math.abs(v1 / v0 - 2) < 0.05,
+    `descent ${Math.round(v0)} → ${Math.round(v1)} px/s`,
+  );
+  // 무아지경: 1.4 s, then the screen bursts: every enemy on it turns into 엽전
+  await rows(0.5);
+  await g.step(2);
+  await g.eval(() => {
+    const pl = window.__g.player;
+    window.__g.addPickup('hyper', pl.x, pl.y);
+  });
+  await g.step(1);
+  const hyper = await g.state(() => window.__g.state.hyper);
+  await g.eval(() => (window.__g.state.rowTimer = 99));
+  await g.eval(() => {
+    // a row just entering the screen when 무아지경 ends
+    window.__g.state.hyper = 0.02;
+    for (const e of window.__g.enemies) e.y = 120;
+  });
+  const before = await g.state(() => window.__g.enemies.filter(e => !e.dead).length);
+  await g.step(3);
+  const after = await g.state(() => ({
+    alive: window.__g.enemies.filter(e => !e.dead && !e.boss && e.y > -40).length,
+    coins: window.__g.pickups.filter(p => p.kind === 'coin').length,
+  }));
+  check(
+    f,
+    Math.abs(hyper - 1.4) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
+    `무아지경 1.4 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
+  );
+  // the 처치 게이지 fills by the kill's tier
+  const worth = await g.eval(() => {
+    const G = window.__g,
+      out = [];
+    for (const tier of [1, 4, 6]) {
+      G.state.gauge = 0;
+      G.state.meetReady = false;
+      const e = {
+        x: 240,
+        y: 200,
+        hp: 1,
+        maxHp: 1,
+        type: 1,
+        rank: tier - 1,
+        tier,
+        r: 22,
+        row: -1,
+        dead: false,
+        size: 80,
+        color: '#fff',
+        phase: 0,
+        hit: 0,
+      };
+      G.enemies.push(e);
+      G.kill(e);
+      out.push(G.state.gauge);
+    }
+    G.state.gauge = 0;
+    return out;
+  });
+  check(f, worth.join() === '1,4,6', `a kill fills the gauge by its tier (${worth})`);
+  // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
+  await g.eval(() => {
+    const G = window.__g;
+    G.enemies.length = 0;
+    G.pickups.length = 0;
+    const e = {
+      x: 240,
+      y: 200,
+      hp: 1,
+      maxHp: 1,
+      type: 0,
+      rank: 1,
+      chest: true,
+      r: 28,
+      row: -1,
+      dead: false,
+      size: 88,
+      color: '#fff',
+      phase: 0,
+      hit: 0,
+    };
+    G.enemies.push(e);
+    G.kill(e);
+  });
+  const gems = await g.state(() => window.__g.pickups.filter(p => p.kind === 'gem').length);
+  const c0 = await g.state(() => window.__g.state.coins);
+  await g.eval(() => {
+    const pl = window.__g.player;
+    window.__g.pickups.length = 0;
+    window.__g.addPickup('gem', pl.x, pl.y);
+  });
+  await g.step(1);
+  const c1 = await g.state(() => window.__g.state.coins);
+  check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
+  // items hang at the top of their pop before they fall; 엽전 do not
+  await g.eval(() => {
+    window.__g.pickups.length = 0;
+    window.__g.addPickup('double', 60, 400);
+    window.__g.addPickup('coin', 420, 400);
+  });
+  let hang = 0;
+  for (let i = 0; i < 90; i++) {
+    await g.step(1);
+    const vy = await g.state(() => window.__g.pickups.find(p => p.kind === 'double')?.vy);
+    if (vy === 0) hang++;
+  }
+  check(f, hang >= 24 && hang <= 30, `an item hangs about 0.45 s at the top (${hang} frames)`);
+  // 운석: warned 2 s ahead
+  const warn = await g.eval(() => {
+    window.__g.state.meteorTimer = 0;
+    window.__g.hazards.length = 0;
+    return null;
+  });
+  await g.step(1);
+  const meteor = await g.state(() => window.__g.hazards.find(h => h.kind === 'meteor')?.warn);
+  check(f, warn === null && meteor > 1.9 && meteor <= 2, `운석 warned 2 s ahead (${meteor})`);
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return { name: `I seed ${seed}`, failures: f, log: [`descent ${Math.round(v0)} → ${Math.round(v1)} px/s`] };
 }
 
 /** Opens the detail popup of the i-th tile on the open collection screen, reads it, and closes it. */
@@ -1344,6 +1529,7 @@ results.push(await scenarioE(browser, 606));
 results.push(await scenarioF(browser, 707));
 results.push(await scenarioG(browser, 808));
 results.push(await scenarioH(browser, 909));
+results.push(await scenarioI(browser, 1010));
 await browser.close();
 
 let failed = 0;

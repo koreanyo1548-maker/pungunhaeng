@@ -4,6 +4,7 @@
 - Proposals do not authorize implementation: implement only what the user asked for.
 - Preserve the existing gameplay rules, collision geometry, attack cadence and seeded simulation when polishing presentation, unless a gameplay change is requested.
 - Keep gameplay RNG separate from effect RNG.
+- For art tasks, refer to [풍운행 아트 스타일 기준](docs/art-style-reference.md) for the existing art references and in-game review criteria.
 - Validate relevant changes with typecheck, builds and the existing flow/UI tests. Single-file sharing uses `npm run build:single`.
 
 # Shared workflow (Codex and Claude)

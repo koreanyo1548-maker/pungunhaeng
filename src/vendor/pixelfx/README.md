@@ -6,4 +6,5 @@ category `_lib.js`) are copied. Files are unmodified except `core/painter.js`, w
 `glowRing` clip their loops to the frame (and `glow` inlines `add`); marked `[pungunhaeng patch]`, same output. The gallery and its Patch Pixel font are not included.
 
 To add an effect: copy `src/fx/<category>/<name>.js` (and that category's `_lib.js` if missing) from the same
-commit, then register it in `effects.js`. Used by `src/render/pfx.ts`.
+commit, then register it in `effects.js`. Used by `src/render/pfx.ts` (one-shot effects) and `src/render/glows.ts`
+(looping glows rendered to frames once: `fire/fireball`, `projectiles/laser-bolt`, `holy/sunburst`).

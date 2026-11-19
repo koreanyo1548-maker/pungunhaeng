@@ -16,6 +16,7 @@ import { VICTORY_SCORE, runBonus } from './score';
 import { VIRTUE_BONUS } from './alignment';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
+import { prepareGlows } from '../render/glows';
 
 export function movementTier() {
   return G.state && G.mode !== 'title' ? region().world : 0;
@@ -157,6 +158,8 @@ export function home() {
 }
 export function beginStage() {
   const r = region();
+  // the looping glows behind 죽창, 운석, 엽전 and items are rendered to frames once (render/glows.ts)
+  prepareGlows();
   announce('S' + G.state.stage + ' · ' + r.name, josa(r.boss, '을', '를') + ' 찾아서', r.hint, r.color, 2.4);
   chime();
   syncHUD();

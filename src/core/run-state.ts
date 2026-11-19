@@ -16,6 +16,7 @@ export function createRunState(meta: Meta): RunState {
     magnet: 0,
     double: 0,
     hyperDrops: 0,
+    hyperDropReducedUntil: 0,
     /** items and 보물상자 that came this run (for the balance measurements) */
     drops: { hyper: 0, magnet: 0, double: 0, chest: 0 },
     combo: 0,

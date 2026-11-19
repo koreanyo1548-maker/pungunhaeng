@@ -54,12 +54,19 @@ export function addPickup(kind: PickupKind, x: number, y: number) {
 export function dropLoot(x: number, y: number, coins: number, items = true) {
   for (let i = 0; i < coins; i++) addPickup('coin', x + rnd(-15, 15), y + rnd(-10, 10));
   if (!items) return;
-  for (const kind of ITEMS)
-    if (random() < BASELINE.itemChance[kind]) {
-      addPickup(kind, x, y);
-      G.state.drops[kind]++;
-      if (kind === 'hyper') G.state.hyperDrops++;
+  for (const kind of ITEMS) {
+    const chance =
+      kind === 'hyper' && G.state.elapsed < G.state.hyperDropReducedUntil
+        ? BASELINE.hyper.reducedDropChance
+        : BASELINE.itemChance[kind];
+    if (random() >= chance) continue;
+    addPickup(kind, x, y);
+    G.state.drops[kind]++;
+    if (kind === 'hyper') {
+      G.state.hyperDrops++;
+      G.state.hyperDropReducedUntil = G.state.elapsed + BASELINE.hyper.reducedDropSeconds;
     }
+  }
 }
 /** A 보물상자 bursts into BASELINE.chest.gems 보석 at (x, y). */
 export function dropGems(x: number, y: number) {

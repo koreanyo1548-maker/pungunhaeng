@@ -8,18 +8,18 @@
     "resampling": "LANCZOS; lossless encoding relative to the resized image"
   },
   "fileCount": 41,
-  "originalBytes": 72487623,
-  "webpBytes": 26697468,
-  "savedBytes": 45790155,
-  "reductionPercent": 63.17,
+  "originalBytes": 72408323,
+  "webpBytes": 26709180,
+  "savedBytes": 45699143,
+  "reductionPercent": 63.11,
   "build": {
     "fileCount": 40,
     "resizedCount": 36,
-    "originalPngBytes": 70835529,
+    "originalPngBytes": 70756229,
     "fullsizeWebpBytes": 46042982,
-    "mobileWebpBytes": 25676536,
-    "savedBytes": 20366446,
-    "reductionPercent": 44.23,
+    "mobileWebpBytes": 25688248,
+    "savedBytes": 20354734,
+    "reductionPercent": 44.21,
     "decodedPixelsBefore": 62917165,
     "decodedPixelsAfter": 32777808
   },
@@ -393,11 +393,11 @@
       "height": 512,
       "includedInBuild": true,
       "resized": true,
-      "originalBytes": 1640782,
-      "webpBytes": 134348,
+      "originalBytes": 1561482,
+      "webpBytes": 146060,
       "fullsizeWebpBytes": 1035574,
-      "sourceSha256": "86cec24e4de2f01774120fab941cba076cf122bc9ccba591a0badd1560e802c8",
-      "webpSha256": "bf67ce9dea0b3cf78a6f8add5da7df478f3df6d98023567de36b433ce1f53722"
+      "sourceSha256": "7e1d391bd50910b03e31a3389b290a46160fa771609a1cbf661e73a4bdeb4ed6",
+      "webpSha256": "1e35f32ee0dbf8ae620d8315458ecf7b6deb1af833cb6048b6d1845367da329a"
     },
     {
       "source": "art/originals/simma.png",

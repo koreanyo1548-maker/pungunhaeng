@@ -30,6 +30,8 @@ export async function loadPortraitProps() {
     [125, 595, 285, 295],
     [610, 575, 325, 325],
     [1120, 590, 285, 305],
+    [40, 432, 132, 132], // magnet
+    [260, 432, 132, 132], // double score
   ];
   rects.forEach(r => propArt.push(cropProp(props, r, imageDimensions['props.webp'].source)));
   for (let i = 0; i < 2; i++) {

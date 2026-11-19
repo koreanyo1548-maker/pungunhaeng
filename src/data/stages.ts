@@ -18,7 +18,8 @@ export interface Stage {
   patterns: string[];
   /** metres to run before the boss comes (data/baseline.ts `stageLength`: about 3 minutes with 무아지경) */
   distance: number;
-  /** kills that fill the 처치 게이지 (a 만남): set from the bot's kills per stage so a run has about 6 (provisional) */
+  /** the 처치 게이지 (a 만남), in tiers of the kills (systems/encounter.ts): set from the invincible bot's gauge per
+   *  run so the reference growth meets about 6 times a run (S2~S6 provisional) */
   gauge: number;
 }
 
@@ -36,7 +37,7 @@ export const STAGES: Stage[] = [
     hint: '갈수록 거세진다 · 약한 틈을 찾아 뚫어라',
     patterns: ['fan', 'dive', 'lanes'],
     distance: stageLength(1),
-    gauge: 90,
+    gauge: 36,
   },
   {
     name: '청죽림',
@@ -48,7 +49,7 @@ export const STAGES: Stage[] = [
     hint: '죽창이 쏟아진다 · 스치며 흘려라',
     patterns: ['lanes', 'fan', 'dive'],
     distance: stageLength(2),
-    gauge: 75,
+    gauge: 20,
   },
   {
     name: '폐사',
@@ -60,7 +61,7 @@ export const STAGES: Stage[] = [
     hint: '향로의 연기가 짙다 · 적이 느리게 몰려온다',
     patterns: ['dive', 'lanes', 'fan'],
     distance: stageLength(3),
-    gauge: 65,
+    gauge: 37,
   },
   {
     name: '부유암',
@@ -72,7 +73,7 @@ export const STAGES: Stage[] = [
     hint: '떠다니는 바위섬 · 부수며 나아가라',
     patterns: ['fan', 'dive', 'lanes'],
     distance: stageLength(4),
-    gauge: 55,
+    gauge: 34,
   },
   {
     name: '유운봉',
@@ -85,7 +86,7 @@ export const STAGES: Stage[] = [
     hint: '바람 칼날이 떨어진다 · 스치며 흘려라',
     patterns: ['lanes', 'fan', 'dive'],
     distance: stageLength(5),
-    gauge: 60,
+    gauge: 30,
   },
   {
     name: '천마성',
@@ -97,7 +98,7 @@ export const STAGES: Stage[] = [
     hint: '기류가 거세다 · 적이 느리게 몰려온다',
     patterns: ['dive', 'lanes', 'fan'],
     distance: stageLength(6),
-    gauge: 60,
+    gauge: 44,
   },
 ];
 export const STAGE_COUNT = STAGES.length;

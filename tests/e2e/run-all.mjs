@@ -490,20 +490,20 @@ async function scenarioD(browser, seed) {
   const g = await openGame(file, { browser, seed });
   await setup(g, 0);
   await g.eval(() => window.__g.god());
-  // a 필살기 that kills 300 at once (S1 gauge 90): one 만남 waits, the carry stops below full
+  // a 필살기 that kills 300 at once (S1 gauge 36): one 만남 waits, the carry stops below full
   await g.eval(() => {
     window.__g.state.gauge = 0;
   });
   await blastKills(g, 300);
   let s = await g.state(S);
-  check(f, s.meetReady && s.gauge === 89, `one 만남 waits, the carry stays below full (gauge ${s.gauge})`);
+  check(f, s.meetReady && s.gauge === 35, `one 만남 waits, the carry stays below full (gauge ${s.gauge})`);
   check(f, s.bombs === 0, `필살기 used: count 1 → 0, no charge (${s.bombs})`);
   await g.step(2);
   check(f, (await g.mode()) === 'choice', 'the waiting 만남 opens at the end of the step');
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
-  check(f, s.gauge === 89 && !s.meetReady, `the carry is kept for the next gauge (${s.gauge})`);
+  check(f, s.gauge === 35 && !s.meetReady, `the carry is kept for the next gauge (${s.gauge})`);
   // 정요란 fills it 1.5× while she fights
   await g.eval(() => {
     const st = window.__g.state;
@@ -731,16 +731,22 @@ async function scenarioE(browser, seed) {
     window.__g.player.inv = 0;
   });
   await waitForDeath(g);
-  const left = await g.state(() => window.__g.state.coins);
+  // the 만남 answered while dying may add 선 or 악: read the points the run ended with
+  const end = await g.state(() => ({
+    coins: window.__g.state.coins,
+    good: window.__g.state.good,
+    evil: window.__g.state.evil,
+  }));
+  const left = end.coins;
   p = await P();
   const settleText = await g.eval(() => document.getElementById('settle').textContent);
   check(
     f,
-    p.coins === Math.floor(left * 1.1) &&
+    p.coins === Math.floor(left * (1 + 0.05 * end.evil)) &&
       left >= 700 &&
-      /선 1 점수 \+5%/.test(settleText) &&
-      /악 2 \+10%/.test(settleText),
-    `엽전 left at the end is banked with 악 +10%, the score gets 선 +5% (${left} → bank ${p.coins}; ${settleText})`,
+      new RegExp(`선 ${end.good} 점수 \\+${end.good * 5}%`).test(settleText) &&
+      new RegExp(`악 ${end.evil} \\+${end.evil * 5}%`).test(settleText),
+    `엽전 left at the end is banked with 악 +5% each, the score gets 선 +5% each (${JSON.stringify(end)} → bank ${p.coins}; ${settleText})`,
   );
   // 뽑기 from the result screen: one draw, then ten
   await g.eval(() => document.getElementById('resultGacha').click());
@@ -1276,6 +1282,7 @@ async function scenarioH(browser, seed) {
     s.distance = 3000;
     s.rowTimer = 0;
     s.gauge = 0;
+    s.gaugeEarned = 0;
     s.stats = {};
     s.hyper = 2;
   });
@@ -1291,14 +1298,14 @@ async function scenarioH(browser, seed) {
   }
   const h1 = await g.state(() => ({
     kills: window.__g.state.kills,
-    gauge: window.__g.state.gauge,
+    gauge: window.__g.state.gaugeEarned,
     stats: window.__g.state.stats,
   }));
   const hyperKills = h1.kills - k0;
   check(
     f,
     hyperKills >= 15 &&
-      h1.gauge === hyperKills &&
+      h1.gauge >= hyperKills &&
       h1.stats.nearKill >= 10 &&
       h1.stats.graze === h1.stats.nearKill &&
       items.length === 0 &&
@@ -1317,7 +1324,7 @@ async function scenarioH(browser, seed) {
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
 // (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 1.4 s ending in a screen burst that turns
 // the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
-// the 운석 warned 2 s ahead.
+// the 운석 warned 2 s ahead, and the gauge filled by the kill's tier.
 async function scenarioI(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
@@ -1401,6 +1408,37 @@ async function scenarioI(browser, seed) {
     Math.abs(hyper - 1.4) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
     `무아지경 1.4 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
   );
+  // the 처치 게이지 fills by the kill's tier
+  const worth = await g.eval(() => {
+    const G = window.__g,
+      out = [];
+    for (const tier of [1, 4, 6]) {
+      G.state.gauge = 0;
+      G.state.meetReady = false;
+      const e = {
+        x: 240,
+        y: 200,
+        hp: 1,
+        maxHp: 1,
+        type: 1,
+        rank: tier - 1,
+        tier,
+        r: 22,
+        row: -1,
+        dead: false,
+        size: 80,
+        color: '#fff',
+        phase: 0,
+        hit: 0,
+      };
+      G.enemies.push(e);
+      G.kill(e);
+      out.push(G.state.gauge);
+    }
+    G.state.gauge = 0;
+    return out;
+  });
+  check(f, worth.join() === '1,4,6', `a kill fills the gauge by its tier (${worth})`);
   // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
   await g.eval(() => {
     const G = window.__g;

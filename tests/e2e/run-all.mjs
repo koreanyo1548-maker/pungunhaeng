@@ -1381,11 +1381,7 @@ async function scenarioI(browser, seed) {
   const v0 = await fall(0),
     v1 = await fall(0.995);
   await g.eval(() => (window.__g.player.fire = 0));
-  check(
-    f,
-    Math.abs(v0 - 300) < 10 && Math.abs(v1 - 600) < 10,
-    `descent ${Math.round(v0)} → ${Math.round(v1)} px/s`,
-  );
+  check(f, Math.abs(v0 - 300) < 10 && Math.abs(v1 - 600) < 10, `descent ${Math.round(v0)} → ${Math.round(v1)} px/s`);
   // 무아지경: 3 s, then the screen bursts: every enemy on it turns into 엽전
   await rows(0.5);
   await g.step(2);

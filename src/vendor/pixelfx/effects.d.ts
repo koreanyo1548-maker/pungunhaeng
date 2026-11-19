@@ -6,7 +6,10 @@ export type PixelEffectId =
   | 'holy/feather-burst'
   | 'pickups/collect-burst'
   | 'arcane/mana-burst'
-  | 'explosions/plasma-explosion';
+  | 'explosions/plasma-explosion'
+  | 'fire/fireball'
+  | 'projectiles/laser-bolt'
+  | 'holy/sunburst';
 export interface PixelEffectModule {
   meta: { size: [number, number]; origin: [number, number]; duration: number; loop?: boolean; fps?: number };
 }

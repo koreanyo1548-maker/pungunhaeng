@@ -3,6 +3,7 @@ import { G } from '../core/context';
 import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
+import { drawGlow } from './glows';
 
 export function blade(x, y, angle, length, color) {
   drawVfxSprite(projectileArt[6], x, y, length, length, angle);
@@ -40,6 +41,9 @@ export function drawMartialShots() {
     drawVfxSprite(im, s.x, s.y, s.art === 'mancheon' ? 36 : size, s.art === 'mancheon' ? 48 : size, rot);
   }
 }
+/** 죽창 and 운석 are drawn larger than their hit (render only; the hit radius stays `r`) */
+const SPEAR_ART = 1.25,
+  METEOR_ART = 1.25;
 export function drawMartialHazard(h) {
   if (h.dead) return;
   const r = Math.max(5, h.r);
@@ -48,11 +52,26 @@ export function drawMartialHazard(h) {
   ctx.save();
   ctx.shadowColor = '#ff503b';
   ctx.shadowBlur = 3;
+  const heading = angle + Math.PI / 2;
   if (h.kind === 'spear') {
     if (h.skin === 'wind') drawVfxSprite(projectileArt[7], h.x, h.y, r * 3.5, r * 5, angle + Math.PI);
-    else drawVfxSprite(propArt[2], h.x, h.y, r * 2.2, r * 6, angle);
+    else {
+      // drawn 1.25x (the hit stays r); a jade laser trail behind it, its head just inside the tip (render/glows.ts)
+      const length = r * 6 * SPEAR_ART;
+      drawGlow(
+        'spear',
+        h.x + Math.cos(heading) * (length / 2 - 11),
+        h.y + Math.sin(heading) * (length / 2 - 11),
+        1.86,
+        heading,
+        h.x * 0.013,
+      );
+      drawVfxSprite(propArt[2], h.x, h.y, r * 2.2 * SPEAR_ART, length, angle);
+    }
   } else if (h.kind === 'meteor') {
-    drawVfxSprite(combatProjectileArt[4], h.x, h.y, r * 2.7, r * 2.7, angle);
+    // drawn 1.25x (the hit stays r) with a fire tail behind it
+    drawGlow('meteor', h.x, h.y, 1.57, heading, h.x * 0.017);
+    drawVfxSprite(combatProjectileArt[4], h.x, h.y, r * 2.7 * METEOR_ART, r * 2.7 * METEOR_ART, angle);
   } else {
     const index = h.foe ? 5 : ({ 3: 0, 6: 1, 7: 2, 8: 3 }[region().type] ?? 2);
     const im = h.foe ? projectileArt[index] : combatProjectileArt[index];
@@ -75,6 +94,15 @@ export function drawPickup(p) {
     grow = Math.min(1, 0.55 + (10 - p.life) * 3),
     lean = Math.max(-0.5, Math.min(0.5, (p.vx || 0) / 340));
   ctx.scale(grow, grow);
+  // rays behind it: gold for 엽전 and 점수 두 배, sky blue for 무아지경, jade for 자석 (render/glows.ts)
+  drawGlow(
+    coin || p.kind === 'double' ? 'gold' : p.kind === 'magnet' ? 'jade' : 'cyan',
+    0,
+    0,
+    coin ? 0.69 : 1.28,
+    0,
+    p.phase,
+  );
   ctx.strokeStyle = coin ? '#ffdf80' : (tint?.line ?? '#c9c0ff');
   ctx.fillStyle = coin ? '#37280be0' : (tint?.fill ?? '#201e48dc');
   ctx.lineWidth = coin ? 2 : 2.5;

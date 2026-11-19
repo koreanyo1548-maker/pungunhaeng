@@ -147,6 +147,7 @@ function eraseHazard(s): boolean {
 }
 
 function updateEnemies(dt: number): boolean {
+  const descent = G.state.stage === 1 ? BASELINE.s1Descent : BASELINE.descent;
   for (const e of G.enemies) {
     if (e.dead) continue;
     e.hit = Math.max(0, e.hit - dt);
@@ -156,8 +157,7 @@ function updateEnemies(dt: number): boolean {
       if (G.mode !== 'play') return false;
       continue;
     }
-    // rows come down at BASELINE.descent px/s, as much faster as the run (systems/ladder.ts)
-    e.y += dt * BASELINE.descent * speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
+    e.y += dt * descent * speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);

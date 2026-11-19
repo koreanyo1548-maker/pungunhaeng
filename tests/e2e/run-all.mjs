@@ -183,9 +183,9 @@ async function scenarioA(browser, stage, seed) {
   });
   check(
     f,
-    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 100, 180, 320, 580, 1050], boss: 4800 }) &&
+    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 55, 95, 165, 295, 530], boss: 4800 }) &&
       JSON.stringify(stats.at10km) === JSON.stringify(stats.start),
-    `attack 10, tier health 1·10·18·32·58·105 shots, boss 30 s, no distance multiplier (${JSON.stringify(stats)})`,
+    `attack 10, tier health 10·55·95·165·295·530, boss 30 s, no distance multiplier (${JSON.stringify(stats)})`,
   );
   await g.seconds(3);
   const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));
@@ -1326,7 +1326,7 @@ async function scenarioH(browser, seed) {
 }
 
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
-// (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 1.4 s ending in a screen burst that turns
+// (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 3 s ending in a screen burst that turns
 // the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
 // the 운석 warned 2 s ahead, and the gauge filled by the kill's tier.
 async function scenarioI(browser, seed) {
@@ -1383,10 +1383,10 @@ async function scenarioI(browser, seed) {
   await g.eval(() => (window.__g.player.fire = 0));
   check(
     f,
-    Math.abs(v0 - 592) < 20 && Math.abs(v1 / v0 - 2) < 0.05,
+    Math.abs(v0 - 300) < 10 && Math.abs(v1 - 600) < 10,
     `descent ${Math.round(v0)} → ${Math.round(v1)} px/s`,
   );
-  // 무아지경: 1.4 s, then the screen bursts: every enemy on it turns into 엽전
+  // 무아지경: 3 s, then the screen bursts: every enemy on it turns into 엽전
   await rows(0.5);
   await g.step(2);
   await g.eval(() => {
@@ -1409,8 +1409,8 @@ async function scenarioI(browser, seed) {
   }));
   check(
     f,
-    Math.abs(hyper - 1.4) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
-    `무아지경 1.4 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
+    Math.abs(hyper - 3) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
+    `무아지경 3 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
   );
   // the 처치 게이지 fills by the kill's tier
   const worth = await g.eval(() => {

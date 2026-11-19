@@ -13,12 +13,13 @@ export const BASELINE = {
   steps: 6,
   /** the run gets faster with the stage's progress: × (1 + speedUp × progress), so twice as fast at the boss */
   speedUp: 1,
-  /** px a second rows come down at the start (a row reaches 80% of the screen, y 640 from y −70, in 1.2 s) */
+  /** starting row descent in px/s, before the stage progress multiplier */
   descent: 592,
+  s1Descent: 300,
   /** seconds between rows at the start and at the boss (by the stage's progress) */
   rowGap: { start: 1.7, end: 1.45 },
-  /** basic shots of the reference growth (Lv1, no 인연) a tier takes: tier 2 is 10 times tier 1, then × 1.8 */
-  tierShots: [1, 10, 18, 32, 58, 105],
+  /** health as a multiple of the reference basic attack, with half the previous gap between tiers */
+  tierHealthMultipliers: [1, 5.5, 9.5, 16.5, 29.5, 53],
   /** within a tier step k: the weak slot is tier k; each other slot is k+1 or k+2 with these chances, growing from
    *  the start of the step to its end (the rest are tier k); tiers above 6 are 6 */
   stepMix: { next: [0.2, 0.6], nextTwo: [0, 0.2] },
@@ -31,10 +32,9 @@ export const BASELINE = {
   meteor: { every: [15, 45], warn: 2 },
   /** 무아지경: `seconds` long at `speed` × the running speed, it cuts through everything; at its end the screen
    *  bursts and the enemies left turn into 엽전 */
-  hyper: { seconds: 1.4, speed: 6, descent: 2.5 },
-  /** chance a kill drops each item, set so a run of the reference growth (about 100 kills outside 무아지경 on S1)
-   *  sees about 6, 2 and 2; a 무아지경 kill drops none */
-  itemChance: { hyper: 0.06, magnet: 0.02, double: 0.02 },
+  hyper: { seconds: 3, speed: 6, descent: 2.5, reducedDropSeconds: 10, reducedDropChance: 0.015 },
+  /** chance a kill drops each item; a 무아지경 kill drops none */
+  itemChance: { hyper: 0.03, magnet: 0.02, double: 0.02 },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
@@ -49,5 +49,7 @@ export const BASELINE = {
 export const stageLength = (stage: number) =>
   Math.round((BASELINE.stageSeconds * runSpeed(stage)) / Math.log(1 + BASELINE.speedUp) / 100) * 100;
 /** health of a tier (1 to 6) for the reference attack */
-export const tierHealth = (tier: number, attack: number) =>
-  BASELINE.tierShots[Math.min(BASELINE.tierShots.length, Math.max(1, tier)) - 1] * attack;
+export function tierHealth(tier: number, attack: number) {
+  const multipliers = BASELINE.tierHealthMultipliers;
+  return Math.round(multipliers[Math.min(multipliers.length, Math.max(1, tier)) - 1] * attack);
+}

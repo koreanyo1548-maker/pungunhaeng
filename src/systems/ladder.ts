@@ -6,7 +6,7 @@ import { random } from '../core/rng';
 import { BASELINE } from '../data/baseline';
 import { stageDistance } from './flow';
 
-const TOP = BASELINE.tierShots.length;
+const TOP = BASELINE.tierHealthMultipliers.length;
 
 /** 0 at the start of a stage, 1 at the boss */
 export const stageProgress = () => Math.min(1, Math.max(0, G.state.distance / stageDistance()));

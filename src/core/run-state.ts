@@ -57,6 +57,8 @@ export function createRunState(meta: Meta): RunState {
     gauge: 0,
     /** all the gauge this run's kills gave (for the balance measurements) */
     gaugeEarned: 0,
+    /** the score at the end of the run before the 선 bonus (for the measurements) */
+    baseScore: 0,
     meetReady: false,
     encounters: 0,
     passers: 0,

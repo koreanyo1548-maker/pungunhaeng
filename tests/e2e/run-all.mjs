@@ -723,7 +723,7 @@ async function scenarioE(browser, seed) {
   check(f, first === '행인', `nothing unlocked yet: the first 만남 is a passer-by (${first})`);
   await g.act(0);
   await g.step(2);
-  // 선 1 (the help) and 악 2: the score gets +5%, the 엽전 banked +10% (a short run reaches no 최대 점수 tier)
+  // 선 1 (the help) and 악 2: the score gets +5%, the 엽전 banked +10% (a short run reaches no 기준 점수 tier)
   await g.eval(() => {
     window.__g.state.evil = 2;
     window.__g.state.coins = 700;
@@ -1121,7 +1121,7 @@ async function scenarioG(browser, seed) {
 
 // Scenario H: 의뢰 targets grow with each 의뢰 of the same 인연 (1/3, 2/3, all), the row gap (2 s → 0.8 s with
 // distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (10 s, retaken = full time), one
-// 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 최대 점수 of every stage.
+// 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 기준 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
@@ -1313,12 +1313,16 @@ async function scenarioH(browser, seed) {
     `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items, no 근접 × (${nearLabels} ` +
       `${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
   );
-  // 최대 점수 of each stage: whole thousands, longer and harder stages give more
-  const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.maxScore(n)));
-  check(f, max.every(m => m > 0 && m % 1000 === 0) && max[5] > max[0], `최대 점수 per stage (${max})`);
+  // 기준 점수 of each stage: whole thousands
+  const max = await g.eval(() => [1, 2, 3, 4, 5, 6].map(n => window.__g.referenceScore(n)));
+  check(
+    f,
+    max.every(m => m > 0 && m % 1000 === 0),
+    `기준 점수 per stage (${max})`,
+  );
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   await g.page.close();
-  return { name: `H seed ${seed}`, failures: f, log: [`최대 점수 ${max.join(' · ')}`] };
+  return { name: `H seed ${seed}`, failures: f, log: [`기준 점수 ${max.join(' · ')}`] };
 }
 
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress

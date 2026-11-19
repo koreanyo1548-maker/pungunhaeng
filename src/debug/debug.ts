@@ -8,7 +8,7 @@ import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
 import { questEvent, raiseBond } from '../systems/quest';
 import { moveAlign } from '../systems/alignment';
-import { maxScore, rowGap } from '../systems/score';
+import { referenceScore, rowGap } from '../systems/score';
 import { addPickup } from '../entities/pickups';
 import { go } from '../systems/scene-flow';
 import { bossHealth, enemyHealth, region, stageDistance } from '../systems/flow';
@@ -94,8 +94,8 @@ if (location.hash.includes('debug'))
     },
     /** add 선 (positive) or 악 (negative) points (unlocks as play would) */
     moveAlign,
-    /** a stage's 최대 점수 (systems/score.ts) */
-    maxScore,
+    /** a stage's 기준 점수 (systems/score.ts) */
+    referenceScore,
     /** raise an 인연 one level (teaches the skill), as a met 의뢰 would */
     raiseBond,
     killBoss() {

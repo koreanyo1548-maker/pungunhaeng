@@ -97,6 +97,7 @@ export interface RunState {
   /** 처치 게이지 toward the next 만남 (systems/encounter.ts) */
   gauge: number;
   gaugeEarned: number;
+  baseScore: number;
   /** the gauge is full: a 만남 opens at the next safe step */
   meetReady: boolean;
   /** 만남 so far this run */

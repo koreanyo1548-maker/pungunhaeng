@@ -95,8 +95,9 @@ export function end(victory = false) {
   G.state.victory = victory;
   if (victory) G.state.score += VICTORY_SCORE;
   closeQuest();
-  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 최대 점수 add to the 엽전 left, which go to
+  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 기준 점수 add to the 엽전 left, which go to
   // the bank with the clear bonus; beating the boss opens the next stage.
+  G.state.baseScore = Math.round(G.state.score);
   const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil);
   G.state.score = Math.round(G.state.score * (1 + b.scoreBonus));
   const record = G.state.score > profile.best;
@@ -109,7 +110,7 @@ export function end(victory = false) {
   profile.coins += banked;
   saveProfile();
   $('settle').innerHTML =
-    `최대 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
+    `기준 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
     (b.scoreBonus ? ` · 선 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
     `<br>남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
     (b.coinBonus

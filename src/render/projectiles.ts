@@ -81,14 +81,13 @@ export function drawMartialHazard(h) {
 }
 
 const ITEM_TINT = {
-  magnet: { line: '#8fe3b0', fill: '#10322adc', glyph: '磁' },
-  double: { line: '#ffd36e', fill: '#3a2a08dc', glyph: '倍' },
+  magnet: { line: '#8fe3b0', fill: '#10322adc', art: 6 },
+  double: { line: '#ffd36e', fill: '#3a2a08dc', art: 7 },
 };
 export function drawPickup(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
   const coin = p.kind === 'coin',
-    // 자석 and 점수 두 배 are drawn with a placeholder glyph until their own art comes (Codex hand-off)
     tint = ITEM_TINT[p.kind],
     // it springs out of the kill (small to full in 0.15 s) and leans with its throw
     grow = Math.min(1, 0.55 + (10 - p.life) * 3),
@@ -117,11 +116,7 @@ export function drawPickup(p) {
     drawVfxSprite(propArt[3], 0, 0, 30, 30);
   } else if (tint) {
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
-    ctx.fillStyle = tint.line;
-    ctx.font = 'bold 36px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tint.glyph, 0, 2);
+    drawVfxSprite(propArt[tint.art], 0, 0, 56, 56);
   } else {
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
     drawVfxSprite(propArt[5], 0, 0, 58, 58);

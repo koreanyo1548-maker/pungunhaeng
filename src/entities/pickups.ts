@@ -2,7 +2,7 @@
 // was, slows, then falls (PICKUP_FALL) and leaves the screen unless it is caught; only a magnet (황연청, the 자석
 // item) pulls them in (systems/loop.ts). A kill drops one 엽전 and, with BASELINE.itemDrop.chance, one item picked by its
 // weights (a 무아지경 kill drops 엽전 only). An item hangs at the top of its pop (BASELINE.itemHang) before it falls. A 보물상자
-// bursts into 보석 (gem), each worth BASELINE.chest.gemCoins 엽전, thrown wider than 엽전 (docs/balance-baseline.md):
+// bursts into BASELINE.chest.coins 엽전, thrown wider and higher than a kill's (docs/balance-baseline.md):
 //   hyper  무아지경: BASELINE.hyper.seconds of invincibility at BASELINE.hyper.speed × the run, cutting through all;
 //          the end bursts the screen (entities/enemies.ts hyperFinish)
 //   magnet 자석: pickups are pulled in for ITEM_SECONDS
@@ -24,7 +24,7 @@ import { BASELINE } from '../data/baseline';
 
 const COIN = ramp('#ffdf87');
 
-export type PickupKind = 'coin' | 'gem' | 'hyper' | 'magnet' | 'double' | 'dual';
+export type PickupKind = 'coin' | 'hyper' | 'magnet' | 'double' | 'dual';
 /** the items a kill can drop (picked by BASELINE.itemDrop.weights) */
 export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
 /** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
@@ -35,12 +35,12 @@ export const PICKUP_FALL = { pop: [560, 720], spread: 170, gravity: 1250, max: 3
 /** how close the hero has to come to take a pickup (px from its centre) */
 export const PICKUP_REACH = { coin: 34, item: 44 };
 
-/** 엽전 and 보석 are small; items are taken from farther */
-export const isCoinLike = (kind: PickupKind) => kind === 'coin' || kind === 'gem';
+/** 엽전 are small; items are taken from farther */
+export const isCoinLike = (kind: PickupKind) => kind === 'coin';
 
-export function addPickup(kind: PickupKind, x: number, y: number) {
-  // 보석 burst out of a 보물상자 to every side, wider and higher than 엽전
-  const wide = kind === 'gem' ? 2.2 : 1;
+/** A pickup at (x, y); `burst`: thrown wider and higher (a 보물상자's 엽전, to every side). */
+export function addPickup(kind: PickupKind, x: number, y: number, burst = false) {
+  const wide = burst ? 2.2 : 1;
   G.pickups.push({
     kind,
     x,
@@ -49,7 +49,7 @@ export function addPickup(kind: PickupKind, x: number, y: number) {
     life: 10,
     phase: rnd(0, 6),
     vx: rnd(-PICKUP_FALL.spread, PICKUP_FALL.spread) * wide,
-    vy: -rnd(PICKUP_FALL.pop[0], PICKUP_FALL.pop[1]) * (kind === 'gem' ? 1.15 : 1),
+    vy: -rnd(PICKUP_FALL.pop[0], PICKUP_FALL.pop[1]) * (burst ? 1.15 : 1),
     hang: isCoinLike(kind) ? 0 : BASELINE.itemHang,
   });
 }
@@ -69,21 +69,13 @@ export function pickItem(roll: number): (typeof ITEMS)[number] {
   for (const kind of ITEMS) if ((left -= w[kind]) < 0) return kind;
   return ITEMS[ITEMS.length - 1];
 }
-/** A 보물상자 bursts into BASELINE.chest.gems 보석 at (x, y). */
-export function dropGems(x: number, y: number) {
-  for (let i = 0; i < BASELINE.chest.gems; i++) addPickup('gem', x + rnd(-20, 20), y + rnd(-14, 14));
+/** A 보물상자 bursts into BASELINE.chest.coins 엽전 at (x, y), thrown to every side. */
+export function dropChestCoins(x: number, y: number) {
+  for (let i = 0; i < BASELINE.chest.coins; i++) addPickup('coin', x + rnd(-20, 20), y + rnd(-14, 14), true);
 }
 export function collect(p) {
   p.dead = true;
-  if (p.kind === 'gem') {
-    // a 보석 is BASELINE.chest.gemCoins 엽전 (and scores as many)
-    const n = BASELINE.chest.gemCoins;
-    G.state.coins += n;
-    addScore(COIN_SCORE * n);
-    emit('coin', { n });
-    tone(1700, 0.06, 'sine', 0.05, 2300);
-    burst(p.x, p.y, '#ff6f8e', 5, 80);
-  } else if (p.kind === 'coin') {
+  if (p.kind === 'coin') {
     G.state.coins++;
     addScore(COIN_SCORE);
     emit('coin', { n: 1 });

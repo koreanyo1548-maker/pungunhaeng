@@ -389,16 +389,16 @@ async function scenarioB(browser, seed) {
     s.quest?.t === 'coins' && s[side] === 1 && s.good + s.evil === 1,
     `무시한다: an 엽전 의뢰, ${side} +1 (정 ${s.good} · 사 ${s.evil})`,
   );
-  // 엽전 taken count (a 보석 is 5)
+  // 엽전 taken count
   const prog = await g.eval(() => {
     const G = window.__g;
     G.pickups.length = 0;
     G.addPickup('coin', G.player.x, G.player.y);
-    G.addPickup('gem', G.player.x, G.player.y);
+    G.addPickup('coin', G.player.x, G.player.y);
     return null;
   });
   await g.step(2);
-  check(f, (await g.state(() => window.__g.state.quest.prog)) === 6, `an 엽전 counts 1, a 보석 5 (${prog})`);
+  check(f, (await g.state(() => window.__g.state.quest.prog)) === 2, `each 엽전 counts 1 (${prog})`);
   await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
   await succeed(g);
   check(
@@ -1461,7 +1461,7 @@ async function scenarioH(browser, seed) {
 
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
 // (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 2 s ending in a screen burst that turns
-// the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
+// the enemies into 엽전, a 보물상자 bursting into 20 엽전, items hanging at the top of their pop, and
 // the 운석 warned 2 s ahead.
 async function scenarioI(browser, seed) {
   const f = [];
@@ -1543,7 +1543,7 @@ async function scenarioI(browser, seed) {
     Math.abs(hyper - 2) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
     `무아지경 2 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
   );
-  // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
+  // 보물상자: bursts into 20 엽전
   await g.eval(() => {
     const G = window.__g;
     G.enemies.length = 0;
@@ -1567,16 +1567,8 @@ async function scenarioI(browser, seed) {
     G.enemies.push(e);
     G.kill(e);
   });
-  const gems = await g.state(() => window.__g.pickups.filter(p => p.kind === 'gem').length);
-  const c0 = await g.state(() => window.__g.state.coins);
-  await g.eval(() => {
-    const pl = window.__g.player;
-    window.__g.pickups.length = 0;
-    window.__g.addPickup('gem', pl.x, pl.y);
-  });
-  await g.step(1);
-  const c1 = await g.state(() => window.__g.state.coins);
-  check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
+  const chestCoins = await g.state(() => window.__g.pickups.filter(p => p.kind === 'coin').length);
+  check(f, chestCoins === 20, `보물상자 → ${chestCoins} 엽전`);
   // an item drops with 3% a kill, picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2
   const picks = await g.eval(() => {
     const out = { hyper: 0, magnet: 0, double: 0, dual: 0 };

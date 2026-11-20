@@ -46,8 +46,8 @@ export const BASELINE = {
    *  next comes `after` s later. Who comes is announced for `arrive` s before the cards open. */
   meet: { first: 10, quest: 60, reward: 1.4, after: 3, arrive: 1.5 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
-   *  and it bursts into `gems` 보석 worth `gemCoins` 엽전 each */
-  chest: { perRow: 0.018, gems: 10, gemCoins: 5 },
+   *  and it bursts into `coins` 엽전 */
+  chest: { perRow: 0.018, coins: 20 },
   /** 기준 점수 of S1 to S6: the invincible bot's average score at the reference growth (6 runs each, before the 선
    *  bonus), rounded; the 엽전 bonus tiers are 100/150/200% of it (systems/score.ts) */
   referenceScore: [136000, 73000, 143000, 122000, 77000, 153000],

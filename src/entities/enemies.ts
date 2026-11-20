@@ -10,7 +10,7 @@ import { W, reduced } from '../core/dom';
 import { clamp, fxRnd, rnd } from '../core/math';
 import { RANKS } from '../data/enemies';
 import { TUNE } from '../data/tune';
-import { dropGems, dropLoot } from './pickups';
+import { dropChestCoins, dropLoot } from './pickups';
 import { hyperQuestKill, questEvent } from '../systems/quest';
 import { ROW_CLEAR_SCORE, addScore, bossScore, comboMult, killScore } from '../systems/score';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
@@ -26,7 +26,7 @@ import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
   // the tier ladder (systems/ladder.ts): the weak slot is the step's tier, the others k, k+1 or k+2; now and then a
-  // slot holds a 보물상자 instead (as strong as the step's strong tier, it bursts into 보석)
+  // slot holds a 보물상자 instead (as strong as the step's strong tier, it bursts into 엽전)
   const id = ++G.rowId,
     weak = Math.floor(rnd(0, 5)),
     chestSlot = random() < BASELINE.chest.perRow ? (weak + 1 + Math.floor(rnd(0, 4))) % 5 : -1;
@@ -201,7 +201,7 @@ export function kill(e, byHyper = false) {
   } else {
     onComboKill();
     // 무아지경 kills drop 엽전 only: an item from them could chain 무아지경 without end
-    if (e.chest) dropGems(e.x, e.y);
+    if (e.chest) dropChestCoins(e.x, e.y);
     else dropLoot(e.x, e.y, coinsForKill(), !byHyper);
     if (near > 1 && !G.state.blasting) label('근접 ×' + near, e.x, e.y, '#ffe0a0', 15);
     resolveRow(e);

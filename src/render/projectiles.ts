@@ -4,7 +4,7 @@ import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
 import { drawGlow } from './glows';
-import { drawDualIcon, drawGem } from './placeholder-art';
+import { drawDualIcon } from './placeholder-art';
 
 export function blade(x, y, angle, length, color) {
   drawVfxSprite(projectileArt[6], x, y, length, length, angle);
@@ -89,16 +89,6 @@ const DUAL_TINT = { line: '#ff9a7a', fill: '#3a140cdc' };
 export function drawPickup(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
-  if (p.kind === 'gem') {
-    // 보석 (a stand-in until its art comes, docs/codex-art-handoff.md): spins while it flies up
-    const grow = Math.min(1, 0.55 + (10 - p.life) * 3);
-    ctx.scale(grow, grow);
-    ctx.rotate(Math.max(-0.5, Math.min(0.5, (p.vx || 0) / 340)));
-    ctx.scale(Math.max(0.35, Math.abs(Math.cos(G.time * (p.vy < 0 ? 14 : 6) + p.phase))), 1);
-    drawGem(ctx);
-    ctx.restore();
-    return;
-  }
   const coin = p.kind === 'coin',
     tint = ITEM_TINT[p.kind] ?? (p.kind === 'dual' ? DUAL_TINT : undefined),
     // it springs out of the kill (small to full in 0.15 s) and leans with its throw

@@ -9,7 +9,6 @@ import { W } from '../core/dom';
 import { rnd } from '../core/math';
 import { visualSkill, withSkill } from '../core/skill-context';
 import { HEROES } from '../data/heroes';
-import { weaponStage } from '../data/meta';
 import { TUNE } from '../data/tune';
 import type { HeroId } from '../data/roster';
 import { hitEnemy } from '../entities/enemies';
@@ -49,8 +48,6 @@ export const hyperItemScale = () => 1 + (traitValue('soun') ?? 0);
 export const fighterLevel = () => G.state?.meta?.levels?.[activeHeroId()] ?? 1;
 /** The attack of the fighting hero: the base attack plus one per level above 1 (docs/combat-stats.md). */
 export const heroAttack = () => TUNE.attack + fighterLevel() - 1;
-/** The basic attack's stage (shots per volley) of the fighting hero, from their level. */
-export const heroWeapon = () => weaponStage(fighterLevel());
 /** Attack bonus in %: 아영's trait while she fights, and 매의 눈 ★5 adds to it. */
 export function attackBonus() {
   return (traitValue('ayeong') ?? 0) + (effectOn('ayeong') && G.state.effect.level >= 4 ? 0.1 : 0);

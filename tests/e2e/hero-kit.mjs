@@ -334,7 +334,7 @@ try {
   assert.equal(entries.pungun.check, 20, '계승 of 홍련화: every hit critical');
   assert.equal(entries.pungun.total, 15, '계승 lasts as long as the vanguard skill at ★1');
   assert.deepEqual(entries.cheolhyeol.check, { kept: true, hp: 2, hit: true }, '불굴: no health lost, shockwave');
-  assert.equal(entries.mukyoung.check, 4, '그림자 분신 copies the basic attack');
+  assert.equal(entries.mukyoung.check, 2, '그림자 분신 copies the basic attack (one shot each)');
   assert.equal(entries.bicheon.check, true, '어검진 blocks hazards');
   assert.equal(entries.unhak.check, true, '학의 장막 clears hazards inside');
   assert.equal(entries.hongryeon.check, 20, '홍련화: every hit critical');
@@ -365,7 +365,7 @@ try {
       fell();
       G.shots = [];
       M.shoot();
-      const clones = G.shots.length / 2 - 1;
+      const clones = G.shots.length - 1;
       party('pungun', 'bicheon');
       fell();
       const swords = M.swordPositions().length;

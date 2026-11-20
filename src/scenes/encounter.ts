@@ -38,10 +38,12 @@ export function openEncounter() {
   s.encounters++;
   // an 의뢰 still open fails (its time or its success opened this 만남, so this is only a safeguard)
   closeQuest();
-  // debug: forceNpc brings that 인연, or a passer-by for 'passer'
-  const forced = s.forceNpc;
+  // who comes was rolled and announced (systems/encounter.ts); debug: forceNpc brings that 인연, 'passer' a passer-by
+  const arrived = s.meetArrive,
+    forced = s.forceNpc;
+  s.meetArrive = undefined;
   s.forceNpc = null;
-  const id = forced === 'passer' ? null : forced || rollMeet();
+  const id = arrived ? arrived.id : forced === 'passer' ? null : forced || rollMeet();
   if (id) openBond(id);
   else openPasser();
 }

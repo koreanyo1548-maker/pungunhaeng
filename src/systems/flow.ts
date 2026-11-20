@@ -43,9 +43,9 @@ export function stageDistance() {
 /** health of an enemy tier (1 to 6): the shots of the reference growth (Lv1, no 인연) × its attack. No distance
  *  multiplier: health grows only with the tier ladder (systems/ladder.ts). */
 export const enemyHealth = (tier: number) => tierHealth(tier, TUNE.attack);
-/** the boss's health: BASELINE.bossSeconds of the reference basic attack (2 shots a volley) */
+/** the boss's health: BASELINE.bossSeconds of the reference basic attack (one shot a volley) */
 export function bossHealth() {
-  return Math.round((BASELINE.bossSeconds * TUNE.attack * 2) / BASELINE.fireInterval);
+  return Math.round((BASELINE.bossSeconds * TUNE.attack) / BASELINE.fireInterval);
 }
 export function start() {
   if (!G.loaded) return;

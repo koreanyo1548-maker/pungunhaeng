@@ -7,7 +7,7 @@ import { heroLevelCap, heroOwned, heroStars, levelUp, levelUpCost, profile } fro
 import { fmt } from '../core/math';
 import { showBank } from '../ui/hud';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, LEVEL_MAX, LEVELS_PER_STAR, PIECE_STEPS, starText, weaponStage } from '../data/meta';
+import { HERO_IDS, LEVEL_MAX, LEVELS_PER_STAR, PIECE_STEPS, starText } from '../data/meta';
 import { TUNE } from '../data/tune';
 import type { HeroId } from '../data/meta';
 import { openCollection } from '../ui/collection';
@@ -51,8 +51,8 @@ function detail(id: HeroId): Detail {
     {
       title: `레벨 ${level} / ${cap}`,
       body:
-        `공격력 ${attackAt(level)} · 공격 단계 ${weaponStage(level)} (한 번에 ${weaponStage(level) + 1}발)` +
-        `<br>레벨마다 공격력 +1, 10레벨에 공격 단계 2, 20레벨에 3. 성급이 오를 때마다 최대 레벨 +${LEVELS_PER_STAR}.`,
+        `공격력 ${attackAt(level)} · 한 번에 1발` +
+        `<br>레벨마다 공격력 +1. 성급이 오를 때마다 최대 레벨 +${LEVELS_PER_STAR}.`,
     },
     {
       title: `특성 「${h.trait.name}」`,

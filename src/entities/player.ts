@@ -13,7 +13,7 @@ import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
-import { basicShotOptions, cloneOffsets, heroWeapon, unbowedHit } from '../systems/hero-effects';
+import { basicShotOptions, cloneOffsets, unbowedHit } from '../systems/hero-effects';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
@@ -70,28 +70,25 @@ export function shoot() {
   G.player.swing = 1;
   G.player.swingCount++;
   if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
-  // Every hero shoots the same; the hero's level sets the shots per volley; traits and entry skills add aim,
-  // piercing, erasing or clones.
-  const weapon = heroWeapon(),
-    offsets = weapon === 1 ? [-9, 9] : weapon === 2 ? [-18, 0, 18] : [-27, -9, 9, 27],
-    extra = basicShotOptions();
+  // Every hero shoots the same: one shot a volley at every level (the level raises its power); traits and entry
+  // skills add aim, piercing, erasing or clones.
+  const extra = basicShotOptions();
   for (const from of [0, ...cloneOffsets()])
-    for (const x of offsets)
-      G.shots.push({
-        x: G.player.x + from + x,
-        y: G.player.y - 34,
-        prevY: G.player.y - 34,
-        vx: weapon === 3 ? x * 1.5 : 0,
-        // BASELINE.shotSpeed: about 2.2 screen heights a second (docs/balance-baseline.md)
-        vy: BASELINE.shotSpeed,
-        damage: shotPower(),
-        r: 5,
-        kind: weapon === 2 && x !== 0 ? 'knife' : weapon === 3 ? 'sword' : 'qi',
-        phase: G.time,
-        skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
-        basic: true,
-        ...extra,
-      });
+    G.shots.push({
+      x: G.player.x + from,
+      y: G.player.y - 34,
+      prevY: G.player.y - 34,
+      vx: 0,
+      // BASELINE.shotSpeed: about 2.2 screen heights a second (docs/balance-baseline.md)
+      vy: BASELINE.shotSpeed,
+      damage: shotPower(),
+      r: 5,
+      kind: 'qi',
+      phase: G.time,
+      skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
+      basic: true,
+      ...extra,
+    });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);
 }
 export function borrowedSword() {

@@ -41,8 +41,6 @@ export const LEVELS_PER_STAR = 10;
 export const levelCap = (stars: number) => Math.max(1, stars * LEVELS_PER_STAR);
 /** 엽전 to go from `level` to the next */
 export const levelCost = (level: number) => level * 20;
-/** the basic attack's stage (shots per volley) at a hero level: 1 below 10, 2 from 10, 3 from 20 */
-export const weaponStage = (level: number) => (level >= 20 ? 3 : level >= 10 ? 2 : 1);
 
 // ---- in a run (provisional numbers)
 /** 엽전 an 의뢰 pays when it does not raise an 인연: defied, or the 인연 is already at level 3 */

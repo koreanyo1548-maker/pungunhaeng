@@ -260,13 +260,22 @@ export function drawSkillAnimations() {
   if (negate) drawSkillFrame('hoechun', f, G.player.x, G.player.y + 32, 48, 0.55);
   for (const [id, a] of auras) drawSkillFrame(id, f, G.player.x, G.player.y, a.size, 0.38);
 }
+/** heroes' basic shots are drawn this many times their old size (40 px with a hero's own art, 36 px for 검기) */
+export const BASIC_SHOT_ART = 2;
 /**
  * A skill's projectile is drawn larger than a basic shot (36 to 48 px) and leaves two fading copies of itself
  * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.
  */
 export function drawSkillShot(s: any) {
   if (flightRows[s.skill] === undefined && heroineSkillSheets[s.skill] === undefined) return false;
-  const size = s.basic ? 40 : s.kind === 'gang' ? Math.max(66, (s.w || 8) * 5) : s.kind === 'orb' ? 54 : 58,
+  // a hero's basic shot is drawn at BASIC_SHOT_ART × its old 40 px (render only; the hit radius stays `r`)
+  const size = s.basic
+      ? 40 * BASIC_SHOT_ART
+      : s.kind === 'gang'
+        ? Math.max(66, (s.w || 8) * 5)
+        : s.kind === 'orb'
+          ? 54
+          : 58,
     frame = reduced || ['soun', 'seolyeong'].includes(s.skill) ? 2 : Math.floor((G.time - s.phase) * 18) % 6,
     vy = s.vy ?? 900,
     angle = Math.atan2(s.vx, vy);

@@ -1,4 +1,4 @@
-import { drawSkillShot, heroShotFrame } from '../render/skill-animation';
+import { BASIC_SHOT_ART, drawSkillShot, heroShotFrame } from '../render/skill-animation';
 import { G } from '../core/context';
 import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
@@ -30,7 +30,8 @@ export function drawMartialShots() {
     const rot = Math.atan2(s.vx, s.vy ?? 900),
       idx = { qi: 0, sword: 1, knife: 2, gang: 3, orb: 4 }[s.kind] ?? 1;
     const size =
-      s.kind === 'gang'
+      (s.basic ? BASIC_SHOT_ART : 1) *
+      (s.kind === 'gang'
         ? Math.max(70, (s.w || 8) * 5)
         : s.kind === 'sword'
           ? 48
@@ -38,7 +39,7 @@ export function drawMartialShots() {
             ? 34
             : s.kind === 'orb'
               ? 32
-              : 36;
+              : 36);
     const im =
       s.art === 'mancheon' ? combatProjectileArt[5] : s.art === 'dobeop' ? projectileArt[3] : projectileArt[idx];
     if (s.art === 'mancheon' && !reduced)

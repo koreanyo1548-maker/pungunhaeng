@@ -68,6 +68,34 @@ export async function openGame(
         el.click();
         confirm?.click();
       }, i),
+    /** the lobby's stage cards: { n, locked } of the card shown and how many the arrows reach */
+    lobby: () =>
+      page.evaluate(() => ({
+        text: document.getElementById('stageCard').textContent,
+        locked: document.getElementById('stageCard').classList.contains('locked'),
+        dots: document.querySelectorAll('#stageDots i').length,
+        on: [...document.querySelectorAll('#stageDots i')].findIndex(i => i.classList.contains('on')) + 1,
+        start: !document.getElementById('start').disabled,
+      })),
+    /** turn the lobby's stage card to stage index i (0 = S1) and press 강호에 나서기 */
+    setOut: i =>
+      page.evaluate(i => {
+        while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click();
+        for (let k = 0; k < i; k++) document.getElementById('stageNext').click();
+        document.getElementById('start').click();
+      }, i),
+    /** the 편대 screen: clear the party, pick the heroes at grid indexes a and b (선봉, 후발), then 출발 */
+    party: (a = 0, b = 1) =>
+      page.evaluate(
+        ([a, b]) => {
+          for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+          const h = [...document.querySelectorAll('#choice .party-hero')];
+          h[a].click();
+          h[b].click();
+          document.getElementById('formationConfirm').click();
+        },
+        [a, b],
+      ),
     /** click the enabled card with this title; returns false if it is missing or disabled */
     pickTitled: title =>
       page.evaluate(title => {

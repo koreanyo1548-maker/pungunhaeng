@@ -17,32 +17,35 @@ try {
     const shot = async name => {
       if (output) await g.page.screenshot({ path: `${output}/${name}-${viewport.width}.png` });
     };
+    // the lobby: the stage card opens on the highest open stage (S6 in the debug roster); turn it to S4 부유암 (운해:
+    // left-right only) with the arrows, then 강호에 나서기
+    assert.ok(await g.page.locator('#stageNext').isDisabled(), 'S6 first, nothing after it');
+    await shot('lobby');
+    for (let i = 0; i < 2; i++) await g.page.locator('#stagePrev').tap();
+    assert.match(await g.page.locator('#stageCard').textContent(), /S4/);
     await g.page.locator('#start').tap();
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '어디로 갈까');
-    await shot('stages');
-    await g.pick(3); // S4 부유암 (운해: left-right only)
-    await g.step(2);
+    assert.equal(await g.choiceTitle(), '편대');
+    // 편대: tap two heroes (1 선봉, 2 후발); nothing commits until 출발, which needs both
     const formation = await g.state(() => [...window.__g.state.formation]);
-    const roster = g.page.locator('#choice button.card');
+    const roster = g.page.locator('#choice .party-hero');
+    assert.equal(await roster.count(), 12);
     await roster.nth(1).tap();
     assert.equal(await g.mode(), 'choice');
-    assert.deepEqual(await g.state(() => [...window.__g.state.formation]), formation, 'preview must not commit');
     assert.equal(await roster.nth(1).getAttribute('aria-pressed'), 'true');
+    assert.ok(await g.page.locator('#formationConfirm').isDisabled(), '출발 needs two heroes');
+    await roster.nth(3).tap();
+    assert.deepEqual(await g.state(() => [...window.__g.state.formation]), formation, 'picking must not commit');
     assert.ok(
       await g.page.locator('#formationConfirm').evaluate(el => {
         const r = el.getBoundingClientRect(),
           p = el.closest('.panel').getBoundingClientRect();
-        return r.top >= p.top && r.bottom <= p.bottom;
+        return r.top >= p.top && r.bottom <= p.bottom && !el.disabled;
       }),
-      'confirm visible without scrolling',
+      '출발 visible without scrolling, on with two heroes',
     );
     await shot('formation');
     await g.page.locator('#formationConfirm').tap();
-    await g.step(2);
-    assert.equal(await g.choiceTitle(), '후발');
-    assert.equal(await roster.count(), 11, 'front hero excluded from rear roster');
-    await g.pick(0);
     await g.step(2);
     assert.equal(await g.mode(), 'play', 'play starts after the party is set');
     await g.eval(() => (window.__g.player.inv = 999)); // UI input checks do not depend on combat survival.
@@ -108,7 +111,7 @@ try {
     assert.deepEqual(g.errors, []);
     await g.page.close();
     console.log(
-      `PASS ${viewport.width}: stage select, preview/confirm, touch drag, hidden swap slot, blast, 만남, no page errors`,
+      `PASS ${viewport.width}: lobby stage card, 편대 (two then 출발), touch drag, hidden swap slot, blast, 만남, no page errors`,
     );
   }
 } finally {

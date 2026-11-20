@@ -22,9 +22,9 @@ function bindAction(id: string, action: () => void) {
 }
 bindAction('blast', blast);
 $('start').addEventListener('click', start);
-$('retry').onclick = start;
+// 다시 강호로: back to the lobby, to pick the stage and set out again
+$('retry').onclick = home;
 $('restartPause').onclick = start;
-$('home').onclick = home;
 $('pause').onclick = pause;
 $('resume').onclick = resume;
 

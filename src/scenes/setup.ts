@@ -1,48 +1,12 @@
-import strike from '../assets/icons/strike.svg';
-import dodge from '../assets/icons/dodge.svg';
-import energy from '../assets/icons/energy.svg';
 import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
-import { heroPictures, heroAnimations } from '../core/assets';
-import { STAGES } from '../data/stages';
-import { fmt } from '../core/math';
-import { heroLevelCap, heroOwned, profile } from '../core/profile';
-import { TUNE } from '../data/tune';
+import { artImage, heroPictures } from '../core/assets';
+import { $ } from '../core/dom';
+import { heroOwned, profile, saveProfile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, LEVEL_MAX, PIECE_STEPS, pieceLevel, starText } from '../data/meta';
+import { HERO_IDS, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
-import { openChoice } from './choice';
 
-/** Stage select: six stages opened in order; beating a stage's boss opens the next (profile.stages). */
-export function openStageSelect() {
-  openChoice({
-    eyebrow: '스테이지',
-    title: '어디로 갈까',
-    sub: '보스를 잡으면 다음 스테이지가 열린다. 적을 처치해 게이지를 채우면 인연이나 행인을 만난다.',
-    cards: STAGES.map((st, i) => {
-      const n = i + 1,
-        locked = n > profile.stages;
-      return {
-        color: st.color,
-        disabled: locked,
-        tag: locked ? `잠김 · S${n - 1} 보스를 잡으면 열림` : `S${n} · ${st.world === 2 ? '하늘' : '땅'}`,
-        title: st.name,
-        desc: `보스 <b>${st.boss}</b> · ${fmt(st.distance)}m<br>${st.hint}`,
-        onPick: () => done('stageSelect', n),
-      };
-    }),
-  });
-}
-/** "★★☆☆☆ 성급 2 · 다음 성급까지 조각 2개" for a hero's 성급 (raised by pieces from 뽑기). */
-export function starLine(id: HeroId) {
-  const pieces = profile.heroes[id],
-    stars = pieceLevel(pieces);
-  const next = stars >= LEVEL_MAX ? '최고 성급' : `다음 성급까지 조각 ${PIECE_STEPS[stars] - pieces}개`;
-  return `<span class="mastery"><i class="stars">${starText(stars)}</i> 성급 ${stars} · ${next}</span>`;
-}
-/** "Lv 7/20" for a hero's level (raised with 엽전, capped by 성급). It sits beside the name, so the formation
- *  preview keeps its height; the 영웅 screen shows the attack and the attack stage. */
-export const levelTag = (id: HeroId) => `Lv ${profile.levels[id]}/${heroLevelCap(id)}`;
 export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
 /** "특성 「질풍」 근접 처치 시 …" with its scope; a trait that waits for a later step says so. */
 export function traitText(id: HeroId, L: number) {
@@ -56,52 +20,102 @@ export function entryText(id: HeroId, L: number) {
   return `<b>등장 기술 「${e.name}」</b> ${s ? s + '초 · ' : ''}${e.desc(L)}`;
 }
 const scopeLabel = (id: HeroId) => (HEROES[id].trait.scope === 'party' ? '지원 · 편대 전체' : '싸우는 동안');
-export function heroCard(id: HeroId, slot: number) {
-  const h = HEROES[id],
-    locked = !heroOwned(id),
-    level = G.state.meta.heroes[id];
-  if (locked)
-    return {
-      image: heroPictures[id],
-      artClass: 'hero-choice-art',
-      color: h.color,
-      locked: true,
-      tag: '잠김 · ' + h.projectile,
-      title: h.name,
-      fullArt: heroAnimations[id][0].toDataURL(),
-      detail: `<b>합류</b> ${LOCKED_HOW}<br>${traitText(id, 0)}<br>${entryText(id, 0)}`,
-      onPick: () => {},
-    };
-  return {
-    image: heroPictures[id],
-    artClass: 'hero-choice-art',
-    color: h.color,
-    tag: h.projectile + ' · 특성 ' + scopeLabel(id),
-    title: h.name,
-    heading: `${h.name} · ${levelTag(id)}`,
-    desc: `<span class="hero-role"><img alt="" src="${h.trait.scope === 'party' ? energy : strike}">${h.trait.scope === 'party' ? '지원' : '특성'}</span>${h.trait.desc(level)}`,
-    fullArt: heroAnimations[id][0].toDataURL(),
-    detail: `${starLine(id)}${traitText(id, level)}<br>${entryText(id, level)}`,
-    onPick: () => {
-      G.state.formation[slot] = id;
-      if (slot === 1) G.state.active = 0;
-      done('formation', slot);
-    },
+/** 편대 편성 (one screen, docs/terms.md): an info window (the hero last touched: portrait, 성급 stars, level, trait,
+ *  entry skill), the party's two slots (선봉, 후발) and the roster grid. Tapping a hero puts it in the next free slot
+ *  (two at most); tapping a chosen one takes it out, and the 후발 moves up to 선봉. 출발 starts once both are set.
+ *  The last run's party is filled in to begin with (profile.formation). Locked heroes are dim and do nothing. */
+export function openFormation() {
+  const ids = [...HERO_IDS].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
+  const party: HeroId[] = profile.formation.filter(id => heroOwned(id)).slice(0, 2);
+  let shown: HeroId | null = party[1] ?? party[0] ?? null;
+  G.mode = 'choice';
+  G.keys.clear();
+  G.pointer = null;
+  const root = $('choice');
+  root.classList.remove('reward-screen', 'formation-screen');
+  root.classList.add('party-screen');
+  $('choiceEyebrow').textContent = '편대 편성';
+  $('choiceTitle').textContent = '편대';
+  $('choiceSub').innerHTML = '';
+  const box = $('choiceCards');
+  box.className = 'cards party-cards';
+  box.innerHTML = `<div class="party-info" aria-live="polite"></div>
+    <div class="party-slots"><span class="party-label">편대</span><button class="party-slot" data-slot="0"></button><button class="party-slot" data-slot="1"></button></div>
+    <div class="party-grid"></div>`;
+  const info = box.querySelector('.party-info') as HTMLElement,
+    slots = [...box.querySelectorAll('.party-slot')] as HTMLButtonElement[],
+    grid = box.querySelector('.party-grid') as HTMLElement;
+  const go = document.createElement('button');
+  go.id = 'formationConfirm';
+  go.className = 'primary';
+  go.textContent = '출발';
+  root.querySelector('#formationConfirm')?.remove();
+  root.querySelector('.formation-preview')?.remove();
+  box.after(go);
+
+  const draw = () => {
+    // the info window: the hero last touched
+    if (shown) {
+      const h = HEROES[shown],
+        L = G.state.meta.heroes[shown];
+      info.innerHTML = `<div class="party-pic">${artImage(heroPictures[shown], 'party-portrait')}<span class="stars">${starText(pieceLevel(profile.heroes[shown]))}</span></div>
+        <div class="party-text"><h3>${h.name}<span class="party-level">Lv ${profile.levels[shown]}</span></h3><span class="tag">${h.projectile} · 특성 ${scopeLabel(shown)}</span><p>${traitText(shown, L)}<br>${entryText(shown, L)}</p></div>`;
+    } else
+      info.innerHTML =
+        '<p class="party-empty">함께 갈 고수 둘을 고른다. 1번은 선봉, 2번은 선봉이 쓰러지면 나서는 후발이다.</p>';
+    slots.forEach((el, i) => {
+      const id = party[i];
+      el.classList.toggle('on', !!id);
+      el.innerHTML = `<span class="party-n">${i + 1}</span>${id ? `${artImage(heroPictures[id], 'party-slot-art')}<span>${HEROES[id].name}</span>` : `<span class="party-slot-empty">${i ? '후발' : '선봉'}</span>`}`;
+    });
+    for (const el of grid.children as HTMLCollectionOf<HTMLButtonElement>) {
+      const at = party.indexOf(el.dataset.id as HeroId);
+      el.classList.toggle('sel', at >= 0);
+      el.setAttribute('aria-pressed', String(at >= 0));
+      const n = el.querySelector('.party-n') as HTMLElement;
+      n.textContent = at >= 0 ? String(at + 1) : '';
+      n.hidden = at < 0;
+    }
+    go.disabled = party.length < 2;
   };
-}
-export function openFormation(slot) {
-  const ids = [...HERO_IDS]
-    .filter(id => slot === 0 || id !== G.state.formation[0])
-    // owned heroes first (the sort is stable, so ties keep the roster order)
-    .sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
-  openChoice({
-    confirm: (slot === 0 ? '선봉으로' : '후발로') + ' 선택',
-    eyebrow: '편대 편성 · ' + (slot + 1) + ' / 2',
-    title: slot === 0 ? '선봉' : '후발',
-    sub:
-      slot === 0
-        ? '먼저 싸울 고수를 고른다. 특성은 싸우는 동안 켜진다. 각 영웅은 체력 1로 시작하고, 인연에게 얻은 기술은 편대가 함께 쓴다.'
-        : '선봉이 쓰러지면 나설 고수를 고른다. 나서는 순간 등장 기술이 펼쳐진다. 지원형의 특성은 대기 중에도 편대 전체에 켜진다.',
-    cards: ids.map(id => heroCard(id, slot)),
-  });
+  for (const id of ids) {
+    const el = document.createElement('button'),
+      locked = !heroOwned(id);
+    el.className = 'card party-hero' + (locked ? ' locked' : '');
+    el.dataset.id = id;
+    el.style.setProperty('--c', HEROES[id].color);
+    el.disabled = locked;
+    el.innerHTML = `<span class="party-n" hidden></span>${locked ? '<span class="party-lock">잠김</span>' : ''}${artImage(heroPictures[id], 'party-hero-art')}<h3>${HEROES[id].name}</h3>`;
+    el.onclick = () => {
+      if (G.mode !== 'choice' || locked) return;
+      const at = party.indexOf(id);
+      if (at >= 0) party.splice(at, 1);
+      else if (party.length < 2) party.push(id);
+      else return;
+      shown = id;
+      draw();
+    };
+    grid.appendChild(el);
+  }
+  slots.forEach(
+    (el, i) =>
+      (el.onclick = () => {
+        if (!party[i]) return;
+        shown = party[i];
+        draw();
+      }),
+  );
+  go.onclick = () => {
+    if (G.mode !== 'choice' || party.length < 2) return;
+    G.state.formation = [party[0], party[1]];
+    G.state.active = 0;
+    profile.formation = [party[0], party[1]];
+    saveProfile();
+    root.classList.add('hidden');
+    root.classList.remove('party-screen');
+    done('formation');
+  };
+  draw();
+  root.classList.remove('hidden');
+  (root.querySelector('.panel') as HTMLElement).scrollTop = 0;
 }

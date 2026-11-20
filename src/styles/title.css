@@ -200,16 +200,103 @@
   letter-spacing: 1px;
   opacity: 0.75;
 }
-.control-hint {
-  margin: 10px 0 12px;
-  text-align: center;
-  font-size: 11px;
-  color: #a0bbb8;
-  text-shadow: 0 1px 4px #001a2d;
+.title-screen #start.off:disabled {
+  font-size: 20px;
+  letter-spacing: 4px;
+  opacity: 1;
+  color: #8a958f;
+  background: #3a4644;
+  box-shadow: none;
 }
-.control-hint span {
-  color: #f1d7a3;
-  margin: 0 6px;
+.title-screen .hub-menu {
+  margin-top: 10px;
+}
+/* the party: 선봉 in front, 후발 a little smaller behind (ui/lobby.ts) */
+.hero-art #heroArt2 {
+  margin-left: -22%;
+  max-height: 86%;
+  z-index: -1;
+  animation-delay: -1.5s;
+}
+.hero-art img[hidden] {
+  display: none;
+}
+/* the stage card, turned with the arrows (ui/lobby.ts) */
+.stage-pick {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+.stage-arrow {
+  width: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid #caa56880;
+  border-radius: 6px;
+  background: #0c2a26cc;
+  color: #f3cf7a;
+  font-size: 24px;
+}
+.stage-arrow:disabled {
+  opacity: 0.25;
+}
+.stage-card {
+  flex: 1;
+  min-height: 64px;
+  padding: 9px 12px;
+  text-align: left;
+  border: 1px solid #caa568;
+  border-radius: 8px;
+  background: linear-gradient(#18363aee, #0d2023f2);
+  color: #e8e2cf;
+  box-shadow: 0 6px 18px #0007;
+}
+.stage-card.locked {
+  opacity: 0.55;
+  filter: grayscale(0.7);
+}
+.stage-no {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #d8b86a;
+}
+.stage-lock {
+  float: right;
+  padding: 0 6px;
+  font-size: 11px;
+  color: #ffb39a;
+  border: 1px solid #ffb39a88;
+  border-radius: 9px;
+}
+.stage-card h3 {
+  margin: 1px 0 3px;
+  font-size: 20px;
+  color: #fff1c8;
+  font-family: 'Noto Serif KR', 'Batang', serif;
+}
+.stage-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #c9dacf;
+}
+.stage-card b {
+  color: #ffe3a3;
+}
+.stage-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.stage-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #caa56866;
+}
+.stage-dots i.on {
+  background: #f3cf7a;
 }
 
 /* 영웅 · 인연 · 수련 */
@@ -318,9 +405,6 @@
   }
   .title-screen #start {
     padding: 14px;
-  }
-  .control-hint {
-    margin: 7px 0 8px;
   }
   .hub-icon {
     width: 34px;

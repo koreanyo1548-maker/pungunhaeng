@@ -41,12 +41,15 @@ try {
   await p.locator('#gachaClose').click();
   const begin = () =>
     p.evaluate(() => {
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       M.start();
-      for (let i = 0; i < 3; i++) {
-        const confirm = document.getElementById('formationConfirm');
-        document.querySelector('#choice button.card').click();
-        confirm?.click();
-      }
+      ((a = 0, b = 1) => {
+        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+        const h = [...document.querySelectorAll('#choice .party-hero')];
+        h[a].click();
+        h[b].click();
+        document.getElementById('formationConfirm').click();
+      })();
     });
   await begin();
   await p.evaluate(() => {

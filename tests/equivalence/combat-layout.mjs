@@ -6,13 +6,21 @@ if (!before || !after) throw Error('Usage: node tests/equivalence/combat-layout.
 const browser = await launch();
 async function snapshot(file, viewport) {
   const g = await openGame(file, { browser, viewport });
-  await g.page.locator('#start').click();
+  // newer builds pick the stage on the lobby card; older ones from a list after 강호에 나서기
+  if (await g.page.$('#stagePrev')) await g.setOut(0);
+  else {
+    await g.page.locator('#start').click();
+    await g.step(2);
+    await g.pick(0);
+  }
   await g.step(2);
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
+  // the 편대: one screen (two heroes, then 출발) in newer builds, two picks in older ones
+  if (await g.page.$('#choice .party-hero')) await g.party(0, 1);
+  else {
+    await g.pick(0);
+    await g.step(2);
+    await g.pick(0);
+  }
   await g.step(2);
   // builds before the stage redesign open a crossroads here; later ones start in play, so call an 인연 first
   if ((await g.mode()) !== 'choice') {

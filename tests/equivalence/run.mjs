@@ -34,6 +34,13 @@ async function run(file, seed, steps, course, frameMs) {
   await page.addInitScript(init(seed, frameMs));
   await page.goto('file://' + path.resolve(file) + '#debug&roster', { timeout: 120000 });
   await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000, polling: 200 });
+  // newer builds: the stage is picked on the lobby card before 강호에 나서기; older ones: from a list after it
+  const lobby = await page.evaluate(course => {
+    if (!document.getElementById('stagePrev')) return false;
+    while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click();
+    for (let k = 0; k < course; k++) document.getElementById('stageNext').click();
+    return true;
+  }, course);
   await page.evaluate(() => document.getElementById('start').click());
   const pick = () =>
     page.evaluate(() => {
@@ -41,12 +48,22 @@ async function run(file, seed, steps, course, frameMs) {
         document.querySelector('#choice .act') || document.querySelector('#choice button.card:not([disabled])');
       if (el) el.click();
     });
-  for (const i of [course, 0, 0])
-    await page.evaluate(i => {
+  if (!lobby) await page.evaluate(i => document.querySelectorAll('#choice button.card')[i].click(), course);
+  // the 편대 screen: one screen (pick the first two, then 출발) in newer builds, two steps in older ones
+  await page.evaluate(() => {
+    const party = document.querySelectorAll('#choice .party-hero');
+    if (party.length) {
+      party[0].click();
+      party[1].click();
+      document.getElementById('formationConfirm').click();
+      return;
+    }
+    for (let i = 0; i < 2; i++) {
       const confirm = document.getElementById('formationConfirm');
-      document.querySelectorAll('#choice button.card')[i].click();
+      document.querySelectorAll('#choice button.card')[0].click();
       confirm?.click();
-    }, i);
+    }
+  });
   await pick();
   await page.evaluate(ids => {
     window.__g.god();

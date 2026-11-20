@@ -369,7 +369,7 @@
 
 ### 6.6 2단계 구현 기록
 
-- **흐름**: 스테이지 선택 → 편대 → 비행 ↔ 만남 → 보스 → 결과(`systems/scene-flow.ts`). `systems/run-plan.ts`와 `scenes/dono.ts`·`tuhak.ts`·`inn.ts`를 지웠다. `scenes/final-gate.ts`는 흐름 밖에 남겼다(심마 데이터는 `data/stages.ts`의 `SIMMA`).
+- **흐름**: 스테이지 선택 → 편대 → 비행 ↔ 만남 → 보스 → 결과(`systems/scene-flow.ts`). (2026-11: 스테이지 선택은 로비의 스테이지 카드로 옮겼다. [메타 성장 계획](meta-progression-plan.md)) `systems/run-plan.ts`와 `scenes/dono.ts`·`tuhak.ts`·`inn.ts`를 지웠다. `scenes/final-gate.ts`는 흐름 밖에 남겼다(심마 데이터는 `data/stages.ts`의 `SIMMA`).
 - **스테이지**: `data/courses.ts` → `data/stages.ts`. 스테이지마다 배경(`world`), 지형, 보스, 거리, 게이지 크기. `G.state.stage`가 스테이지 번호(1~6)라서 적 강도·보스 체력이 번호를 따른다. 하늘 배경의 상하 이동은 `TUNE.freeFlight = false`로 꺼 두었다(코드는 남김).
 - **새 파일**: `systems/encounter.ts`(처치 게이지·만남 열기), `systems/alignment.ts`(저울·해금·후보), `scenes/encounter.ts`(인연 의뢰·행인 화면, 갈림길 화면을 대신함).
 - **인연 단계**: `data/npcs.ts`의 `side`·`unlock`·`levels`, `data/skills.ts`는 인연 기술 18개(인연마다 1·2·3단계). 1단계 수치는 읽는 곳에서 `bondGraze`·`bondArmor`·`bondFireRate`·`bondPower`로 쓰고, 체력·필살기는 배울 때 한 번 더한다. 2·3단계는 기존 발동 장치(`trig`, 주기 기술)를 그대로 쓴다. 기술 ID는 그림과 맞물려 있어 옛 이름을 유지했다(예: 운류보 = `biyeon`, 녹림도법 = `art_dobeop`).

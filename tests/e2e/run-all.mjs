@@ -50,20 +50,16 @@ const S = () => {
   };
 };
 
-/** title → stage (index into the stage list) → 선봉 → 후발: play starts */
+/** lobby: the stage card (index, 0 = S1) → 강호에 나서기 → 편대 (the first two heroes) → 출발: play starts */
 async function setup(g, stage = 0) {
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
   await setupFrom(g, stage);
 }
-/** from the stage select already open: stage → 선봉 → 후발 */
+/** from the lobby: stage card → 강호에 나서기 → 편대 → 출발 */
 async function setupFrom(g, stage) {
-  await g.pick(stage);
+  await g.setOut(stage);
   await g.step(2);
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
+  await g.party(0, 1);
   await g.step(2);
 }
 
@@ -159,15 +155,12 @@ async function scenarioA(browser, stage, seed) {
   const g = await openGame(file, { browser, seed });
   const log = [];
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  const list = await g.cards();
+  // the lobby opens on the highest open stage: all six in the debug roster
+  const lobby = await g.lobby();
   check(
     f,
-    list.length === 6 &&
-      list.every(c => !c.disabled) &&
-      list.map(c => c.title).join() === '산길,청죽림,폐사,부유암,유운봉,천마성',
-    `stage select: six stages, all open in debug roster (${list.map(c => c.title + (c.disabled ? '×' : '')).join(' ')})`,
+    lobby.dots === 6 && lobby.on === 6 && /S6/.test(lobby.text) && /천마성/.test(lobby.text) && lobby.start,
+    `lobby: six stages, S6 shown first (${JSON.stringify(lobby)})`,
   );
   await setupFrom(g, stage);
   let s = await g.state(S);
@@ -273,7 +266,12 @@ async function scenarioA(browser, stage, seed) {
     `돕는다: its point (${side}) moves 10% of the odds from the passer-by (${JSON.stringify(s.odds)})`,
   );
   const coins = s.coins;
-  await g.eval(() => (window.__g.state.forceNpc = 'yakseon'));
+  // no 엽전 on the field to catch meanwhile
+  await g.eval(() => {
+    window.__g.state.forceNpc = 'yakseon';
+    window.__g.pickups.length = 0;
+    window.__g.enemies.length = 0;
+  });
   await succeed(g);
   s = await g.state(S);
   check(
@@ -345,14 +343,7 @@ async function scenarioA(browser, stage, seed) {
   s = await g.state(S);
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
   check(f, s.mode === 'result' && /돌파/.test(title), `beating the boss ends the run (${title})`);
-  const wantScenes = [
-    'stageSelect',
-    'formation',
-    'formation',
-    'stage',
-    ...Array(6).fill(['encounter', 'stage']).flat(),
-    'result',
-  ];
+  const wantScenes = ['formation', 'stage', ...Array(6).fill(['encounter', 'stage']).flat(), 'result'];
   const got = await g.eval(() => window.__g.sceneLog);
   check(
     f,
@@ -494,13 +485,14 @@ async function scenarioC(browser, seed) {
   const P = () => g.state(() => JSON.parse(JSON.stringify(window.__g.profile)));
   check(f, (await P()).stages === 1, 'a new save opens S1');
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  let list = await g.cards();
+  // the lobby: S1, and S2 locked behind the arrow (강호에 나서기 off there)
+  let lobby = await g.lobby();
+  await g.eval(() => document.getElementById('stageNext').click());
+  const next = await g.lobby();
   check(
     f,
-    list.map(c => c.disabled).join() === 'false,true,true,true,true,true' && /잠김/.test(list[1].tag),
-    `only S1 can be picked (${list.map(c => c.tag)})`,
+    lobby.dots === 2 && lobby.on === 1 && lobby.start && next.locked && !next.start && /잠김/.test(next.text),
+    `only S1 can set out; S2 shows locked (${JSON.stringify([lobby, next])})`,
   );
   await setupFrom(g, 0);
   await g.eval(() => window.__g.god());
@@ -510,11 +502,15 @@ async function scenarioC(browser, seed) {
   const won = await P();
   check(f, won.stages === 2 && /S2 청죽림 열림/.test(eyebrow), `beating S1 opens S2 (${eyebrow})`);
   check(f, won.coins >= 300, `a victory banks the clear bonus (${won.coins})`);
-  // S1 again: nothing more opens
+  // S1 again: nothing more opens. 다시 강호로 goes back to the lobby, which shows S2 (the highest open) first
   await g.eval(() => document.getElementById('retry').click());
   await g.step(2);
-  list = await g.cards();
-  check(f, list.map(c => c.disabled).join() === 'false,false,true,true,true,true', 'S1 and S2 can be picked now');
+  lobby = await g.lobby();
+  check(
+    f,
+    (await g.mode()) === 'title' && lobby.dots === 3 && lobby.on === 2 && lobby.start,
+    `back in the lobby: S1 and S2 open, S2 first, S3 locked (${JSON.stringify(lobby)})`,
+  );
   await setupFrom(g, 0);
   await g.eval(() => window.__g.god());
   await reachBoss(g);
@@ -985,7 +981,7 @@ async function scenarioF(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed, roster: false });
   const formation = () =>
-    g.page.$$eval('#choice button.card', els =>
+    g.page.$$eval('#choice .party-hero', els =>
       els.map(e => ({ name: e.querySelector('h3').textContent, locked: e.classList.contains('locked') })),
     );
   // 영웅 screen: grid, joined first; popups
@@ -1014,9 +1010,7 @@ async function scenarioF(browser, seed) {
   await g.eval(() => document.getElementById('collectionClose').click());
 
   // formation: owned first; a locked hero cannot be confirmed
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  await g.pick(0); // S1 산길
+  await g.setOut(0); // S1 산길
   await g.step(2);
   let cards = await formation();
   check(
@@ -1024,21 +1018,24 @@ async function scenarioF(browser, seed) {
     cards.length === 12 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
     `출전: 2 owned first, 10 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
   );
-  await g.pick(-1);
-  await g.step(2);
-  const stuck = await g.eval(() => ({
-    title: document.getElementById('choiceTitle').textContent,
-    disabled: document.getElementById('formationConfirm').disabled,
-    detail: document.querySelector('.formation-preview').textContent,
-  }));
+  // a locked hero is dim and does nothing; 출발 needs two
+  const stuck = await g.eval(() => {
+    const h = [...document.querySelectorAll('#choice .party-hero')];
+    h.at(-1).click();
+    h[0].click();
+    return {
+      title: document.getElementById('choiceTitle').textContent,
+      disabled: document.getElementById('formationConfirm').disabled,
+      picked: document.querySelectorAll('#choice .party-hero.sel').length,
+      lockedDisabled: h.at(-1).disabled,
+    };
+  });
   check(
     f,
-    stuck.title === '선봉' && stuck.disabled && /뽑기/.test(stuck.detail),
-    `a locked hero is previewed and cannot be confirmed (${JSON.stringify(stuck)})`,
+    stuck.title === '편대' && stuck.disabled && stuck.picked === 1 && stuck.lockedDisabled,
+    `a locked hero cannot be picked; one hero cannot start (${JSON.stringify(stuck)})`,
   );
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
+  await g.party(0, 1);
   await g.step(2);
   // a piece of 철혈 and pieces of 풍운객 arrive mid-run (as from 뽑기): this run keeps its snapshot
   await g.eval(() =>
@@ -1052,7 +1049,7 @@ async function scenarioF(browser, seed) {
   await waitForDeath(g);
 
   // 레벨업 on the 영웅 screen: 엽전 for one level, capped by 성급 (풍운객 is ★3 now: up to Lv 30)
-  await g.eval(() => document.getElementById('home').click());
+  await g.eval(() => document.getElementById('retry').click());
   await g.eval(() => window.__g.loadProfile({ ...window.__g.profile, coins: 1000 }));
   await g.eval(() => document.getElementById('openRoster').click());
   const button = () =>
@@ -1097,9 +1094,7 @@ async function scenarioF(browser, seed) {
   await g.eval(() => document.getElementById('collectionClose').click());
 
   // next run: 철혈 joined, 풍운객 ★3 (6 pieces) and Lv 2 in the preview and the snapshot
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  await g.pick(0);
+  await g.setOut(0);
   await g.step(2);
   cards = await formation();
   check(
@@ -1107,15 +1102,17 @@ async function scenarioF(browser, seed) {
     cards.filter(c => !c.locked).length === 3 && cards.slice(0, 3).every(c => !c.locked),
     `next run: 3 owned first (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
   );
-  const preview = await g.eval(() => document.querySelector('.formation-preview').textContent);
+  // the last run's party is filled in; tapping 풍운객's slot shows him in the info window
+  const preview = await g.eval(() => {
+    document.querySelector('#choice .party-slot').click();
+    return document.querySelector('.party-info').textContent;
+  });
   check(
     f,
-    /성급 3/.test(preview) && /Lv 2\/30/.test(preview) && /반경 100/.test(preview) && /시간 \+50%/.test(preview),
-    `풍운객 shows 성급 3, the stronger trait and the ★3 entry change (${preview})`,
+    /★★★☆☆/.test(preview) && /Lv 2/.test(preview) && /반경 100/.test(preview) && /시간 \+50%/.test(preview),
+    `풍운객 shows ★★★, Lv 2, the stronger trait and the ★3 entry change (${preview})`,
   );
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
+  await g.party(0, 1);
   await g.step(2);
   const level = await g.state(() => window.__g.state.meta.heroes);
   check(f, level.pungun === 2 && level.cheolhyeol === 0, `snapshot has 성급 − 1 (${JSON.stringify(level)})`);
@@ -1178,7 +1175,7 @@ async function scenarioG(browser, seed) {
     window.__g.player.inv = 0;
   });
   await waitForDeath(g);
-  await g.eval(() => document.getElementById('home').click());
+  await g.eval(() => document.getElementById('retry').click());
   await g.eval(() => document.getElementById('openCards').click());
   const grid = await g.page.$$eval('#collectionGrid .tile', els => els.map(e => e.textContent));
   // 인연 order: 청운 도인, 혈마 밀사, 철벽 노승, 비연 낭자, 떠돌이 약선, 녹림 의적
@@ -1214,8 +1211,6 @@ async function scenarioG(browser, seed) {
   check(f, afterOne.join() === 'true,false' && afterTwo, `Escape closes the popup, then the screen`);
 
   // a run with these 호감도: the snapshot, and the level at work
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
   await setupFrom(g, 0);
   const meta = await g.state(() => window.__g.state.meta.cards);
   check(
@@ -1278,6 +1273,8 @@ async function scenarioH(browser, seed) {
   const gaps = await g.eval(() => [0, 6000, 12000, 20000].map(m => window.__g.rowGap(m, 12000)));
   check(f, gaps.join() === '1.7,1.575,1.45,1.45', `row gap 1.7 → 1.45 s with the stage's progress (${gaps})`);
   await g.eval(() => {
+    // no 운석 소나기 (it holds rows back at a step's end)
+    window.__g.state.showerSteps = [1, 2, 3, 4, 5, 6];
     window.__g.state.distance = window.__g.stageDistance / 2;
     window.__g.state.rowTimer = 0;
   });
@@ -1301,7 +1298,8 @@ async function scenarioH(browser, seed) {
   const p0 = await P();
   await g.step(12);
   const p1 = await P();
-  await g.step(60);
+  // it falls fast (gravity 1800): look at it 0.7 s in, before it leaves the screen
+  await g.step(30);
   const p2 = await P();
   check(
     f,
@@ -1423,6 +1421,8 @@ async function scenarioH(browser, seed) {
     };
     s.stats = {};
     s.hyper = 2;
+    // no basic shots: only what 무아지경 cuts down is counted (shots kill weak rows far up, with 근접 ×2)
+    window.__g.player.fire = 1e6;
   });
   const k0 = await g.state(() => window.__g.state.kills);
   // no 근접 × for what 무아지경 cuts down: no 근접 label while it runs
@@ -1440,6 +1440,7 @@ async function scenarioH(browser, seed) {
     kills: window.__g.state.kills,
     stats: window.__g.state.stats,
   }));
+  await g.eval(() => (window.__g.player.fire = 0));
   const hyperKills = h1.kills - k0;
   check(
     f,
@@ -1472,6 +1473,8 @@ async function scenarioI(browser, seed) {
     g.eval(async p => {
       const G = window.__g;
       G.state.distance = p * G.stageDistance;
+      // no 운석 소나기 (it holds rows back at a step's end)
+      G.state.showerSteps = [1, 2, 3, 4, 5, 6];
       G.state.meetTimer = 1e6;
       if (G.state.quest) G.state.quest.left = 1e6;
       G.enemies.length = 0;

@@ -25,7 +25,7 @@ async function layout(file, viewport) {
         '.hub-menu',
         '#choice',
         '#choice .panel',
-        '.formation-body',
+        '.party-portrait',
         '#formationConfirm',
         '#blast',
       ];
@@ -39,14 +39,22 @@ async function layout(file, viewport) {
       );
     });
   snapshots.push(await snap());
-  await g.page.locator('#start').click();
-  await g.step(2);
-  await g.pick(0);
+  // the stage: on the lobby card (newer builds) or from a list after 강호에 나서기 (older ones)
+  if (await g.page.$('#stagePrev')) await g.setOut(0);
+  else {
+    await g.page.locator('#start').click();
+    await g.step(2);
+    await g.pick(0);
+  }
   await g.step(2);
   snapshots.push(await snap());
-  await g.pick(0);
-  await g.step(2);
-  await g.pick(0);
+  // the 편대: one screen (newer) or two picks (older)
+  if (await g.page.$('#choice .party-hero')) await g.party(0, 1);
+  else {
+    await g.pick(0);
+    await g.step(2);
+    await g.pick(0);
+  }
   await g.step(2);
   snapshots.push(await snap());
   assert.deepEqual(g.errors, []);

@@ -43,12 +43,15 @@ try {
           ].map(p => import(p)),
         )),
       );
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       document.getElementById('start').click();
-      for (let i = 0; i < 3; i++) {
-        const c = document.getElementById('formationConfirm');
-        document.querySelector('#choice button.card').click();
-        c?.click();
-      }
+      ((a = 0, b = 1) => {
+        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+        const h = [...document.querySelectorAll('#choice .party-hero')];
+        h[a].click();
+        h[b].click();
+        document.getElementById('formationConfirm').click();
+      })();
       const { G } = M;
       G.banner = null;
       G.bossIntro = null;

@@ -61,16 +61,34 @@ async function run(viewport) {
   const snap = async label => Object.assign(all, await dump(page, label));
   await step(30);
   await snap('title');
+  // newer builds: the stage on the lobby card (S1), then 강호에 나서기 opens the 편대; older ones: a stage list first
+  const lobby = await page.evaluate(() => {
+    if (!document.getElementById('stagePrev')) return false;
+    while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click();
+    return true;
+  });
   await click('#start');
   await step(2);
-  await snap('course');
-  await click('#choice button.card');
-  await step(2);
+  if (!lobby) {
+    await snap('course');
+    await click('#choice button.card');
+    await step(2);
+  }
   await snap('formation');
-  await click('#choice button.card');
-  await click('#formationConfirm');
-  await click('#choice button.card');
-  await click('#formationConfirm');
+  // the 편대 screen (one screen: two heroes, then 출발) or the older two-step one
+  if (await page.$('#choice .party-hero')) {
+    await page.evaluate(() => {
+      const h = document.querySelectorAll('#choice .party-hero');
+      h[0].click();
+      h[1].click();
+    });
+    await click('#formationConfirm');
+  } else {
+    await click('#choice button.card');
+    await click('#formationConfirm');
+    await click('#choice button.card');
+    await click('#formationConfirm');
+  }
   await step(2);
   await snap('crossroads');
   await click('#choice .act');

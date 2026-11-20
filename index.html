@@ -75,12 +75,17 @@
           <p class="subtitle">질주에서 경공으로, 경공에서 어검으로</p>
           <div class="hero-art">
             <div class="halo"></div>
-            <img id="heroArt" alt="붉은 수건과 청록 띠를 두른 백의 협객" />
+            <img id="heroArt" alt="편대 선봉" /><img id="heroArt2" alt="편대 후발" />
           </div>
           <div class="launch">
+            <div class="stage-pick">
+              <button class="stage-arrow" id="stagePrev" aria-label="이전 스테이지">‹</button>
+              <div class="stage-card" id="stageCard" aria-live="polite"></div>
+              <button class="stage-arrow" id="stageNext" aria-label="다음 스테이지">›</button>
+            </div>
+            <div class="stage-dots" id="stageDots"></div>
             <p class="best-record" id="introBest">최고 기록 0</p>
             <button class="primary" id="start" disabled>강호를 준비하는 중…</button>
-            <p class="control-hint"><span>←</span> 좌우로 움직이면 공격은 자동 <span>→</span></p>
             <div class="hub-menu">
               <button class="hub-tile" id="openRoster">
                 <span class="hub-icon"><img id="hubHeroIcon" alt="" /></span><b>영웅</b
@@ -120,8 +125,7 @@
             <p class="settle" id="settle"></p>
             <div class="summary" id="summary"></div>
             <button class="primary" id="retry">다시 강호로</button
-            ><button class="secondary" id="resultGacha">뽑기하러 가기</button
-            ><button class="secondary" id="home">처음 화면</button>
+            ><button class="secondary" id="resultGacha">뽑기하러 가기</button>
           </div>
         </div>
         <div class="overlay modal hidden" id="choice">

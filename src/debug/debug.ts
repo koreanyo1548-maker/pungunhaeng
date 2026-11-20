@@ -76,6 +76,9 @@ if (location.hash.includes('debug'))
     loadProfile,
     /** run the rest of the stage's distance at once (the boss comes next step) */
     skipFlight() {
+      // no 운석 소나기 on the way (the boss comes next step)
+      G.state.showerSteps = [1, 2, 3, 4, 5, 6];
+      G.state.shower = undefined;
       G.state.distance = Math.max(G.state.distance, stageDistance());
     },
     /** make a 만남 due: it opens at the end of the next step (as its time would) */

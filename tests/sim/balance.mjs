@@ -95,9 +95,7 @@ const botScript = () => {
 async function oneRun(browser, stage, seed) {
   const g = await openGame(file, { browser, seed });
   await g.eval(botScript);
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  await g.pick(stage - 1);
+  await g.setOut(stage - 1);
   await g.step(2);
   await g.pick(0);
   await g.step(2);

@@ -31,12 +31,15 @@ try {
           ].map(x => import(x)),
         )),
       );
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       document.getElementById('start').click();
-      for (let i = 0; i < 3; i++) {
-        let c = document.getElementById('formationConfirm');
-        document.querySelector('#choice button.card').click();
-        c?.click();
-      }
+      ((a = 0, b = 1) => {
+        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+        const h = [...document.querySelectorAll('#choice .party-hero')];
+        h[a].click();
+        h[b].click();
+        document.getElementById('formationConfirm').click();
+      })();
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
     // passers-by (forced) in portrait order; helping one takes its 의뢰 and adds 정 or 사 (rolled per passer-by)

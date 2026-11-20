@@ -60,15 +60,16 @@ try {
     // a run with the given party, in play, with an empty field
     window.party = (first, second) => {
       M.clearSkillAnimations();
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       M.start();
-      document.querySelector('#choice button.card').click(); // S1 산길
+      for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
       for (const id of [first, second]) {
         const name = M.HEROES[id].name;
-        [...document.querySelectorAll('#choice button.card')]
+        [...document.querySelectorAll('#choice .party-hero')]
           .find(c => c.querySelector('h3')?.textContent === name)
           .click();
-        document.getElementById('formationConfirm').click();
       }
+      document.getElementById('formationConfirm').click();
       const { G } = M;
       G.time = 10;
       G.state.phase = 'flight';

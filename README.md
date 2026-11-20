@@ -44,7 +44,7 @@ python tools/convert-webp.py --check
 
 - **고정 시간 간격**: 시뮬레이션은 화면 주사율과 상관없이 1/60초 단위로 진행합니다 (`systems/loop.ts`). 60·90·120Hz에서 같은 판이 나옵니다.
 - **시드 난수**: 게임플레이 난수(`random`, `rnd`)와 연출 난수(`fxRandom`, `fxRnd`)를 나눴습니다 (`core/rng.ts`). 파티클·화면 흔들림은 게임 결과에 영향을 주지 않습니다.
-- **장면 흐름**: 한 판의 장면 순서(스테이지 선택 → 편대 → 비행 ↔ 만남 → 보스 → 결과)는 `systems/scene-flow.ts`의 전환표 한 곳에서 정합니다. 장면은 끝났다는 것만 알립니다(`done`).
+- **장면 흐름**: 한 판의 장면 순서(로비 스테이지 카드 → 편대 → 비행 ↔ 만남 → 보스 → 결과)는 `systems/scene-flow.ts`의 전환표 한 곳에서 정합니다. 장면은 끝났다는 것만 알립니다(`done`).
 - **스테이지 단계**: 한 스테이지 안의 비행(정해진 거리) → 경고 → 보스 → 돌파는 `systems/stage-phases.ts`의 단계표에 있고, 단계 전환은 `setPhase`로만 합니다.
 - **스테이지와 만남**: 스테이지 6개는 `data/stages.ts`(배경, 보스, 거리). 만남이 열리는 때는 `systems/encounter.ts`, 정·사와 만남 확률은 `systems/alignment.ts`, 점수·줄 간격·정산 보너스는 `systems/score.ts`, 의뢰와 인연 단계는 `systems/quest.ts`, 행인은 `systems/virtue.ts`에 있습니다. 설계는 `docs/ability-redesign-plan.md`.
 - **이벤트 버스**: 전투는 일어난 일만 알리고(`emit`), 의뢰와 인연 기술이 구독합니다 (`core/events.ts`). 의뢰 리스너가 먼저 등록되어 있어야 합니다 (`main.ts`).
@@ -78,7 +78,7 @@ tests/
 ```bash
 npm test               # 타입 검사 → 한 파일 빌드 → e2e (게임을 켜는 테스트: 큰 구조 변경 때만, docs/workflow.md 3장)
 
-# e2e: 스테이지 선택·해금, 만남(행인 의뢰, 인연 의뢰 따름·거스름·실패), 정·사와 만남 확률,
+# e2e: 로비 스테이지 카드·해금, 만남(행인 의뢰, 인연 의뢰 따름·거스름·실패), 정·사와 만남 확률,
 #      인연 1→2→3단계→엽전, 만남 시점, 거리 → 보스 → 결과, 뽑기·영웅 레벨업·인연 호감도. 실패하면 종료 코드 1
 npm run test:e2e
 

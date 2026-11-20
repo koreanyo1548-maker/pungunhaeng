@@ -1,7 +1,7 @@
 // Pickups: 엽전 and the in-play items (docs/combat-stats.md). They drop from kills: each pops up from where the enemy
 // was, slows, then falls (PICKUP_FALL) and leaves the screen unless it is caught; only a magnet (황연청, the 자석
-// item) pulls them in (systems/loop.ts). A kill drops one 엽전 and rolls each item's chance (BASELINE.itemChance; a
-// 무아지경 kill drops 엽전 only). An item hangs at the top of its pop (BASELINE.itemHang) before it falls. A 보물상자
+// item) pulls them in (systems/loop.ts). A kill drops one 엽전 and, with BASELINE.itemDrop.chance, one item picked by its
+// weights (a 무아지경 kill drops 엽전 only). An item hangs at the top of its pop (BASELINE.itemHang) before it falls. A 보물상자
 // bursts into 보석 (gem), each worth BASELINE.chest.gemCoins 엽전, thrown wider than 엽전 (docs/balance-baseline.md):
 //   hyper  무아지경: BASELINE.hyper.seconds of invincibility at BASELINE.hyper.speed × the run, cutting through all;
 //          the end bursts the screen (entities/enemies.ts hyperFinish)
@@ -9,6 +9,7 @@
 //   double 점수 두 배: score counts twice for ITEM_SECONDS (systems/score.ts addScore)
 // Taking an item whose effect is running sets it back to its full time (it does not stack).
 import { G } from '../core/context';
+import { emit } from '../core/events';
 import { chime, tone } from '../core/audio';
 import { rnd } from '../core/math';
 import { random } from '../core/rng';
@@ -22,7 +23,7 @@ import { BASELINE } from '../data/baseline';
 const COIN = ramp('#ffdf87');
 
 export type PickupKind = 'coin' | 'gem' | 'hyper' | 'magnet' | 'double';
-/** the items a kill can drop, in the order they are rolled (each with its BASELINE.itemChance) */
+/** the items a kill can drop (picked by BASELINE.itemDrop.weights) */
 export const ITEMS = ['hyper', 'magnet', 'double'] as const;
 /** seconds the 자석 and 점수 두 배 items last */
 export const ITEM_SECONDS = 10;
@@ -50,23 +51,21 @@ export function addPickup(kind: PickupKind, x: number, y: number) {
     hang: isCoinLike(kind) ? 0 : BASELINE.itemHang,
   });
 }
-/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, each item with its chance. */
+/** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, maybe one item. */
 export function dropLoot(x: number, y: number, coins: number, items = true) {
   for (let i = 0; i < coins; i++) addPickup('coin', x + rnd(-15, 15), y + rnd(-10, 10));
-  if (!items) return;
-  for (const kind of ITEMS) {
-    const chance =
-      kind === 'hyper' && G.state.elapsed < G.state.hyperDropReducedUntil
-        ? BASELINE.hyper.reducedDropChance
-        : BASELINE.itemChance[kind];
-    if (random() >= chance) continue;
-    addPickup(kind, x, y);
-    G.state.drops[kind]++;
-    if (kind === 'hyper') {
-      G.state.hyperDrops++;
-      G.state.hyperDropReducedUntil = G.state.elapsed + BASELINE.hyper.reducedDropSeconds;
-    }
-  }
+  if (!items || random() >= BASELINE.itemDrop.chance) return;
+  const kind = pickItem(random());
+  addPickup(kind, x, y);
+  G.state.drops[kind]++;
+  if (kind === 'hyper') G.state.hyperDrops++;
+}
+/** the item a roll (0 to 1) picks by BASELINE.itemDrop.weights */
+export function pickItem(roll: number): (typeof ITEMS)[number] {
+  const w = BASELINE.itemDrop.weights;
+  let left = roll * ITEMS.reduce((sum, kind) => sum + w[kind], 0);
+  for (const kind of ITEMS) if ((left -= w[kind]) < 0) return kind;
+  return ITEMS[ITEMS.length - 1];
 }
 /** A 보물상자 bursts into BASELINE.chest.gems 보석 at (x, y). */
 export function dropGems(x: number, y: number) {
@@ -79,11 +78,13 @@ export function collect(p) {
     const n = BASELINE.chest.gemCoins;
     G.state.coins += n;
     addScore(COIN_SCORE * n);
+    emit('coin', { n });
     tone(1700, 0.06, 'sine', 0.05, 2300);
     burst(p.x, p.y, '#ff6f8e', 5, 80);
   } else if (p.kind === 'coin') {
     G.state.coins++;
     addScore(COIN_SCORE);
+    emit('coin', { n: 1 });
     if (G.state.coins % 3 === 0) tone(1400 + (G.state.coins % 5) * 100, 0.045, 'sine', 0.045, 1800);
     if (!pfx('collect', p.x, p.y + 40, { palette: COIN })) burst(p.x, p.y, '#ffdf87', 3, 60);
   } else if (p.kind === 'magnet') {

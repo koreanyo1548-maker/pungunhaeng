@@ -6,14 +6,22 @@ export interface SkillInstance {
   flash?: number;
 }
 export interface Quest {
-  npc: string;
+  /** the 인연's id, or null for a passer-by's 의뢰 */
+  npc: string | null;
+  /** a passer-by's portrait (ambient art key) and name */
+  who?: { art: string; name: string };
+  /** follow / defy (인연), help / ignore (passer-by) */
   mode: string;
+  /** the side the choice adds a point to (+1 정, −1 사) */
+  move: number;
   t: string;
   target: number;
   prog: number;
   br: string;
   done: boolean;
   failed: boolean;
+  /** seconds of flight left to meet it (BASELINE.meet.quest); the next 만남 opens when it runs out */
+  left: number;
   tick?: number;
   /** combo 의뢰: the combo already running when it was accepted (only the chain after it counts) */
   from?: number;
@@ -45,8 +53,6 @@ export interface RunState {
   /** seconds left of the 점수 두 배 item */
   double: number;
   hyperDrops: number;
-  /** run elapsed time when the normal 무아지경 drop chance returns */
-  hyperDropReducedUntil: number;
   drops: { hyper: number; magnet: number; double: number; chest: number };
   combo: number;
   comboTimer: number;
@@ -88,23 +94,25 @@ export interface RunState {
   meta: Meta;
   /** debug: the 인연 the next 만남 brings */
   forceNpc: string | null;
-  /** 선 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
+  /** 정 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
   good: number;
-  /** 악 points this run: only grow; each adds 5% to the 엽전 banked */
+  /** 사 points this run: only grow; each adds 5% to the 엽전 banked */
   evil: number;
-  /** 인연 the points have unlocked this run */
-  unlocked: string[];
+  /** who comes to a 만남: the weights of a passer-by, a 정파 and a 사파 인연 (systems/alignment.ts) */
+  meetOdds: { passer: number; good: number; evil: number };
+  /** the 의뢰 the open 만남 offers (rolled when it opens: the cards show them), by choice */
+  offer?: Quest[];
   /** each 인연's level this run, 0 to 3 */
   bond: Record<string, number>;
-  /** 처치 게이지 toward the next 만남 (systems/encounter.ts) */
-  gauge: number;
-  gaugeEarned: number;
+  /** seconds of flight before the next 만남 when no 의뢰 runs, and the whole wait (systems/encounter.ts) */
+  meetTimer: number;
+  meetWait: number;
   baseScore: number;
-  /** the gauge is full: a 만남 opens at the next safe step */
+  /** a 만남 is due: it opens at the next safe step */
   meetReady: boolean;
   /** 만남 so far this run */
   encounters: number;
-  /** passers-by met this run (their level and portrait) */
+  /** passers-by met this run (their portrait goes in order) */
   passers: number;
   /** a hero entered during this step, so a 만남 waits one step (cleared when the next step starts) */
   enteredStep?: boolean;

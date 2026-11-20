@@ -13,4 +13,7 @@ export const COND = {
   nearKill: { br: 'gang', label: '근접 처치 (근접 ×3 거리)' },
   rowClear: { br: 'gang', label: '한 줄 전멸' },
   combo: { br: 'gang', label: '연속 처치' },
+  /** a passer-by's 의뢰 (systems/virtue.ts) */
+  kills: { br: 'gang', label: '적 처치' },
+  coins: { br: 'gi', label: '엽전 획득' },
 };

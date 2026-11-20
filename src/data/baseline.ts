@@ -32,11 +32,15 @@ export const BASELINE = {
   meteor: { every: [15, 45], warn: 2 },
   /** 무아지경: `seconds` long at `speed` × the running speed, it cuts through everything; at its end the screen
    *  bursts and the enemies left turn into 엽전 */
-  hyper: { seconds: 3, speed: 6, descent: 2.5, reducedDropSeconds: 10, reducedDropChance: 0.015 },
-  /** chance a kill drops each item; a 무아지경 kill drops none */
-  itemChance: { hyper: 0.03, magnet: 0.02, double: 0.02 },
+  hyper: { seconds: 2, speed: 6, descent: 2.5 },
+  /** a kill drops an item with `chance`; which one is picked by `weights` (무아지경 4 : 자석 4 : 점수 두 배 2);
+   *  a 무아지경 kill drops none */
+  itemDrop: { chance: 0.01, weights: { hyper: 4, magnet: 4, double: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
+  /** 만남: the first opens `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has `quest` s of flight
+   *  to be met, and the next 만남 opens when it is met or its time runs out (systems/encounter.ts) */
+  meet: { first: 10, quest: 60 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
    *  and it bursts into `gems` 보석 worth `gemCoins` 엽전 each */
   chest: { perRow: 0.018, gems: 10, gemCoins: 5 },

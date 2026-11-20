@@ -1,35 +1,43 @@
-// 처치 게이지 (docs/ability-redesign-plan.md, 4.2 and 7.6). Kills fill it, each by its enemy's tier (1 to 6, the
-// tier ladder; a 보물상자 or 바위 counts as the step's strong tier), so the few strong kills of a late step fill it as
-// steadily as the many weak ones of the start. It is apart from the score. When it is full a 만남 opens: an 인연
-// with an 의뢰 when one can come (systems/alignment.ts), otherwise a passer-by (scenes/encounter.ts).
-//   - Only in flight: the boss warning and the boss fight neither fill it nor open a 만남; the boss kill is not
-//     counted. Kills by 필살기 and 무아지경 count.
-//   - Overflow carries into the next gauge, but never fills it: one 만남 at a time.
-//   - 정요란 fills it faster while she fights (her trait).
+// 만남 timing (docs/ability-redesign-plan.md, 4.2 and 7.6). The first 만남 opens BASELINE.meet.first s into the
+// flight. Each 만남 brings an 의뢰 with BASELINE.meet.quest s of flight to meet it: the next 만남 opens as soon as it is
+// met, or when its time runs out (it fails). A passer-by brings an 의뢰 too. So meeting 의뢰 fast means more 만남
+// (and more 인연 skills).
+//   - Only flight time counts: the 만남 window, the boss warning and the boss fight do not. An 의뢰 running at the
+//     boss warning carries into the boss fight with no clock; the end of the run fails it.
 //   - A 만남 opens at the end of a step, and not in the step a hero entered (it waits one step).
 import { G } from '../core/context';
-import { traitValue } from './hero-effects';
+import { BASELINE } from '../data/baseline';
+import { closeQuest } from './quest';
 import { go } from './scene-flow';
-import { region } from './flow';
 
-/** the gauge's size on this stage, in tiers of the kills (data/stages.ts `gauge`) */
-export const gaugeMax = () => region().gauge;
-/** what a kill adds to the gauge: its tier (1 for an enemy with none) */
-export const gaugeWorth = (e: { tier?: number }) => e.tier ?? 1;
+/** an 의뢰 is running (accepted, not met, not failed) */
+export const questRunning = () => {
+  const q = G.state.quest;
+  return !!q && !q.done && !q.failed;
+};
 
-/** A kill: fills the gauge by its tier (kill() in entities/enemies.ts). */
-export function addKill(e: { boss?: boolean; tier?: number }) {
+/** A step of flight: runs the 의뢰's clock, or the wait for the next 만남 when no 의뢰 runs. */
+export function updateMeetClock(dt: number) {
   const s = G.state;
-  if (e.boss || s.phase !== 'flight') return;
-  const add = gaugeWorth(e) * (1 + (traitValue('yoran') ?? 0));
-  s.gauge += add;
-  s.gaugeEarned += add;
-  const max = gaugeMax();
-  if (s.gauge >= max && !s.meetReady) {
-    s.meetReady = true;
-    s.gauge -= max;
+  if (s.meetReady) return;
+  if (questRunning()) {
+    s.quest.left -= dt;
+    if (s.quest.left <= 0) {
+      closeQuest();
+      s.meetReady = true;
+    }
+    return;
   }
-  if (s.meetReady) s.gauge = Math.min(s.gauge, max - 1);
+  s.meetTimer -= dt;
+  if (s.meetTimer <= 0) s.meetReady = true;
+}
+
+/** how near the next 만남 is at the latest, 0 to 1 (the HUD's bar): the 의뢰's clock, or the wait */
+export function meetProgress() {
+  const s = G.state;
+  if (s.meetReady) return 1;
+  if (questRunning()) return 1 - s.quest.left / BASELINE.meet.quest;
+  return 1 - Math.max(0, s.meetTimer) / s.meetWait;
 }
 
 /** Opens a waiting 만남. Called at the end of a step; false when the 만남 opened (the step is over). */

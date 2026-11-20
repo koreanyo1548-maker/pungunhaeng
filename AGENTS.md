@@ -6,6 +6,7 @@
 - Keep gameplay RNG separate from effect RNG.
 - For art tasks, refer to [풍운행 아트 스타일 기준](docs/art-style-reference.md) for the existing art references and in-game review criteria.
 - Validate relevant changes with typecheck, builds and the existing flow/UI tests. Single-file sharing uses `npm run build:single`.
+- Balance and game feel are judged only by the user's own play (`docs/workflow.md` section 8). Do not run the balance bot (`tests/sim/balance.mjs`, `npm run test:sim`) to judge or tune balance, and do not claim a change "feels right" from bot numbers. Apply the requested adjustment, open the PR; the user merges, plays and asks for the next adjustment.
 
 # Shared workflow (Codex and Claude)
 

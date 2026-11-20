@@ -2,7 +2,7 @@
 // and reports survival, hits taken, stage length, kills, 만남 count, coins and 의뢰 results per stage.
 // The bot is deliberately plain (aims at the weakest enemy of the nearest row, waits in a row's gap while it passes,
 // sidesteps warned hazards,
-// never uses 필살기 on purpose, always follows an 인연 and helps or gives to passers-by, ignores the 의뢰), so the
+// never uses 필살기 on purpose, always follows an 인연 and helps passers-by, ignores the 의뢰), so the
 // numbers are a floor, not a skilled player.
 // usage: node tests/sim/balance.mjs [build.html] [--runs N] [--parallel P] [--seed S] [--stages 1,6] [--god]
 //   --god: invincible bot, for stage length, 만남 count and coin income over a whole stage
@@ -24,7 +24,7 @@ const runs = opt('runs', 4),
 const botScript = () => {
   window.__sim = { stages: {}, hits: 0, lastHp: null, frames: 0 };
   const choose = () => {
-    // 만남: 따른다 / 돕는다 / 엽전을 베푼다 when it can, otherwise the other choice
+    // 만남: 따른다 / 돕는다
     const act = [...document.querySelectorAll('#choice .act')].find(b => !b.disabled);
     if (act) return act.click();
     const cards = [...document.querySelectorAll('#choice button.card')];
@@ -121,11 +121,10 @@ async function oneRun(browser, stage, seed) {
       title: document.getElementById('resultTitle').textContent,
       path: s.path.map(p => p.result),
       skills: s.skills.map(k => k.id),
-      align: `선${s.good}·악${s.evil}`,
+      align: `정${s.good}·사${s.evil}`,
       score: Math.round(s.score),
       max: window.__g.referenceScore(s.stage),
       drops: s.drops,
-      gauge: Math.round(s.gaugeEarned),
       base: s.baseScore,
       kills: s.kills,
       time: s.elapsed,
@@ -153,7 +152,7 @@ for (const r of results) {
   const s = r.sim.stages[r.course] || {};
   console.log(
     `S${r.course} seed ${r.seed}: ${won(r) ? '돌파' : `사망 ${r.phase}`} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) ` +
-      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 드롭 ${JSON.stringify(r.drops)} 게이지 ${r.gauge} 기본점수 ${r.base} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
+      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 드롭 ${JSON.stringify(r.drops)} 기본점수 ${r.base} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
       ` (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
   );
 }

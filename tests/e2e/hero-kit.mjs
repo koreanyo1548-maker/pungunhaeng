@@ -46,6 +46,7 @@ try {
           'systems/flow',
           'systems/formation',
           'systems/hero-effects',
+          'systems/quest',
           'systems/combat',
           'entities/player',
           'entities/enemies',
@@ -194,13 +195,10 @@ try {
     // 아영: attack +20% while she fights (her trait; it used to be one more attack level)
     party('ayeong', 'pungun');
     out.ayeong = Math.round((M.shotPower() / 10) * 100) / 100;
-    // 정요란: waits for the kill gauge (step 2): no effect yet, nothing breaks
+    // 정요란: 의뢰 targets −15% while she fights
     party('yoran', 'pungun');
     out.yoran = M.traitActive('yoran');
-    // 정요란: a kill fills the 처치 게이지 1.5 while she fights
-    G.state.gauge = 0;
-    M.kill(target());
-    out.yoranGauge = G.state.gauge;
+    out.yoranTarget = M.questTarget({ n: 30 }, 0);
     // 운학 (party): one more 필살기 at the start, even as second
     party('pungun', 'unhak');
     out.unhak = G.state.bombs;
@@ -229,7 +227,7 @@ try {
   assert.equal(traits.soun, 1.5);
   assert.equal(traits.ayeong, 1.2, '아영: attack +20% while she fights');
   assert.equal(traits.yoran, true);
-  assert.equal(traits.yoranGauge, 1.5, '정요란: gauge +50% per kill');
+  assert.equal(traits.yoranTarget, 21, '정요란: an 의뢰 of 30 (asks 25) asks 21');
   assert.equal(traits.unhak, 2, 'one 필살기 + 1');
   assert.deepEqual(traits.yeoncheong, { second: 2, first: 2, afterFall: 0 });
   assert.deepEqual(traits.offWhileWaiting, { graze: 1.4, crit: false });
@@ -313,8 +311,9 @@ try {
       // it ends after its time, and a new run starts without it
       G.player.inv = 999;
       G.state.hyper = 0;
-      // no 만남 while it runs out: kills (and a 무아지경 item a magnet pulls in) could fill the gauge
-      G.state.gauge = -1e6;
+      // no 만남 while it runs out
+      G.state.meetTimer = 1e6;
+      if (G.state.quest) G.state.quest.left = 1e6;
       // a little extra: kills cause short hit-stops that slow game time
       run(r.total + 3, 1 / 20);
       r.ended = G.state.effect === null;

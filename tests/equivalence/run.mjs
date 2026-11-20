@@ -85,7 +85,7 @@ async function run(file, seed, steps, course, frameMs) {
             coins: s.coins,
             hp: p.hp,
             bombs: s.bombs,
-            gauge: Math.round(s.gauge * 100),
+            meetTimer: Math.round((s.meetTimer ?? s.gauge) * 100),
             virtue: s.align ?? `${s.good},${s.evil}`,
             encounters: s.encounters,
             combo: s.combo,

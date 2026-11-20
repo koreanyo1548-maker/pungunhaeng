@@ -1,6 +1,7 @@
 import { G } from '../core/context';
 import { profile } from '../core/profile';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
+import { ambientPictures } from '../core/ambient-art';
 import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
@@ -9,7 +10,7 @@ import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
 import { NPCS } from '../data/npcs';
 import { SKILLS } from '../data/skills';
 import { region, stageDistance } from '../systems/flow';
-import { gaugeMax } from '../systems/encounter';
+import { meetProgress } from '../systems/encounter';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -55,9 +56,9 @@ export function syncHUD() {
     ).join('');
     $('hearts').setAttribute('aria-label', `남은 체력 ${G.player.hp}`);
   }
-  // the stage box: the stage, the 처치 게이지 toward the next 만남 (the bar), and the distance left to the boss
+  // the stage box: the stage, the time to the next 만남 at the latest (the bar), and the distance left to the boss
   const left = Math.max(0, stageDistance() - G.state.distance),
-    gauge = G.state.meetReady ? 1 : G.state.gauge / gaugeMax();
+    gauge = meetProgress();
   $('stage').textContent = `S${G.state.stage} ${region().name} · 만남 ${Math.floor(gauge * 100)}%`;
   syncQuestHUD();
   $('stageName').textContent =
@@ -112,10 +113,10 @@ export function syncQuestHUD() {
   el.classList.toggle('hidden', !show);
   if (!show) return;
   el.style.setProperty('--c', BR[q.br].color);
-  $('questTitle').textContent = q.mode === 'follow' ? '따름' : '거스름';
-  $('questImg').classList.toggle('defy', q.mode !== 'follow');
+  $('questTitle').textContent = { follow: '따름', defy: '거스름', help: '돕기', ignore: '무시' }[q.mode] ?? '';
+  $('questImg').classList.toggle('defy', q.mode === 'defy');
   el.classList.toggle('hot', !q.done && !q.failed && q.prog / q.target >= 0.8);
-  const qp = npcPictures[q.npc] || '';
+  const qp = (q.npc ? npcPictures[q.npc] : q.who && ambientPictures[q.who.art + '-neutral']) || '';
   if ($('questImg').dataset.src !== qp) {
     $('questImg').dataset.src = qp;
     $('questImg').src = qp;

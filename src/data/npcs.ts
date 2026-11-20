@@ -1,12 +1,15 @@
 import type { Cell, NpcId } from './roster';
 
-// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). Each 인연 belongs to a side (정파 good, 사파 evil) and is unlocked
-// when the run's points of that side (선 or 악) reach `unlock`. An 의뢰's `n` is the full target, asked from the third
-// 의뢰 of the same 인연 in a run (1/3 and 2/3 before; systems/quest.ts `questTarget`). Meeting them brings an 의뢰; following it
+// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). Each 인연 belongs to a side (정파 good, 사파 evil); who comes to a
+// 만남 is rolled by the run's 정·사 odds (systems/alignment.ts). An 의뢰's `n` is its full target: it asks about 5/6
+// of it, ±10% (systems/quest.ts `questTarget`). Meeting them brings an 의뢰; following it
 // and succeeding raises the 인연 one level (1단계 a number, 2단계 a projectile skill, 3단계 their signature skill).
 // `levels` are the skill ids of those levels (data/skills.ts). `br` only colours their screens.
 export type Side = 'good' | 'evil';
 export const SIDE_NAME: Record<Side, string> = { good: '정파', evil: '사파' };
+/** who comes to a 만남 at the start of a run (weights: passer-by 6 : 정파 2 : 사파 2), and what a 정 or 사 point moves
+ *  from the passer-by to its side (systems/alignment.ts) */
+export const MEET_ODDS = { passer: 6, good: 2, evil: 2, shift: 1 };
 
 export const NPCS = {
   dosa: {
@@ -15,7 +18,6 @@ export const NPCS = {
     title: '구름을 따라 떠도는 도사',
     br: 'yu',
     side: 'good' as Side,
-    unlock: 3,
     levels: ['biyeon', 'yusu', 'taeguk'],
     quests: [
       {
@@ -36,7 +38,6 @@ export const NPCS = {
     title: '천마신교의 그림자',
     br: 'gi',
     side: 'evil' as Side,
-    unlock: 5,
     levels: ['manryu', 'geomu', 'art_cheonma'],
     quests: [
       {
@@ -57,7 +58,6 @@ export const NPCS = {
     title: '산문을 지키는 노승',
     br: 'gang',
     side: 'good' as Side,
-    unlock: 5,
     levels: ['swaegap', 'bungsan', 'art_cheolgap'],
     quests: [
       {
@@ -78,7 +78,6 @@ export const NPCS = {
     title: '암기를 쓰는 여협',
     br: 'yu',
     side: 'evil' as Side,
-    unlock: 1,
     levels: ['muyoung', 'janyoung', 'mancheon'],
     quests: [
       {
@@ -99,7 +98,6 @@ export const NPCS = {
     title: '산을 떠도는 의원',
     br: 'gi',
     side: 'good' as Side,
-    unlock: 1,
     levels: ['cheolgol', 'gitan', 'hoechun'],
     quests: [
       {
@@ -120,7 +118,6 @@ export const NPCS = {
     title: '채주를 등진 산적',
     br: 'gang',
     side: 'evil' as Side,
-    unlock: 3,
     levels: ['yeonhwan', 'uihyeop', 'art_dobeop'],
     quests: [
       {
@@ -135,7 +132,4 @@ export const NPCS = {
       },
     ],
   },
-} satisfies Record<
-  NpcId,
-  { name: string; side: Side; unlock: number; levels: string[]; art: Cell; [key: string]: unknown }
->;
+} satisfies Record<NpcId, { name: string; side: Side; levels: string[]; art: Cell; [key: string]: unknown }>;

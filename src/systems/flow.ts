@@ -95,7 +95,7 @@ export function end(victory = false) {
   G.state.victory = victory;
   if (victory) G.state.score += VICTORY_SCORE;
   closeQuest();
-  // 정산 (systems/score.ts): 선 adds to the score; 악 and the share of the 기준 점수 add to the 엽전 left, which go to
+  // 정산 (systems/score.ts): 정 adds to the score; 사 and the share of the 기준 점수 add to the 엽전 left, which go to
   // the bank with the clear bonus; beating the boss opens the next stage.
   G.state.baseScore = Math.round(G.state.score);
   const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil);
@@ -111,13 +111,13 @@ export function end(victory = false) {
   saveProfile();
   $('settle').innerHTML =
     `기준 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
-    (b.scoreBonus ? ` · 선 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
+    (b.scoreBonus ? ` · 정 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
     `<br>남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
     (b.coinBonus
       ? ` + <b>${fmt(kept - G.state.coins)}냥</b> (` +
         [
           b.tier ? `달성 +${pct(b.tier)}` : '',
-          G.state.evil ? `악 ${G.state.evil} +${pct(G.state.evil * VIRTUE_BONUS)}` : '',
+          G.state.evil ? `사 ${G.state.evil} +${pct(G.state.evil * VIRTUE_BONUS)}` : '',
         ]
           .filter(Boolean)
           .join(' · ') +

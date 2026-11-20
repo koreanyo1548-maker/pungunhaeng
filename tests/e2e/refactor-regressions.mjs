@@ -94,9 +94,9 @@ try {
     Object.assign(M.G.state, {
       good: 4,
       evil: 2,
-      unlocked: ['yakseon'],
+      meetOdds: { passer: 0, good: 8, evil: 2 },
       bond: { yakseon: 2 },
-      gauge: 30,
+      meetTimer: 3,
       encounters: 3,
       passers: 2,
     });
@@ -113,9 +113,9 @@ try {
       auras: M.skillAnimationSnapshot().auras.length,
       run: [
         M.G.state.good + M.G.state.evil,
-        M.G.state.unlocked.length,
+        Object.values(M.G.state.meetOdds).join(':'),
         Object.keys(M.G.state.bond).length,
-        M.G.state.gauge,
+        M.G.state.meetTimer,
         M.G.state.meetReady,
         M.G.state.encounters,
         M.G.state.passers,
@@ -131,11 +131,11 @@ try {
     best: 100000,
     cues: 0,
     auras: 0,
-    run: '0,0,0,0,false,0,0',
+    run: '0,6:2:2,0,10,false,0,0',
   });
   assert.deepEqual(errors, []);
   console.log(
-    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart (scale, 인연 levels, gauge cleared)',
+    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart (scale, 인연 levels, 만남 wait reset)',
   );
 } finally {
   await b.close();

@@ -19,6 +19,7 @@ import { region, stageDistance } from './flow';
 import { profile } from '../core/profile';
 import { STAGES, STAGE_COUNT } from '../data/stages';
 import { done } from './scene-flow';
+import { updateMeetClock } from './encounter';
 
 export type Phase = 'flight' | 'warning' | 'boss' | 'clear';
 
@@ -32,6 +33,7 @@ const PHASES: Record<Phase, PhaseDef> = {
   flight: {
     update: dt => {
       updateFlight(dt);
+      updateMeetClock(dt);
       if (G.state.distance >= stageDistance()) setPhase('warning');
     },
   },
@@ -74,7 +76,7 @@ export function updatePhase(dt: number): boolean {
 function updateFlight(dt) {
   G.state.stageTime += dt;
   // rows come by distance in 무아지경: it runs BASELINE.hyper.speed times faster, so its rows come that much faster
-  // and it cuts through as many enemies a metre as running does (its kills fill the gauge, score and drop 엽전)
+  // and it cuts through as many enemies a metre as running does (its kills score and drop 엽전)
   G.state.rowTimer -= dt * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
   G.state.meteorTimer -= dt;
   if (G.state.rowTimer <= 0) {

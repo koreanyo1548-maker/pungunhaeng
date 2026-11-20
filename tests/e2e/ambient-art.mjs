@@ -39,12 +39,11 @@ try {
       }
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
-    // with nothing unlocked by the scale every 만남 is a passer-by, in portrait order; the first is level 1 (help),
-    // the rest level 2 (give 엽전). Helping unlocks 인연, so the unlocks are cleared before each 만남.
+    // passers-by (forced) in portrait order; helping one takes its 의뢰 and adds 정 or 사 (rolled per passer-by)
     for (let n = 0; n < 4; n++) {
       await p.evaluate(n => {
         M.G.state.passers = n;
-        M.G.state.unlocked = [];
+        M.G.state.forceNpc = 'passer';
         M.G.state.coins = 40;
         M.G.mode = 'play';
         M.openEncounter();
@@ -54,16 +53,16 @@ try {
         return im?.complete && im.naturalWidth === 314;
       });
       await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
-      const before = await p.evaluate(() => ({ coins: M.G.state.coins, good: M.G.state.good }));
+      const before = await p.evaluate(() => ({ points: M.G.state.good + M.G.state.evil }));
       await p.locator('#choice .act').first().click();
       const after = await p.evaluate(() => ({
-        coins: M.G.state.coins,
-        good: M.G.state.good,
+        points: M.G.state.good + M.G.state.evil,
+        quest: M.G.state.quest?.t,
         mode: M.G.mode,
         toast: document.querySelector('#toast img')?.getAttribute('src'),
       }));
-      assert.equal(after.coins, before.coins - (n ? 20 : 0));
-      assert.equal(after.good, before.good + (n ? 2 : 1));
+      assert.equal(after.points, before.points + 1);
+      assert.equal(after.quest, 'kills');
       assert.equal(after.mode, 'play');
       assert.ok(after.toast?.startsWith('data:image/png'));
       await p.waitForFunction(() => document.querySelector('#toast img')?.complete);
@@ -84,7 +83,7 @@ try {
     );
     await p.screenshot({ path: `${out}/${width}-hero-piece.png` });
     assert.deepEqual(errors, []);
-    console.log(`PASS ${width}: four passer portraits + thanks, help then give (엽전, 저울), hero piece icon`);
+    console.log(`PASS ${width}: four passer portraits + thanks, help (적 처치 의뢰, 정·사), hero piece icon`);
     await p.close();
   }
 } finally {

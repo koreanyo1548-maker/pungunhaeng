@@ -1,5 +1,7 @@
 import { createHeroHealth, BASE_HEALTH } from './hero-health';
 import type { Meta } from '../data/meta';
+import { BASELINE } from '../data/baseline';
+import { MEET_ODDS } from '../data/npcs';
 import type { RunState, Player, Enemy, Shot, HeroHealth } from './state-types';
 
 export function createRunState(meta: Meta): RunState {
@@ -16,7 +18,6 @@ export function createRunState(meta: Meta): RunState {
     magnet: 0,
     double: 0,
     hyperDrops: 0,
-    hyperDropReducedUntil: 0,
     /** items and 보물상자 that came this run (for the balance measurements) */
     drops: { hyper: 0, magnet: 0, double: 0, chest: 0 },
     combo: 0,
@@ -53,12 +54,12 @@ export function createRunState(meta: Meta): RunState {
     forceNpc: null,
     good: 0,
     evil: 0,
-    unlocked: [],
+    meetOdds: { passer: MEET_ODDS.passer, good: MEET_ODDS.good, evil: MEET_ODDS.evil },
     bond: {},
-    gauge: 0,
-    /** all the gauge this run's kills gave (for the balance measurements) */
-    gaugeEarned: 0,
-    /** the score at the end of the run before the 선 bonus (for the measurements) */
+    /** the first 만남 comes BASELINE.meet.first s into the flight (systems/encounter.ts) */
+    meetTimer: BASELINE.meet.first,
+    meetWait: BASELINE.meet.first,
+    /** the score at the end of the run before the 정 bonus (for the measurements) */
     baseScore: 0,
     meetReady: false,
     encounters: 0,

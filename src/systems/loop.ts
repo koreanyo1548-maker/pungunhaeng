@@ -15,7 +15,7 @@ import { graze, grazeEnemy } from './combat';
 import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
 import { RUN_SCORE, addScore, runSpeed } from './score';
-import { speedFactor } from './ladder';
+import { descentFactor, speedFactor } from './ladder';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
@@ -44,6 +44,7 @@ export function update(dt) {
   if (hyperBefore > 0 && G.state.hyper <= 0) hyperFinish();
   G.state.magnet = Math.max(0, G.state.magnet - dt);
   G.state.double = Math.max(0, G.state.double - dt);
+  G.state.dual = Math.max(0, G.state.dual - dt);
   G.player.inv = Math.max(0, G.player.inv - dt);
   G.player.muzzle = Math.max(0, G.player.muzzle - dt);
   G.shake = Math.max(0, G.shake - realDt * 22);
@@ -157,7 +158,7 @@ function updateEnemies(dt: number): boolean {
       if (G.mode !== 'play') return false;
       continue;
     }
-    e.y += dt * descent * speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
+    e.y += dt * descent * descentFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);

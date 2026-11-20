@@ -70,25 +70,27 @@ export function shoot() {
   G.player.swing = 1;
   G.player.swingCount++;
   if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
-  // Every hero shoots the same: one shot a volley at every level (the level raises its power); traits and entry
-  // skills add aim, piercing, erasing or clones.
-  const extra = basicShotOptions();
+  // Every hero shoots the same: one shot a volley at every level (the level raises its power), two lines side by side
+  // while the 듀얼샷 item lasts; traits and entry skills add aim, piercing, erasing or clones.
+  const extra = basicShotOptions(),
+    lines = G.state.dual > 0 ? [-9, 9] : [0];
   for (const from of [0, ...cloneOffsets()])
-    G.shots.push({
-      x: G.player.x + from,
-      y: G.player.y - 34,
-      prevY: G.player.y - 34,
-      vx: 0,
-      // BASELINE.shotSpeed: about 2.2 screen heights a second (docs/balance-baseline.md)
-      vy: BASELINE.shotSpeed,
-      damage: shotPower(),
-      r: 5,
-      kind: 'qi',
-      phase: G.time,
-      skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
-      basic: true,
-      ...extra,
-    });
+    for (const x of lines)
+      G.shots.push({
+        x: G.player.x + from + x,
+        y: G.player.y - 34,
+        prevY: G.player.y - 34,
+        vx: 0,
+        // BASELINE.shotSpeed: about 2.2 screen heights a second (docs/balance-baseline.md)
+        vy: BASELINE.shotSpeed,
+        damage: shotPower(),
+        r: 5,
+        kind: 'qi',
+        phase: G.time,
+        skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
+        basic: true,
+        ...extra,
+      });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);
 }
 export function borrowedSword() {

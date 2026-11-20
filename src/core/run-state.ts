@@ -17,9 +17,10 @@ export function createRunState(meta: Meta): RunState {
     /** seconds left of 자석 and 점수 두 배 (in-play items) */
     magnet: 0,
     double: 0,
+    dual: 0,
     hyperDrops: 0,
     /** items and 보물상자 that came this run (for the balance measurements) */
-    drops: { hyper: 0, magnet: 0, double: 0, chest: 0 },
+    drops: { hyper: 0, magnet: 0, double: 0, dual: 0, chest: 0 },
     combo: 0,
     comboTimer: 0,
     stage: 1,

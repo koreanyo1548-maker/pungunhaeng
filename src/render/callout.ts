@@ -1,51 +1,53 @@
-// 초식 이름: a skill's name struck in brush style above the player when it goes off.
-// Shown the first few times after a skill is learned or enhanced, and every time for rare, big skills.
-// Cosmetic only: counts live outside game state and nothing here touches timers or the gameplay RNG.
+// 초식 이름: a name struck in brush style above the player when something goes off: every 인연 skill (the same
+// skill at most once a GAP), and 필살기, 무아지경, 자석 and 점수 두 배 (these take a line even when both are busy).
+// Cosmetic only: nothing here touches game state, timers or the gameplay RNG.
 import { G } from '../core/context';
 import { W, ctx, reduced } from '../core/dom';
 import { clamp } from '../core/math';
 import { BR } from '../data/branches';
-import { SKILLS, cooldown } from '../data/skills';
+import { SKILLS } from '../data/skills';
 
 type Callout = { name: string; sub: string; color: string; seal: string; age: number; slot: number };
 
-const FIRST = 3, // times a newly learned or enhanced skill announces itself
-  GAP = 1, // seconds before the same skill may announce again
+const GAP = 1, // seconds before the same skill may announce again
   LIFE = 0.95,
   SLOTS = 2;
-const shown = new WeakMap<object, number>(),
-  lastAt = new WeakMap<object, number>();
+const lastAt = new WeakMap<object, number>();
 const live: Callout[] = [];
 
-/** Rare, deliberate skills keep their callout for the whole run. */
-function always(id: string) {
-  const d = SKILLS[id];
-  return d.trig === 'blast' || (d.trig === 'tick' && cooldown(d) >= 10);
+/** a free line, or with `force` the oldest one (taken over); -1 when none */
+function freeSlot(force: boolean) {
+  for (let slot = 0; slot < SLOTS; slot++) if (!live.some(c => c.slot === slot)) return slot;
+  if (!force) return -1;
+  const oldest = live.reduce((a, b) => (b.age > a.age ? b : a));
+  live.splice(live.indexOf(oldest), 1);
+  return oldest.slot;
 }
 
-/** `s` is the skill instance in G.state.skills. */
+/** An 인연 skill went off: every time, the same skill at most once a GAP. `s` is its instance in G.state.skills. */
 export function skillCallout(s: { id: string }) {
-  const count = shown.get(s) ?? 0;
-  if (!always(s.id) && count >= FIRST) return;
   if (G.time - (lastAt.get(s) ?? -99) < GAP) return;
-  let slot = 0;
-  while (live.some(c => c.slot === slot)) slot++;
-  if (slot >= SLOTS) return;
+  const slot = freeSlot(false);
+  if (slot < 0) return;
   const d = SKILLS[s.id];
-  live.push({
-    name: d.name,
-    sub: '',
-    color: BR[d.br].color,
-    seal: BR[d.br].hanja,
-    age: 0,
-    slot,
-  });
-  shown.set(s, count + 1);
+  live.push({ name: d.name, sub: '', color: BR[d.br].color, seal: BR[d.br].hanja, age: 0, slot });
   lastAt.set(s, G.time);
 }
-/** After a skill is enhanced it announces itself again, now in gold. */
+/** The run's own moves and items: name, colour and seal character. */
+export const ACTION_CALLOUTS = {
+  blast: { name: '필살기', color: '#ffd77a', seal: '必' },
+  hyper: { name: '무아지경', color: '#c5ffff', seal: '無' },
+  magnet: { name: '자석', color: '#8fe3b0', seal: '磁' },
+  double: { name: '점수 두 배', color: '#ffd36e', seal: '倍' },
+  dual: { name: '듀얼샷', color: '#ff9a7a', seal: '雙' },
+};
+/** 필살기, 무아지경, 자석 or 점수 두 배 went off: always shown (it takes the oldest line when both are busy). */
+export function actionCallout(kind: keyof typeof ACTION_CALLOUTS) {
+  const a = ACTION_CALLOUTS[kind];
+  live.push({ name: a.name, sub: '', color: a.color, seal: a.seal, age: 0, slot: freeSlot(true) });
+}
+/** After a skill is enhanced it may announce itself again at once. */
 export function resetCallout(s: object) {
-  shown.delete(s);
   lastAt.delete(s);
 }
 export function clearCallouts() {

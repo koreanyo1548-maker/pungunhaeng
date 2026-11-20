@@ -250,7 +250,7 @@ async function scenarioA(browser, stage, seed) {
     /^돕는다 · 적 처치 (3\d|40)/.test(acts[0]) &&
       /엽전 50냥/.test(acts[0]) &&
       /^무시한다 · 엽전 획득 (2\d|30)/.test(acts[1]) &&
-      /점수 두 배 10초/.test(acts[1]) &&
+      /점수 두 배 3초/.test(acts[1]) &&
       [acts[0], acts[1]]
         .map(t => (/정 \+1/.test(t) ? '정' : /사 \+1/.test(t) ? '사' : '?'))
         .sort()
@@ -389,22 +389,22 @@ async function scenarioB(browser, seed) {
     s.quest?.t === 'coins' && s[side] === 1 && s.good + s.evil === 1,
     `무시한다: an 엽전 의뢰, ${side} +1 (정 ${s.good} · 사 ${s.evil})`,
   );
-  // 엽전 taken count (a 보석 is 5)
+  // 엽전 taken count
   const prog = await g.eval(() => {
     const G = window.__g;
     G.pickups.length = 0;
     G.addPickup('coin', G.player.x, G.player.y);
-    G.addPickup('gem', G.player.x, G.player.y);
+    G.addPickup('coin', G.player.x, G.player.y);
     return null;
   });
   await g.step(2);
-  check(f, (await g.state(() => window.__g.state.quest.prog)) === 6, `an 엽전 counts 1, a 보석 5 (${prog})`);
+  check(f, (await g.state(() => window.__g.state.quest.prog)) === 2, `each 엽전 counts 1 (${prog})`);
   await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
   await succeed(g);
   check(
     f,
-    Math.abs((await g.state(() => window.__g.state.double)) - 10) < 0.1,
-    'the 엽전 의뢰 met: 점수 두 배 10 s at once',
+    Math.abs((await g.state(() => window.__g.state.double)) - 3) < 0.1,
+    'the 엽전 의뢰 met: 점수 두 배 3 s at once',
   );
   // 만남 2: 비연 낭자 (사파); defy → 정 +1; success pays 엽전
   await nextMeet(g);
@@ -1247,7 +1247,7 @@ async function scenarioG(browser, seed) {
 }
 
 // Scenario H: 의뢰 targets 5/6 of the full count ±10% each time, the row gap (2 s → 0.8 s with
-// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (10 s, retaken = full time), one
+// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (3 s, retaken = full time), one
 // 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 기준 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
@@ -1325,7 +1325,7 @@ async function scenarioH(browser, seed) {
     q1 && Math.abs(q1.px + 110 - q1.x) < 60 && q1.y < q1.py - 100,
     `무아지경 does not pull 엽전 in (${JSON.stringify([q0, q1])})`,
   );
-  // the 자석 item: 10 s, pickups within reach are pulled in
+  // the 자석 item: 3 s, pickups within reach are pulled in
   await g.eval(() => {
     window.__g.pickups.length = 0;
     const pl = window.__g.player;
@@ -1333,7 +1333,7 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   let s = await g.state(() => ({ magnet: window.__g.state.magnet, coins: window.__g.state.coins }));
-  check(f, Math.abs(s.magnet - 10) < 0.05, `자석 runs 10 s (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 3) < 0.05, `자석 runs 3 s (${s.magnet})`);
   await g.eval(() => {
     const pl = window.__g.player;
     window.__g.addPickup('coin', pl.x + 110, pl.y - 200);
@@ -1348,7 +1348,7 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   s = await g.state(() => ({ magnet: window.__g.state.magnet }));
-  check(f, Math.abs(s.magnet - 10) < 0.05, `retaking 자석 sets it back to 10 s, no stacking (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 3) < 0.05, `retaking 자석 sets it back to 3 s, no stacking (${s.magnet})`);
   // 점수 두 배: a 엽전 is worth 20 while it runs
   await g.eval(() => {
     const pl = window.__g.player;
@@ -1364,10 +1364,10 @@ async function scenarioH(browser, seed) {
   const after = await g.state(() => window.__g.state.score);
   check(
     f,
-    Math.abs(before.double - 10) < 0.05 && after - before.score > 20 && after - before.score < 21,
-    `점수 두 배: 10 s, a 엽전 scores 20 (+${after - before.score})`,
+    Math.abs(before.double - 3) < 0.05 && after - before.score > 20 && after - before.score < 21,
+    `점수 두 배: 3 s, a 엽전 scores 20 (+${after - before.score})`,
   );
-  // one 엽전 a kill (an item drops with 1%, so a few kills are checked)
+  // one 엽전 a kill (an item drops with 3%, so a few kills are checked)
   const drops = await g.eval(() => {
     const out = [];
     for (let i = 0; i < 5; i++) {
@@ -1461,7 +1461,7 @@ async function scenarioH(browser, seed) {
 
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
 // (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 2 s ending in a screen burst that turns
-// the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
+// the enemies into 엽전, a 보물상자 bursting into 20 엽전, items hanging at the top of their pop, and
 // the 운석 warned 2 s ahead.
 async function scenarioI(browser, seed) {
   const f = [];
@@ -1543,7 +1543,7 @@ async function scenarioI(browser, seed) {
     Math.abs(hyper - 2) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
     `무아지경 2 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
   );
-  // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
+  // 보물상자: bursts into 20 엽전
   await g.eval(() => {
     const G = window.__g;
     G.enemies.length = 0;
@@ -1567,27 +1567,35 @@ async function scenarioI(browser, seed) {
     G.enemies.push(e);
     G.kill(e);
   });
-  const gems = await g.state(() => window.__g.pickups.filter(p => p.kind === 'gem').length);
-  const c0 = await g.state(() => window.__g.state.coins);
-  await g.eval(() => {
-    const pl = window.__g.player;
-    window.__g.pickups.length = 0;
-    window.__g.addPickup('gem', pl.x, pl.y);
-  });
-  await g.step(1);
-  const c1 = await g.state(() => window.__g.state.coins);
-  check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
-  // an item drops with 1% a kill, picked 무아지경 4 : 자석 4 : 점수 두 배 2
+  const chestCoins = await g.state(() => window.__g.pickups.filter(p => p.kind === 'coin').length);
+  check(f, chestCoins === 20, `보물상자 → ${chestCoins} 엽전`);
+  // an item drops with 3% a kill, picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2
   const picks = await g.eval(() => {
-    const out = { hyper: 0, magnet: 0, double: 0 };
-    for (let i = 0; i < 1000; i++) out[window.__g.pickItem((i + 0.5) / 1000)]++;
+    const out = { hyper: 0, magnet: 0, double: 0, dual: 0 };
+    for (let i = 0; i < 1400; i++) out[window.__g.pickItem((i + 0.5) / 1400)]++;
     return out;
   });
   check(
     f,
-    picks.hyper === 400 && picks.magnet === 400 && picks.double === 200,
-    `items picked 4:4:2 (${JSON.stringify(picks)})`,
+    picks.magnet === 400 && picks.double === 400 && picks.dual === 400 && picks.hyper === 200,
+    `items picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2 (${JSON.stringify(picks)})`,
   );
+  // 듀얼샷: two lines of basic shots for 3 s
+  const dual = await g.eval(() => {
+    const G = window.__g;
+    G.pickups.length = 0;
+    G.addPickup('dual', G.player.x, G.player.y);
+    return null;
+  });
+  await g.step(2);
+  const lines = await g.eval(() => {
+    const G = window.__g;
+    G.shots.length = 0;
+    G.player.fire = 0;
+    window.__step(1);
+    return { left: G.state.dual, shots: G.shots.filter(s => s.basic).length };
+  });
+  check(f, lines.left > 2.9 && lines.shots === 2, `듀얼샷: 3 s of two lines (${JSON.stringify(lines)}${dual ?? ''})`);
   // items hang at the top of their pop before they fall; 엽전 do not
   await g.eval(() => {
     window.__g.pickups.length = 0;

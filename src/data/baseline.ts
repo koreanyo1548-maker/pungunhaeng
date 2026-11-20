@@ -15,7 +15,10 @@ export const BASELINE = {
   speedUp: 1,
   /** starting row descent in px/s, before the stage progress multiplier */
   descent: 592,
+  /** S1 rows start at `s1Descent` px/s and speed up twice as fast as the run, up to `s1DescentMax` (about 1:30 into
+   *  the flight; systems/ladder.ts `descentFactor`) */
   s1Descent: 300,
+  s1DescentMax: 600,
   /** seconds between rows at the start and at the boss (by the stage's progress) */
   rowGap: { start: 1.7, end: 1.45 },
   /** health as basic shots of the reference growth (Lv1: 10 a shot): tier 2 is 3 shots, then about × 1.4 */
@@ -33,9 +36,9 @@ export const BASELINE = {
   /** 무아지경: `seconds` long at `speed` × the running speed, it cuts through everything; at its end the screen
    *  bursts and the enemies left turn into 엽전 */
   hyper: { seconds: 2, speed: 6, descent: 2.5 },
-  /** a kill drops an item with `chance`; which one is picked by `weights` (무아지경 4 : 자석 4 : 점수 두 배 2);
+  /** a kill drops an item with `chance`; which one is picked by `weights` (자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2);
    *  a 무아지경 kill drops none */
-  itemDrop: { chance: 0.01, weights: { hyper: 4, magnet: 4, double: 2 } },
+  itemDrop: { chance: 0.03, weights: { magnet: 4, double: 4, dual: 4, hyper: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
   /** 만남 (systems/encounter.ts): the first comes `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has
@@ -43,8 +46,8 @@ export const BASELINE = {
    *  next comes `after` s later. Who comes is announced for `arrive` s before the cards open. */
   meet: { first: 10, quest: 60, reward: 1.4, after: 3, arrive: 1.5 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
-   *  and it bursts into `gems` 보석 worth `gemCoins` 엽전 each */
-  chest: { perRow: 0.018, gems: 10, gemCoins: 5 },
+   *  and it bursts into `coins` 엽전 */
+  chest: { perRow: 0.018, coins: 20 },
   /** 기준 점수 of S1 to S6: the invincible bot's average score at the reference growth (6 runs each, before the 선
    *  bonus), rounded; the 엽전 bonus tiers are 100/150/200% of it (systems/score.ts) */
   referenceScore: [136000, 73000, 143000, 122000, 77000, 153000],

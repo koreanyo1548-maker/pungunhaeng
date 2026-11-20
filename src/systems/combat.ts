@@ -1,3 +1,4 @@
+import { actionCallout } from '../render/callout';
 import { skillCue, skillBurst } from '../render/skill-animation';
 import { visualSkill } from '../core/skill-context';
 import { emit } from '../core/events';
@@ -24,6 +25,7 @@ export function shotPower() {
 export function blast() {
   if (G.mode !== 'play' || G.state.bombs <= 0 || ['clear', 'warning'].includes(G.state.phase)) return;
   G.state.bombs--;
+  actionCallout('blast');
   G.hazards = [];
   const before = G.state.kills;
   G.state.blasting = true;

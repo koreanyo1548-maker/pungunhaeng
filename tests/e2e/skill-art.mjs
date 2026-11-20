@@ -196,7 +196,7 @@ try {
       };
       return { first: fire(5) };
     });
-    assert.equal(names.first, 3, 'a new skill is called out exactly three times');
+    assert.equal(names.first, 5, 'a skill is called out every time it goes off (once a second at most)');
     for (const hero of await page.evaluate(() => Object.keys(M.HEROES))) {
       await page.evaluate(hero => {
         resetArtCase();

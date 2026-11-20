@@ -4,6 +4,7 @@ import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
 import { drawGlow } from './glows';
+import { drawPungunShot } from './pungun-shot';
 import { drawDualIcon } from './placeholder-art';
 
 export function blade(x, y, angle, length, color) {
@@ -11,6 +12,10 @@ export function blade(x, y, angle, length, color) {
 }
 export function drawMartialShots() {
   for (const s of G.shots) {
+    if (s.basic && s.pungunShotLevel !== undefined) {
+      drawPungunShot(s);
+      continue;
+    }
     if (drawSkillShot(s)) continue;
     // Positive vx rotates upward-facing art clockwise.
     const rot = Math.atan2(s.vx, s.vy ?? 900),

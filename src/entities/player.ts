@@ -13,7 +13,7 @@ import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
-import { basicShotOptions, cloneOffsets, unbowedHit } from '../systems/hero-effects';
+import { basicShotOptions, cloneOffsets, fighterLevel, unbowedHit } from '../systems/hero-effects';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
@@ -89,6 +89,7 @@ export function shoot() {
         phase: G.time,
         skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
         basic: true,
+        pungunShotLevel: activeHeroId() === 'pungun' ? fighterLevel() : undefined,
         ...extra,
       });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);

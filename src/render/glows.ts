@@ -25,6 +25,13 @@ type GlowDef = {
 const DEFS = {
   /** 죽창: a jade laser trail, head at the tip */
   spear: { id: 'projectiles/laser-bolt', options: { palette: JADE }, fps: 20 },
+  /** Light over 풍운객's existing basic shot (the source effect is unchanged). */
+  shotJade: { id: 'projectiles/plasma-shot', options: { palette: JADE, speed: 40 }, fps: 20 },
+  shotGold: {
+    id: 'projectiles/plasma-shot',
+    options: { palette: ['#241407', '#70501c', '#d7a64b', '#ffe4a1', '#ffffff'], speed: 40 },
+    fps: 20,
+  },
   /** 운석: a fire tail */
   meteor: { id: 'fire/fireball', fps: 20 },
   /** 점수 두 배: gold rays */

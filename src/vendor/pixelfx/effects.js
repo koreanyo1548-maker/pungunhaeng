@@ -8,6 +8,7 @@ import * as collectBurst from './fx/pickups/collect-burst.js';
 import * as manaBurst from './fx/arcane/mana-burst.js';
 import * as plasmaExplosion from './fx/explosions/plasma-explosion.js';
 import * as fireball from './fx/fire/fireball.js';
+import * as plasmaShot from './fx/projectiles/plasma-shot.js';
 import * as laserBolt from './fx/projectiles/laser-bolt.js';
 import * as sunburst from './fx/holy/sunburst.js';
 
@@ -23,5 +24,6 @@ export const EFFECTS = {
   // looping glows behind hazards and pickups, rendered to frames once (src/render/glows.ts)
   'fire/fireball': fireball,
   'projectiles/laser-bolt': laserBolt,
+  'projectiles/plasma-shot': plasmaShot,
   'holy/sunburst': sunburst,
 };

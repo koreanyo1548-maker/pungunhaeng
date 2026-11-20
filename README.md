@@ -83,6 +83,7 @@ npm test               # 타입 검사 → 한 파일 빌드 → e2e
 npm run test:e2e
 
 # 밸런스 봇: 시드별로 생존, 피격, 스테이지 길이, 처치, 만남 횟수, 엽전을 보고
+# (밸런스·체감 판단에는 쓰지 않는다. 사용자가 직접 플레이로 맞춘다: docs/workflow.md 8장)
 npm run test:sim                         # S1·S6 각 4판
 npm run test:sim -- --stages 1,3,6 --god # 무적 봇: 스테이지 길이와 만남 횟수
 npm run test:sim -- other-build.html     # 다른 빌드와 비교할 때

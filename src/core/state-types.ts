@@ -108,6 +108,8 @@ export interface RunState {
   meetTimer: number;
   meetWait: number;
   baseScore: number;
+  /** who the next 만남 brings (an 인연's id, or null for a passer-by), announced for `left` more seconds */
+  meetArrive?: { id: string | null; left: number };
   /** a 만남 is due: it opens at the next safe step */
   meetReady: boolean;
   /** 만남 so far this run */

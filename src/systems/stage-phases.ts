@@ -41,6 +41,7 @@ const PHASES: Record<Phase, PhaseDef> = {
     enter: () => {
       // no 만남 from here on; an 의뢰 still running carries into the boss fight
       G.state.meetReady = false;
+      G.state.meetArrive = undefined;
       bossSpawn();
     },
     update: dt => {

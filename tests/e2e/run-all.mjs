@@ -10,7 +10,7 @@
 //   passer-by) and the roll that follows them.
 // Scenario C: stages and saving: a new save opens S1 only, beating S1 opens S2 (once), death → result, 엽전 banked.
 // Scenario D: 만남 timing: the first after 10 s of flight, a passer-by's 의뢰 has 60 s too, an 의뢰's 60 s (run out:
-//   it fails and the next 만남 opens), a met 의뢰 opens the next at once; 정요란 cuts 의뢰 targets, 필살기 count (no charge),
+//   it fails, 3 s later who comes is announced, then the cards), a met 의뢰 shows its reward, 3 s, the announcement; 정요란 cuts 의뢰 targets, 필살기 count (no charge),
 //   an 의뢰 carried into the boss fight (its clock stopped) and met there, no 만남 in the boss fight.
 // Scenario E: 엽전과 뽑기 (새 저장, 엽전 보관 → 1회·10회 뽑기는 영웅 조각만, 저장 코드, 손상된 저장 복구, 다 모으면 뽑기 불가).
 // Scenario F: 영웅 (시작 영웅 2명, 잠긴 영웅은 미리보기만, 조각으로 합류·성급, 레벨업·최대 레벨, 다음 판 반영).
@@ -68,11 +68,25 @@ async function setupFrom(g, stage) {
 }
 
 /** the 처치 게이지 fills (as kills would): the 만남 opens at the end of the next step */
-/** open a 만남 now (as its time would), unless one is open already (a met 의뢰 opens the next at once) */
+/** open a 만남 now (as its time would), unless one is open already */
 async function meet(g) {
   if ((await g.mode()) === 'choice') return;
   await g.eval(() => window.__g.readyMeet());
   await g.step(2);
+}
+
+/** skip the wait after an 의뢰 ends and the announcement of who comes: the next 만남's cards open */
+async function nextMeet(g) {
+  await g.eval(() => {
+    const s = window.__g.state;
+    if (!s.meetArrive) s.meetTimer = Math.min(s.meetTimer, 0.01);
+  });
+  await g.step(2);
+  await g.eval(() => {
+    const s = window.__g.state;
+    if (s.meetArrive) s.meetArrive.left = 0.01;
+  });
+  await g.step(3);
 }
 
 /** meet the running 의뢰's target */
@@ -192,9 +206,9 @@ async function scenarioA(browser, stage, seed) {
   });
   check(
     f,
-    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 55, 95, 165, 295, 530], boss: 4800 }) &&
+    JSON.stringify(stats.start) === JSON.stringify({ attack: 10, tiers: [10, 30, 40, 60, 80, 120], boss: 2400 }) &&
       JSON.stringify(stats.at10km) === JSON.stringify(stats.start),
-    `attack 10, tier health 10·55·95·165·295·530, boss 30 s, no distance multiplier (${JSON.stringify(stats)})`,
+    `attack 10, tier health 1·3·4·6·8·12 shots, boss 30 s (2400), no distance multiplier (${JSON.stringify(stats)})`,
   );
   await g.seconds(3);
   const spawned = await g.eval(() => window.__g.enemies.filter(e => !e.boss).map(e => e.maxHp));
@@ -272,7 +286,8 @@ async function scenarioA(browser, stage, seed) {
   const want = ['cheolgol', 'gitan', 'hoechun'];
   for (let level = 1; level <= 4; level++) {
     const before = await g.state(S);
-    // the 만남 after a met 의뢰 opens at once
+    // the 만남 after a met 의뢰: its reward, 3 s, the announcement, then the cards
+    await nextMeet(g);
     check(f, (await g.mode()) === 'choice', `만남 ${level + 1} is open`);
     const tag = await g.page.$eval('#choice .card .tag', e => e.textContent);
     check(f, (await g.choiceTitle()) === '인연' && /정파/.test(tag), `만남 ${level + 1}: an 인연 (${tag})`);
@@ -317,8 +332,9 @@ async function scenarioA(browser, stage, seed) {
     check(f, s.path.at(-1).result === '성취', 'path records 성취');
   }
   check(f, s.odds.passer === 1, `five points: the passer-by keeps 10% of the odds (${JSON.stringify(s.odds)})`);
-  // the last met 의뢰 opened 만남 6 at once
-  check(f, (await g.mode()) === 'choice', 'a met 의뢰 opens the next 만남 at once');
+  // the last met 의뢰 brings 만남 6
+  await nextMeet(g);
+  check(f, (await g.mode()) === 'choice', 'a met 의뢰 brings the next 만남');
   await g.act(0);
   await g.step(2);
 
@@ -391,6 +407,7 @@ async function scenarioB(browser, seed) {
     'the 엽전 의뢰 met: 점수 두 배 10 s at once',
   );
   // 만남 2: 비연 낭자 (사파); defy → 정 +1; success pays 엽전
+  await nextMeet(g);
   const before = await g.state(S);
   await g.act(1);
   await g.step(2);
@@ -410,7 +427,8 @@ async function scenarioB(browser, seed) {
     `defied and met: 엽전 +50, no level (${coins} → ${s.coins})`,
   );
   // 만남 3: 비연 낭자 again; follow, and let its time run out → the 의뢰 fails, the point stays
-  check(f, (await g.mode()) === 'choice', 'the met 의뢰 opened 만남 3 at once');
+  await nextMeet(g);
+  check(f, (await g.mode()) === 'choice', 'the met 의뢰 brought 만남 3');
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
@@ -424,7 +442,8 @@ async function scenarioB(browser, seed) {
     s.path.at(-1).result === '미달' && s.evil === before.evil + 1,
     `its time runs out: the 의뢰 fails (${JSON.stringify(s.path.at(-1))})`,
   );
-  check(f, (await g.mode()) === 'choice', 'and a new 만남 opens');
+  await nextMeet(g);
+  check(f, (await g.mode()) === 'choice', 'and a new 만남 comes');
   await g.act(0);
   await g.step(2);
   // the odds: 6 : 2 : 2, a point moves 10% (1 of 10) from the passer-by to its side, and stops at none left
@@ -550,7 +569,17 @@ async function scenarioD(browser, seed) {
   await g.seconds(0.3);
   const early = await g.mode();
   await g.seconds(0.4);
-  check(f, early === 'play' && (await g.mode()) === 'choice', `the 만남 opens when its wait runs out (${early})`);
+  const announced = await g.eval(() => ({
+    mode: window.__g.mode,
+    arrive: !!window.__g.state.meetArrive,
+    left: window.__g.state.meetArrive?.left,
+  }));
+  await g.seconds(1.6);
+  check(
+    f,
+    early === 'play' && announced.mode === 'play' && announced.arrive && (await g.mode()) === 'choice',
+    `the wait runs out: who comes is announced (1.5 s, the fight goes on), then the cards (${early}, ${JSON.stringify(announced)})`,
+  );
   check(f, (await g.choiceTitle()) === '행인', 'a passer-by (forced)');
   // a passer-by's 의뢰 runs on the same 60 s
   await g.act(0);
@@ -558,7 +587,7 @@ async function scenarioD(browser, seed) {
   s = await g.state(S);
   const left0 = await g.state(() => window.__g.state.quest.left);
   check(f, s.mode === 'play' && s.quest?.t === 'kills' && left0 > 59.9, `a passer-by's 의뢰 has 60 s (${left0})`);
-  // an 인연's 의뢰 has 60 s; run out, it fails and the next 만남 opens
+  // an 인연's 의뢰 has 60 s; run out, it fails and 3 s later the next 만남 comes
   await g.eval(() => window.__g.meet('yeonhyeop'));
   await g.act(0);
   await g.step(2);
@@ -571,16 +600,26 @@ async function scenarioD(browser, seed) {
   const running = await g.state(() => [window.__g.mode, window.__g.state.quest.failed]);
   await g.seconds(0.4);
   s = await g.state(S);
+  const wait = await g.state(() => window.__g.state.meetTimer);
   check(
     f,
-    running.join() === 'play,false' && s.mode === 'choice' && s.path.at(-1).result === '미달',
-    `run out: the 의뢰 fails and the next 만남 opens (${running}, ${s.mode}, ${JSON.stringify(s.path.at(-1))})`,
+    running.join() === 'play,false' && s.mode === 'play' && s.path.at(-1).result === '미달' && wait > 2.5 && wait <= 3,
+    `run out: the 의뢰 fails, 3 s to the next (${running}, ${s.mode}, ${wait}, ${JSON.stringify(s.path.at(-1))})`,
   );
-  // met: the next 만남 opens at once
+  await nextMeet(g);
+  check(f, (await g.mode()) === 'choice', 'then the next 만남');
+  // met: the reward shows (1.4 s), 3 s later the next 만남 is announced
   await g.act(0);
   await g.step(2);
   await succeed(g);
-  check(f, (await g.mode()) === 'choice', 'a met 의뢰 opens the next 만남 at once');
+  const met = await g.state(() => ({ mode: window.__g.mode, wait: window.__g.state.meetTimer }));
+  check(
+    f,
+    met.mode === 'play' && met.wait > 4.2 && met.wait <= 4.4,
+    `a met 의뢰: its reward, then 4.4 s to the announcement (${JSON.stringify(met)})`,
+  );
+  await nextMeet(g);
+  check(f, (await g.mode()) === 'choice', 'then the next 만남');
   await g.act(0);
   await g.step(2);
   // a 필살기 counts down with no charge
@@ -688,8 +727,8 @@ async function scenarioD(browser, seed) {
   });
   check(
     f,
-    JSON.stringify(byLevel) === '[[10,2],[18,2],[19,3],[29,4]]',
-    `levels 1, 9, 10, 20: attack and shots per volley (${JSON.stringify(byLevel)})`,
+    JSON.stringify(byLevel) === '[[10,1],[18,1],[19,1],[29,1]]',
+    `levels 1, 9, 10, 20: attack +1 a level, one shot a volley (${JSON.stringify(byLevel)})`,
   );
   // a combo 의뢰 counts only the chain after it was accepted (the combo does not run down during a 만남)
   await g.eval(() => {

@@ -18,14 +18,14 @@ export const BASELINE = {
   s1Descent: 300,
   /** seconds between rows at the start and at the boss (by the stage's progress) */
   rowGap: { start: 1.7, end: 1.45 },
-  /** health as a multiple of the reference basic attack, with half the previous gap between tiers */
-  tierHealthMultipliers: [1, 5.5, 9.5, 16.5, 29.5, 53],
+  /** health as basic shots of the reference growth (Lv1: 10 a shot): tier 2 is 3 shots, then about × 1.4 */
+  tierHealthMultipliers: [1, 3, 4, 6, 8, 12],
   /** within a tier step k: the weak slot is tier k; each other slot is k+1 or k+2 with these chances, growing from
    *  the start of the step to its end (the rest are tier k); tiers above 6 are 6 */
   stepMix: { next: [0.2, 0.6], nextTwo: [0, 0.2] },
   /** the boss takes this many seconds of the reference growth's basic attack */
   bossSeconds: 30,
-  /** the basic attack: a volley every `fireInterval` s (Lv1: 2 shots, so 16 a second), shots fly `shotSpeed` px/s */
+  /** the basic attack: one shot every `fireInterval` s (8 a second) at every level, shots fly `shotSpeed` px/s */
   fireInterval: 0.125,
   shotSpeed: 1760,
   /** 운석: one comes after a random wait of `every` seconds (30 on average), warned `warn` s ahead, aimed */
@@ -38,9 +38,10 @@ export const BASELINE = {
   itemDrop: { chance: 0.01, weights: { hyper: 4, magnet: 4, double: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
-  /** 만남: the first opens `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has `quest` s of flight
-   *  to be met, and the next 만남 opens when it is met or its time runs out (systems/encounter.ts) */
-  meet: { first: 10, quest: 60 },
+  /** 만남 (systems/encounter.ts): the first comes `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has
+   *  `quest` s of flight. Met, its reward shows for `reward` s, then `after` s later the next 만남 comes; run out, the
+   *  next comes `after` s later. Who comes is announced for `arrive` s before the cards open. */
+  meet: { first: 10, quest: 60, reward: 1.4, after: 3, arrive: 1.5 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
    *  and it bursts into `gems` 보석 worth `gemCoins` 엽전 each */
   chest: { perRow: 0.018, gems: 10, gemCoins: 5 },

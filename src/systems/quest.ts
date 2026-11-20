@@ -116,8 +116,8 @@ export function completeQuest() {
     title = rewardName(q);
   q.done = true;
   q.prog = q.target;
-  // met: the next 만남 opens at once
-  G.state.meetReady = true;
+  // met: the reward shows, then the next 만남 comes (systems/encounter.ts)
+  G.state.meetTimer = G.state.meetWait = BASELINE.meet.reward + BASELINE.meet.after;
   if (reward.level) raiseBond(q.npc as string);
   else if (reward.double) G.state.double = ITEM_SECONDS;
   else G.state.coins += reward.coins;
@@ -132,7 +132,7 @@ export function completeQuest() {
         : name + '의 뜻을 거슬러 제 길을 증명했다'
       : name + '와의 일을 마쳤다',
     BR[q.br].color,
-    1.4,
+    BASELINE.meet.reward,
   );
   ring(G.player.x, G.player.y, BR[q.br].color, 10, 260, 0.6);
   G.flash = 0.15;

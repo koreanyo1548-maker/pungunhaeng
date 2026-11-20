@@ -29,9 +29,10 @@ export type PickupKind = 'coin' | 'hyper' | 'magnet' | 'double' | 'dual';
 export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
 /** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
 export const ITEM_SECONDS = 3;
-/** how a pickup moves: it is thrown up at `pop` px/s (it rises about 120-200 px), sideways up to `spread` px/s
- *  (it bounces off the screen's sides), and gravity pulls it down to `max` px/s */
-export const PICKUP_FALL = { pop: [560, 720], spread: 170, gravity: 1250, max: 380 };
+/** how a pickup moves: it is thrown up at `pop` px/s (it rises about 90-145 px), sideways up to `spread` px/s
+ *  (it bounces off the screen's sides), and gravity pulls it down faster and faster, up to `max` px/s (from the
+ *  middle of the screen it reaches the hero about 1.1 s after the kill) */
+export const PICKUP_FALL = { pop: [560, 720], spread: 170, gravity: 1800, max: 900 };
 /** how close the hero has to come to take a pickup (px from its centre) */
 export const PICKUP_REACH = { coin: 34, item: 44 };
 

@@ -20,6 +20,7 @@ import { profile } from '../core/profile';
 import { STAGES, STAGE_COUNT } from '../data/stages';
 import { done } from './scene-flow';
 import { updateMeetClock } from './encounter';
+import { showerOn, updateShower } from './shower';
 
 export type Phase = 'flight' | 'warning' | 'boss' | 'clear';
 
@@ -32,9 +33,12 @@ interface PhaseDef {
 const PHASES: Record<Phase, PhaseDef> = {
   flight: {
     update: dt => {
+      // a 운석 소나기 at the end of a step (the last one holds the boss warning until rows would come back)
+      const atBoss = G.state.distance >= stageDistance(),
+        clear = updateShower(dt, atBoss);
       updateFlight(dt);
       updateMeetClock(dt);
-      if (G.state.distance >= stageDistance()) setPhase('warning');
+      if (atBoss && clear) setPhase('warning');
     },
   },
   warning: {
@@ -78,14 +82,18 @@ function updateFlight(dt) {
   G.state.stageTime += dt;
   // rows come by distance in 무아지경: it runs BASELINE.hyper.speed times faster, so its rows come that much faster
   // and it cuts through as many enemies a metre as running does (its kills score and drop 엽전)
-  G.state.rowTimer -= dt * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
-  G.state.meteorTimer -= dt;
-  if (G.state.rowTimer <= 0) {
+  // no rows and no single 운석 during a 운석 소나기 (systems/shower.ts)
+  const shower = showerOn();
+  if (!shower) {
+    G.state.rowTimer -= dt * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
+    G.state.meteorTimer -= dt;
+  }
+  if (!shower && G.state.rowTimer <= 0) {
     spawnRow();
     // BASELINE.rowGap: 1.7 s a row at the start, 1.45 s at the boss
     G.state.rowTimer = rowGap(G.state.distance, stageDistance());
   }
-  if (G.state.hyper <= 0 && G.state.meteorTimer <= 0) {
+  if (!shower && G.state.hyper <= 0 && G.state.meteorTimer <= 0) {
     // 운석 is an event: a random wait of BASELINE.meteor.every seconds (about 30 on average)
     meteor();
     G.state.meteorTimer = rnd(BASELINE.meteor.every[0], BASELINE.meteor.every[1]);
@@ -98,7 +106,7 @@ function updateFlight(dt) {
       G.state.spearTimer = terrain === 'gate' ? rnd(1, 1.5) : rnd(0.5, 0.85);
     }
   }
-  if (terrain === 'cloud' && G.state.rowTimer > 0.5) G.state.rowTimer -= dt * 0.25;
+  if (!shower && terrain === 'cloud' && G.state.rowTimer > 0.5) G.state.rowTimer -= dt * 0.25;
 }
 
 /** clear phase: the stage is announced and the field emptied (the 의뢰 stays open until the result) */

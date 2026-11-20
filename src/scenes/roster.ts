@@ -26,13 +26,14 @@ function toNext(id: HeroId): [number, number] {
 function tile(id: HeroId): Tile {
   const h = HEROES[id];
   if (!heroOwned(id)) return { id, name: h.name, image: heroPictures[id], color: h.color, locked: true };
-  // on the portrait: the name, the level and the 성급 (pieces are in the popup)
+  // on the portrait: the level in its top-left corner, the name and the 성급 under it (pieces are in the popup)
   return {
     id,
     name: h.name,
     image: heroPictures[id],
     color: h.color,
-    grade: `Lv ${profile.levels[id]} ${starText(heroStars(id))}`,
+    badge: `Lv ${profile.levels[id]}`,
+    grade: starText(heroStars(id)),
   };
 }
 

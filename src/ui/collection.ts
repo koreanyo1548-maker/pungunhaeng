@@ -19,6 +19,8 @@ export type Tile = {
   note?: string;
   /** progress toward the next step, drawn as a thin bar (now, goal) */
   progress?: [number, number];
+  /** portrait tiles: a small mark in the portrait's top-left corner (the level) */
+  badge?: string;
 };
 /** One step on a growth track (성급, card levels, later 레벨 and 초월). */
 export type Step = { label: string; text: string; state: 'done' | 'current' | 'next' };
@@ -67,7 +69,7 @@ function renderGrid() {
       .tiles()
       .map(
         t =>
-          `<button class="tile portrait${t.locked ? ' locked' : ''}" data-id="${t.id}" style="--c:${t.color}" aria-label="${t.name}${t.locked ? ` (${t.lockText ?? '잠김'})` : ''}"><span class="tile-art"><img alt="" src="${t.image}" draggable="false">${t.locked ? `<em>${t.lockText ?? '잠김'}</em>` : ''}<span class="tile-label"><b>${t.name}</b>${t.grade ? `<span class="tile-grade">${t.grade}</span>` : ''}</span></span></button>`,
+          `<button class="tile portrait${t.locked ? ' locked' : ''}" data-id="${t.id}" style="--c:${t.color}" aria-label="${t.name}${t.locked ? ` (${t.lockText ?? '잠김'})` : ''}"><span class="tile-art"><img alt="" src="${t.image}" draggable="false">${t.badge ? `<span class="tile-badge">${t.badge}</span>` : ''}${t.locked ? `<em>${t.lockText ?? '잠김'}</em>` : ''}<span class="tile-label"><b>${t.name}</b>${t.grade ? `<span class="tile-grade">${t.grade}</span>` : ''}</span></span></button>`,
       )
       .join('');
     return;

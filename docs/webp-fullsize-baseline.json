@@ -6,11 +6,11 @@
     "method": 6,
     "exact": true
   },
-  "fileCount": 41,
-  "originalBytes": 72487623,
-  "webpBytes": 47063914,
-  "savedBytes": 25423709,
-  "reductionPercent": 35.07,
+  "fileCount": 43,
+  "originalBytes": 74980056,
+  "webpBytes": 48752986,
+  "savedBytes": 26227070,
+  "reductionPercent": 34.98,
   "files": [
     {
       "source": "art/originals/ambient/inn-collection.png",
@@ -61,6 +61,26 @@
       "webpBytes": 970380,
       "sourceSha256": "ed3477f1511806cd8ffc7d4c4a9193e7d8b6486ae94fbed3bff56bd543860475",
       "webpSha256": "b7e1d6013fced4ed397f80d05684a9a605c23f1e269fd803b784ec9c1f61a2b3"
+    },
+    {
+      "source": "art/originals/enemies/greenwood-air-bird-variants-4x6.png",
+      "runtime": "src/assets/images/enemies/greenwood-air-bird-variants-4x6.webp",
+      "width": 1024,
+      "height": 1536,
+      "originalBytes": 1688487,
+      "webpBytes": 1162244,
+      "sourceSha256": "fd7d6a035348972715118ca5e4b1367a98c6814fd64ed62e157a98b5d537d2ea",
+      "webpSha256": "c0695d8f03814838cb13df9adc18596cc06529ec90485e0473823ceb1a0024f8"
+    },
+    {
+      "source": "art/originals/enemies/greenwood-ground-6x2.png",
+      "runtime": "src/assets/images/enemies/greenwood-ground-6x2.webp",
+      "width": 1536,
+      "height": 512,
+      "originalBytes": 803946,
+      "webpBytes": 526828,
+      "sourceSha256": "f0d66336a6d53b0cad8210a0e06e3f171e9abb9fc34b42897dea4e47c6168640",
+      "webpSha256": "68f712e6bc61ad603c37bd6877e60f0f4d94313fd1da31d976a997a12c70fbb4"
     },
     {
       "source": "art/originals/fx.png",

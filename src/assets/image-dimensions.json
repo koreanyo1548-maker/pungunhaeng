@@ -49,6 +49,26 @@
       444
     ]
   },
+  "enemies/greenwood-air-bird-variants-4x6.webp": {
+    "source": [
+      1024,
+      1536
+    ],
+    "runtime": [
+      1024,
+      1536
+    ]
+  },
+  "enemies/greenwood-ground-6x2.webp": {
+    "source": [
+      1536,
+      512
+    ],
+    "runtime": [
+      1536,
+      512
+    ]
+  },
   "fx.webp": {
     "source": [
       1774,

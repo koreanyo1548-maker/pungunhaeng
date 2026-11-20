@@ -4,7 +4,8 @@
 import { $ } from '../core/dom';
 import { heroPictures } from '../core/assets';
 import { fmt } from '../core/math';
-import { profile } from '../core/profile';
+import { loadProfile, profile } from '../core/profile';
+import { showBank, showBest } from './hud';
 import { STAGES, STAGE_COUNT } from '../data/stages';
 
 let shown = 1;
@@ -56,4 +57,29 @@ $('stagePrev').onclick = () => {
 $('stageNext').onclick = () => {
   if (shown < lastShown()) shown++;
   draw();
+};
+
+// 데이터 초기화: the first tap asks (the button says so for 3 s), the second wipes the profile (엽전, heroes, levels,
+// 호감도, stages, best score and party) back to a new save.
+let resetArmed = 0;
+$('resetData').onclick = () => {
+  const button = $('resetData');
+  if (!resetArmed) {
+    button.textContent = '정말 초기화? 한 번 더';
+    button.classList.add('armed');
+    resetArmed = window.setTimeout(() => {
+      resetArmed = 0;
+      button.textContent = '데이터 초기화';
+      button.classList.remove('armed');
+    }, 3000);
+    return;
+  }
+  clearTimeout(resetArmed);
+  resetArmed = 0;
+  button.textContent = '데이터 초기화';
+  button.classList.remove('armed');
+  loadProfile({});
+  showBest();
+  showBank();
+  showLobby();
 };

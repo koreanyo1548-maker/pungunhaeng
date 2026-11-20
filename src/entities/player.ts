@@ -1,3 +1,4 @@
+import { TUNE } from '../data/tune';
 import { emit } from '../core/events';
 import { G } from '../core/context';
 import { BASELINE } from '../data/baseline';
@@ -85,6 +86,8 @@ export function shoot() {
         vy: BASELINE.shotSpeed,
         damage: shotPower(),
         r: 5,
+        // it hits as wide as it is drawn (data/tune.ts basicShot)
+        w: TUNE.basicShot.reach,
         kind: 'qi',
         phase: G.time,
         skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,

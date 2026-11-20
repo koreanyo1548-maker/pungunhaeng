@@ -342,7 +342,7 @@ async function scenarioA(browser, stage, seed) {
   await killBoss(g);
   s = await g.state(S);
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
-  check(f, s.mode === 'result' && /돌파/.test(title), `beating the boss ends the run (${title})`);
+  check(f, s.mode === 'result' && title === '강호행 승리', `beating the boss ends the run (${title})`);
   const wantScenes = ['formation', 'stage', ...Array(6).fill(['encounter', 'stage']).flat(), 'result'];
   const got = await g.eval(() => window.__g.sceneLog);
   check(
@@ -350,11 +350,20 @@ async function scenarioA(browser, stage, seed) {
     got.join() === wantScenes.join(),
     `scene sequence\n       want ${wantScenes.join(' → ')}\n       got  ${got.join(' → ')}`,
   );
-  const summary = await g.page.$eval('#summary', e => e.textContent);
+  // the result: the score with its 정도 bonus, the 엽전 with the boss bonus (no other information)
+  const result = await g.eval(() => ({
+    score: document.getElementById('scoreRows').textContent,
+    coins: document.getElementById('coinRows').textContent,
+    gacha: !!document.getElementById('resultGacha'),
+  }));
   check(
     f,
-    /떠돌이 약선 3단계/.test(summary) && /행인/.test(summary),
-    `the summary lists 인연 levels (${summary.slice(0, 120)})`,
+    /기본 점수/.test(result.score) &&
+      /정도 보너스 \+\d+%/.test(result.score) &&
+      /남은 엽전/.test(result.coins) &&
+      /보스 처치\+300냥/.test(result.coins) &&
+      !result.gacha,
+    `the result shows the score and 엽전 with their bonuses (${JSON.stringify(result)})`,
   );
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   log.push(`S${stage + 1}: ${title}, 정 ${s.good} · 사 ${s.evil}, skills ${s.skills}`);
@@ -498,9 +507,8 @@ async function scenarioC(browser, seed) {
   await g.eval(() => window.__g.god());
   await reachBoss(g);
   await killBoss(g);
-  const eyebrow = await g.page.$eval('#resultEyebrow', e => e.textContent);
   const won = await P();
-  check(f, won.stages === 2 && /S2 청죽림 열림/.test(eyebrow), `beating S1 opens S2 (${eyebrow})`);
+  check(f, won.stages === 2, `beating S1 opens S2 (${won.stages})`);
   check(f, won.coins >= 300, `a victory banks the clear bonus (${won.coins})`);
   // S1 again: nothing more opens. 다시 강호로 goes back to the lobby, which shows S2 (the highest open) first
   await g.eval(() => document.getElementById('retry').click());
@@ -530,13 +538,9 @@ async function scenarioC(browser, seed) {
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
   const left = await g.state(() => window.__g.state.coins);
   const p = await P();
-  check(f, title === '강호행 종료', `defeat title (got ${title})`);
-  const run = (await g.page.$eval('#resultEyebrow', e => e.textContent)).match(/([\d,]+) \/ ([\d,]+) m/);
-  check(
-    f,
-    run && +run[1].replace(/,/g, '') <= +run[2].replace(/,/g, ''),
-    `the distance on defeat stops at the stage length (${run?.[0]})`,
-  );
+  check(f, title === '강호행 실패', `defeat title (got ${title})`);
+  const run = await g.state(() => [window.__g.state.distance, window.__g.stageDistance]);
+  check(f, run[0] <= run[1] + 1, `on defeat the run had not reached the boss (${run})`);
   check(
     f,
     p.coins === before + left && p.stages === 2,
@@ -546,7 +550,7 @@ async function scenarioC(browser, seed) {
   check(f, got.at(-2) === 'stage' && got.at(-1) === 'result', 'scene sequence ends stage → result');
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
   await g.page.close();
-  return { name: `C seed ${seed}`, failures: f, log: [eyebrow] };
+  return { name: `C seed ${seed}`, failures: f, log: [] };
 }
 
 // Scenario D: 만남 timing and the 의뢰 deadline around the boss.
@@ -864,17 +868,21 @@ async function scenarioE(browser, seed) {
   }));
   const left = end.coins;
   p = await P();
-  const settleText = await g.eval(() => document.getElementById('settle').textContent);
+  const settleText = await g.eval(
+    () => document.getElementById('scoreRows').textContent + ' | ' + document.getElementById('coinRows').textContent,
+  );
   check(
     f,
     p.coins === Math.floor(left * (1 + 0.05 * end.evil)) &&
       left >= 700 &&
-      new RegExp(`정 ${end.good} 점수 \\+${end.good * 5}%`).test(settleText) &&
-      new RegExp(`사 ${end.evil} \\+${end.evil * 5}%`).test(settleText),
+      new RegExp(`정도 보너스 \\+${end.good * 5}%`).test(settleText) &&
+      new RegExp(`사도 보너스 \\+${end.evil * 5}%`).test(settleText),
     `엽전 left at the end is banked with 사 +5% each, the score gets 정 +5% each (${JSON.stringify(end)} → bank ${p.coins}; ${settleText})`,
   );
-  // 뽑기 from the result screen: one draw, then ten
-  await g.eval(() => document.getElementById('resultGacha').click());
+  // 뽑기 from the lobby: one draw, then ten
+  await g.eval(() => document.getElementById('retry').click());
+  await g.step(2);
+  await g.eval(() => document.getElementById('openGacha').click());
   const tenOff = await g.eval(() => document.getElementById('drawTen').disabled);
   check(f, tenOff === p.coins < 1000, `10회 is disabled below 1,000냥 (${p.coins})`);
   await g.eval(() => document.getElementById('drawOne').click());

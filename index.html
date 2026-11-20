@@ -113,19 +113,19 @@
         </div>
         <div class="overlay modal hidden" id="result">
           <div class="panel">
-            <span class="eyebrow" id="resultEyebrow">다음 여정을 기약하며</span>
-            <h2 id="resultTitle">강호행 종료</h2>
+            <h2 id="resultTitle">강호행 실패</h2>
             <p class="record hidden" id="newRecord">새로운 최고 기록!</p>
-            <strong class="result-score" id="finalScore">0</strong><span class="result-score-label">최종 점수</span>
-            <div class="stats">
-              <div><b id="finalDistance">0 m</b><span>이동 거리</span></div>
-              <div><b id="finalKills">0</b><span>처치</span></div>
-              <div><b id="finalCoins">0</b><span>엽전</span></div>
+            <div class="result-section">
+              <h4>점수</h4>
+              <div id="scoreRows"></div>
+              <div class="result-total"><span>최종 점수</span><strong id="finalScore">0</strong></div>
             </div>
-            <p class="settle" id="settle"></p>
-            <div class="summary" id="summary"></div>
-            <button class="primary" id="retry">다시 강호로</button
-            ><button class="secondary" id="resultGacha">뽑기하러 가기</button>
+            <div class="result-section">
+              <h4>획득 엽전</h4>
+              <div id="coinRows"></div>
+              <div class="result-total"><span>보관</span><strong class="coin" id="bankedCoins">0냥</strong></div>
+            </div>
+            <button class="primary" id="retry">다시 강호로</button>
           </div>
         </div>
         <div class="overlay modal hidden" id="choice">

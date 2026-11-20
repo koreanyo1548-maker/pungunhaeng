@@ -1577,7 +1577,7 @@ async function scenarioI(browser, seed) {
   await g.step(1);
   const c1 = await g.state(() => window.__g.state.coins);
   check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
-  // an item drops with 3% a kill, picked 무아지경 4 : 자석 4 : 점수 두 배 2
+  // an item drops with 3% a kill, picked 자석 4 : 점수 두 배 4 : 무아지경 2
   const picks = await g.eval(() => {
     const out = { hyper: 0, magnet: 0, double: 0 };
     for (let i = 0; i < 1000; i++) out[window.__g.pickItem((i + 0.5) / 1000)]++;
@@ -1585,8 +1585,8 @@ async function scenarioI(browser, seed) {
   });
   check(
     f,
-    picks.hyper === 400 && picks.magnet === 400 && picks.double === 200,
-    `items picked 4:4:2 (${JSON.stringify(picks)})`,
+    picks.magnet === 400 && picks.double === 400 && picks.hyper === 200,
+    `items picked 자석 4 : 점수 두 배 4 : 무아지경 2 (${JSON.stringify(picks)})`,
   );
   // items hang at the top of their pop before they fall; 엽전 do not
   await g.eval(() => {

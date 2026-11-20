@@ -46,7 +46,7 @@ python tools/convert-webp.py --check
 - **시드 난수**: 게임플레이 난수(`random`, `rnd`)와 연출 난수(`fxRandom`, `fxRnd`)를 나눴습니다 (`core/rng.ts`). 파티클·화면 흔들림은 게임 결과에 영향을 주지 않습니다.
 - **장면 흐름**: 한 판의 장면 순서(스테이지 선택 → 편대 → 비행 ↔ 만남 → 보스 → 결과)는 `systems/scene-flow.ts`의 전환표 한 곳에서 정합니다. 장면은 끝났다는 것만 알립니다(`done`).
 - **스테이지 단계**: 한 스테이지 안의 비행(정해진 거리) → 경고 → 보스 → 돌파는 `systems/stage-phases.ts`의 단계표에 있고, 단계 전환은 `setPhase`로만 합니다.
-- **스테이지와 만남**: 스테이지 6개는 `data/stages.ts`(배경, 보스, 거리, 게이지 크기). 처치 게이지는 `systems/encounter.ts`, 선·악과 인연 해금은 `systems/alignment.ts`, 점수·줄 간격·정산 보너스는 `systems/score.ts`, 의뢰와 인연 단계는 `systems/quest.ts`, 행인은 `systems/virtue.ts`에 있습니다. 설계는 `docs/ability-redesign-plan.md`.
+- **스테이지와 만남**: 스테이지 6개는 `data/stages.ts`(배경, 보스, 거리). 만남이 열리는 때는 `systems/encounter.ts`, 선·악과 인연 해금은 `systems/alignment.ts`, 점수·줄 간격·정산 보너스는 `systems/score.ts`, 의뢰와 인연 단계는 `systems/quest.ts`, 행인은 `systems/virtue.ts`에 있습니다. 설계는 `docs/ability-redesign-plan.md`.
 - **이벤트 버스**: 전투는 일어난 일만 알리고(`emit`), 의뢰와 인연 기술이 구독합니다 (`core/events.ts`). 의뢰 리스너가 먼저 등록되어 있어야 합니다 (`main.ts`).
 - **데이터 주도**: 수치와 콘텐츠는 `data/`에 있습니다. 밸런스 조정은 먼저 `data/tune.ts`를 봅니다.
 
@@ -59,7 +59,7 @@ src/
   core/         DOM·캔버스, 공유 상태(G), 수학·문자 유틸, 사운드, 리소스 로더
   data/         기획 데이터: 수치(tune), 스테이지, 영웅, 인연, 인연 기술, 의뢰 조건, 적 등급
   entities/     플레이어, 적, 보스, 줍는 물건
-  systems/      게임 흐름, 루프, 전투, 인연 기술, 의뢰, 처치 게이지, 선·악, 점수, 행인, 편대, 영웅 특성·등장 기술
+  systems/      게임 흐름, 루프, 전투, 인연 기술, 의뢰, 만남 시점, 선·악, 점수, 행인, 편대, 영웅 특성·등장 기술
   scenes/       선택 화면: 스테이지·편대, 만남(인연·행인), 결과, 영웅·인연·뽑기 (최종 관문은 흐름 밖에 보관)
   render/       그리기: 배경, 캐릭터, 투사체, 이펙트, 보스 UI, 의뢰 단서
   ui/           HUD, 입력
@@ -79,7 +79,7 @@ tests/
 npm test               # 타입 검사 → 한 파일 빌드 → e2e
 
 # e2e: 스테이지 선택·해금, 만남(행인 1·2단계, 인연 의뢰 따름·거스름·실패), 선·악 해금,
-#      인연 1→2→3단계→엽전, 처치 게이지 규칙, 거리 → 보스 → 결과, 뽑기·영웅 레벨업·인연 호감도. 실패하면 종료 코드 1
+#      인연 1→2→3단계→엽전, 만남 시점, 거리 → 보스 → 결과, 뽑기·영웅 레벨업·인연 호감도. 실패하면 종료 코드 1
 npm run test:e2e
 
 # 밸런스 봇: 시드별로 생존, 피격, 스테이지 길이, 처치, 만남 횟수, 엽전을 보고

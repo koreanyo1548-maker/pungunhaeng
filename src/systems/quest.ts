@@ -2,8 +2,9 @@
 // the 인연's side (선 or 악), defying it a point to the other side; the point comes when the choice is made.
 // The target grows with each 의뢰 of the same 인연 in a run: 1/3, then 2/3, then the full count (data/npcs.ts `n`).
 // Met in time, a followed 의뢰 raises the 인연 one level (its next skill), and pays 엽전 once the 인연 is at level 3;
-// a defied one pays 엽전. The deadline is the next 만남: a full gauge fails an 의뢰 still running, and so does the end
-// of the run. Failing costs only the reward.
+// a defied one pays 엽전. It has BASELINE.meet.quest s of flight: met, the next 만남 opens at once; run out (or at
+// the end of the run) it fails, and the next 만남 opens (systems/encounter.ts). Failing costs only the reward.
+// 정요란 (her trait, while she fights) cuts the targets.
 import { done } from './scene-flow';
 import { on } from '../core/events';
 import { G } from '../core/context';
@@ -18,6 +19,8 @@ import { learn } from './abilities';
 import { moveAlign, moveText, openedText } from './alignment';
 import { bondLevel } from './relationship';
 import { addBond } from '../core/profile';
+import { BASELINE } from '../data/baseline';
+import { traitValue } from './hero-effects';
 
 export const BOND_MAX = 3;
 
@@ -25,7 +28,7 @@ export const BOND_MAX = 3;
 export const QUEST_STEPS = [1 / 3, 2 / 3, 1];
 /** a condition's target for the `met`-th 의뢰 (0 = the first) of its 인연 this run (the same on every stage) */
 export const questTarget = (c: { n: number }, met: number) =>
-  Math.max(1, Math.round(c.n * QUEST_STEPS[Math.min(met, QUEST_STEPS.length - 1)]));
+  Math.max(1, Math.round(c.n * QUEST_STEPS[Math.min(met, QUEST_STEPS.length - 1)] * (1 - (traitValue('yoran') ?? 0))));
 /** the point this 인연's 의뢰 gives when followed (+1 선 for 정파 / −1 = 악 +1 for 사파) or defied (the other side) */
 export const alignMove = (id: string, mode: string) =>
   (NPCS[id].side === 'good' ? 1 : -1) * (mode === 'follow' ? 1 : -1);
@@ -77,6 +80,8 @@ export function completeQuest() {
     reward = questReward(q.npc, q.mode);
   q.done = true;
   q.prog = q.target;
+  // met: the next 만남 opens at once
+  G.state.meetReady = true;
   if (reward.level) raiseBond(q.npc);
   else G.state.coins += reward.coins;
   if (G.state.questPath) G.state.questPath.result = '성취';
@@ -121,6 +126,7 @@ export function acceptQuest(id, qmode) {
     br: COND[c.t].br,
     done: false,
     failed: false,
+    left: BASELINE.meet.quest,
     from: c.t === 'combo' ? G.state.combo : undefined,
   };
   G.state.path.push({ stage: G.state.encounters, npc: id, mode: qmode, t: c.t, result: '진행 중' });

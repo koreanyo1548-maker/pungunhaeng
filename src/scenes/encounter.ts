@@ -1,4 +1,4 @@
-// 만남 (docs/ability-redesign-plan.md, 4.2–4.5): opened when the 처치 게이지 fills (systems/encounter.ts).
+// 만남 (docs/ability-redesign-plan.md, 4.2–4.5): opened by its timing (systems/encounter.ts).
 // An 인연 who can come (unlocked by 선·악 points) brings an 의뢰; otherwise a passer-by comes.
 import { ambientPictures } from '../core/ambient-art';
 import { G } from '../core/context';
@@ -8,6 +8,7 @@ import { BR, COND } from '../data/branches';
 import { NPCS, SIDE_NAME } from '../data/npcs';
 import { SKILLS, skillEffect } from '../data/skills';
 import { openChoice } from './choice';
+import { BASELINE } from '../data/baseline';
 import { region } from '../systems/flow';
 import { alignText, candidates, moveText } from '../systems/alignment';
 import { BOND_MAX, acceptQuest, alignMove, closeQuest, questReward, questTarget } from '../systems/quest';
@@ -19,7 +20,7 @@ const eyebrow = () => `S${G.state.stage} ${region().name} · 만남 ${G.state.en
 export function openEncounter() {
   const s = G.state;
   s.encounters++;
-  // the deadline of an 의뢰 is the next 만남
+  // an 의뢰 still open fails (its time or its success opened this 만남, so this is only a safeguard)
   closeQuest();
   let id = s.forceNpc;
   s.forceNpc = null;
@@ -51,7 +52,7 @@ function openBond(id: string) {
   openChoice({
     eyebrow: eyebrow(),
     title: '인연',
-    sub: `<b>${alignText()}</b>. 의뢰는 다음 만남 전까지 이뤄야 한다. 실패해도 선·악은 오르지만 보상은 없다.`,
+    sub: `<b>${alignText()}</b>. 의뢰는 ${BASELINE.meet.quest}초 안에 이뤄야 한다. 이루면 곧 다음 만남이 온다. 실패해도 선·악은 오르지만 보상은 없다.`,
     cards: [
       {
         image: npcPictures[id],

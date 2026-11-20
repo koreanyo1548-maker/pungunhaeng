@@ -38,6 +38,10 @@ export const BASELINE = {
   itemDrop: { chance: 0.01, weights: { hyper: 4, magnet: 4, double: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
+  /** 만남: the first opens `first` s into the flight; an 의뢰 has `quest` s of flight to be met, and the next 만남
+   *  opens when it is met or its time runs out; after a passer-by (no 의뢰) the next comes `afterPasser` s later
+   *  (systems/encounter.ts) */
+  meet: { first: 10, quest: 60, afterPasser: 10 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
    *  and it bursts into `gems` 보석 worth `gemCoins` 엽전 each */
   chest: { perRow: 0.018, gems: 10, gemCoins: 5 },

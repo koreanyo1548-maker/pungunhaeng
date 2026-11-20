@@ -17,7 +17,6 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
-import { addKill } from '../systems/encounter';
 import { bondArmor } from '../data/skills';
 import { difficulty, enemyHealth, region } from '../systems/flow';
 import { slotTier, strongTier, weakTier } from '../systems/ladder';
@@ -200,7 +199,6 @@ export function kill(e, byHyper = false) {
     G.state.cleared++;
     setPhase('clear');
   } else {
-    addKill(e);
     onComboKill();
     // 무아지경 kills drop 엽전 only: an item from them could chain 무아지경 without end
     if (e.chest) dropGems(e.x, e.y);

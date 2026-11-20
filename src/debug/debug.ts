@@ -6,7 +6,7 @@ import { NPCS } from '../data/npcs';
 import { loadProfile, profile } from '../core/profile';
 import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
-import { questEvent, raiseBond } from '../systems/quest';
+import { questEvent, questTarget, raiseBond } from '../systems/quest';
 import { moveAlign } from '../systems/alignment';
 import { referenceScore, rowGap } from '../systems/score';
 import { addPickup, pickItem } from '../entities/pickups';
@@ -54,13 +54,15 @@ if (location.hash.includes('debug'))
     /** drop a pickup ('coin', 'hyper', 'magnet', 'double') at (x, y), as a kill would */
     addPickup,
     pickItem,
-    /** kill an enemy as a hit would (score, gauge, drops) */
+    /** kill an enemy as a hit would (score, drops) */
     kill,
     /** the 인연 data (data/npcs.ts) */
     npcs: NPCS,
     /** the row gap (seconds) at a distance into a stage of a length (systems/score.ts) */
     rowGap,
     questEvent,
+    /** an 의뢰 condition's target for the met-th 의뢰 of its 인연 (정요란 cuts it) */
+    questTarget,
     learn,
     /** fire the skills bound to a trigger, as combat would (tests count what they shoot) */
     trig,
@@ -76,8 +78,8 @@ if (location.hash.includes('debug'))
     skipFlight() {
       G.state.distance = Math.max(G.state.distance, stageDistance());
     },
-    /** fill the 처치 게이지: the 만남 opens at the end of the next step (as kills would) */
-    fillGauge() {
+    /** make a 만남 due: it opens at the end of the next step (as its time would) */
+    readyMeet() {
       G.state.meetReady = true;
     },
     /** open a 만남 now; with an id, that 인연 comes (whatever the scale) */

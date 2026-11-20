@@ -254,8 +254,8 @@ export const HEROES: Record<HeroId, Hero> = {
     trait: {
       name: '정심',
       scope: 'self',
-      value: L => 0.5 + 0.1 * L,
-      desc: L => `처치 게이지 +${pct(0.5 + 0.1 * L)}`,
+      value: L => 0.15 + 0.03 * L,
+      desc: L => `의뢰 목표 −${pct(0.15 + 0.03 * L)}`,
     },
     entry: {
       name: '정심반사',

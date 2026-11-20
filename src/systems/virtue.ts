@@ -10,6 +10,8 @@ import { label } from '../render/fx';
 import { notify } from '../ui/hud';
 import { moveAlign, moveText, openedText } from './alignment';
 import { done } from './scene-flow';
+import { waitForMeet } from './encounter';
+import { BASELINE } from '../data/baseline';
 
 export const PASSERS = [
   {
@@ -65,6 +67,7 @@ export function meetPasser(pick: number) {
   if (act.move > 0) chime();
   s.passers++;
   s.quest = null;
+  waitForMeet(BASELINE.meet.afterPasser);
   const opened = moveAlign(act.move);
   s.path.push({ stage: s.encounters, npc: null, who: who.name, mode: act.kind, result: act.result });
   done('encounter');

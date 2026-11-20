@@ -125,7 +125,6 @@ async function oneRun(browser, stage, seed) {
       score: Math.round(s.score),
       max: window.__g.referenceScore(s.stage),
       drops: s.drops,
-      gauge: Math.round(s.gaugeEarned),
       base: s.baseScore,
       kills: s.kills,
       time: s.elapsed,
@@ -153,7 +152,7 @@ for (const r of results) {
   const s = r.sim.stages[r.course] || {};
   console.log(
     `S${r.course} seed ${r.seed}: ${won(r) ? '돌파' : `사망 ${r.phase}`} ${Math.round(s.time)}s(boss ${Math.round(s.boss)}) ` +
-      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 드롭 ${JSON.stringify(r.drops)} 게이지 ${r.gauge} 기본점수 ${r.base} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
+      `hit${s.hits} kills ${s.kills} 만남 ${s.encounters} ${s.coins}냥 ${r.align} 점수 ${r.score}/${r.max} 드롭 ${JSON.stringify(r.drops)} 기본점수 ${r.base} 의뢰[${r.path.join(',')}] ${r.skills.join(',')}` +
       ` (${(r.wall / 1000).toFixed(0)}s wall${r.errors.length ? ', ERRORS ' + r.errors.join(' | ') : ''})`,
   );
 }

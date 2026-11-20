@@ -1,5 +1,6 @@
 import { createHeroHealth, BASE_HEALTH } from './hero-health';
 import type { Meta } from '../data/meta';
+import { BASELINE } from '../data/baseline';
 import type { RunState, Player, Enemy, Shot, HeroHealth } from './state-types';
 
 export function createRunState(meta: Meta): RunState {
@@ -54,9 +55,9 @@ export function createRunState(meta: Meta): RunState {
     evil: 0,
     unlocked: [],
     bond: {},
-    gauge: 0,
-    /** all the gauge this run's kills gave (for the balance measurements) */
-    gaugeEarned: 0,
+    /** the first 만남 comes BASELINE.meet.first s into the flight (systems/encounter.ts) */
+    meetTimer: BASELINE.meet.first,
+    meetWait: BASELINE.meet.first,
     /** the score at the end of the run before the 선 bonus (for the measurements) */
     baseScore: 0,
     meetReady: false,

@@ -14,6 +14,8 @@ export interface Quest {
   br: string;
   done: boolean;
   failed: boolean;
+  /** seconds of flight left to meet it (BASELINE.meet.quest); the next 만남 opens when it runs out */
+  left: number;
   tick?: number;
   /** combo 의뢰: the combo already running when it was accepted (only the chain after it counts) */
   from?: number;
@@ -94,11 +96,11 @@ export interface RunState {
   unlocked: string[];
   /** each 인연's level this run, 0 to 3 */
   bond: Record<string, number>;
-  /** 처치 게이지 toward the next 만남 (systems/encounter.ts) */
-  gauge: number;
-  gaugeEarned: number;
+  /** seconds of flight before the next 만남 when no 의뢰 runs, and the whole wait (systems/encounter.ts) */
+  meetTimer: number;
+  meetWait: number;
   baseScore: number;
-  /** the gauge is full: a 만남 opens at the next safe step */
+  /** a 만남 is due: it opens at the next safe step */
   meetReady: boolean;
   /** 만남 so far this run */
   encounters: number;

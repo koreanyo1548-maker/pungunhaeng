@@ -9,7 +9,7 @@ import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
 import { NPCS } from '../data/npcs';
 import { SKILLS } from '../data/skills';
 import { region, stageDistance } from '../systems/flow';
-import { gaugeMax } from '../systems/encounter';
+import { meetProgress } from '../systems/encounter';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -55,9 +55,9 @@ export function syncHUD() {
     ).join('');
     $('hearts').setAttribute('aria-label', `남은 체력 ${G.player.hp}`);
   }
-  // the stage box: the stage, the 처치 게이지 toward the next 만남 (the bar), and the distance left to the boss
+  // the stage box: the stage, the time to the next 만남 at the latest (the bar), and the distance left to the boss
   const left = Math.max(0, stageDistance() - G.state.distance),
-    gauge = G.state.meetReady ? 1 : G.state.gauge / gaugeMax();
+    gauge = meetProgress();
   $('stage').textContent = `S${G.state.stage} ${region().name} · 만남 ${Math.floor(gauge * 100)}%`;
   syncQuestHUD();
   $('stageName').textContent =

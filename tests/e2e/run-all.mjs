@@ -4,11 +4,12 @@
 // Scenario A (S1 산길 and S4 부유암): no 만남 before play, left-right movement only, Q does nothing, 등장, the first
 //   만남 is a passer-by (level 1), 선 1 unlocks 떠돌이 약선, her 의뢰 raises her 1 → 2 → 3단계 (skills) and then
 //   pays 엽전; distance → boss → victory; the scene sequence.
-// Scenario B: 거스름 (a point to the other side, 엽전 on success), 선 and 악 counted apart, an 의뢰 failed by the next
-//   만남, passer-by level 2 (give 엽전 or not, giving disabled when poor), several marks crossed at once.
+// Scenario B: 거스름 (a point to the other side, 엽전 on success), 선 and 악 counted apart, an 의뢰 failed when its
+//   time runs out, passer-by level 2 (give 엽전 or not, giving disabled when poor), several marks crossed at once.
 // Scenario C: stages and saving: a new save opens S1 only, beating S1 opens S2 (once), death → result, 엽전 banked.
-// Scenario D: gauge rules: a blast's kills overflow it once and the carry stays below full, 정요란 ×1.5, 필살기 count
-//   (no charge), an 의뢰 carried into the boss fight and met there, no gauge and no 만남 in the boss fight.
+// Scenario D: 만남 timing: the first after 10 s of flight, 10 s after a passer-by, an 의뢰's 60 s (run out: it fails
+//   and the next 만남 opens), a met 의뢰 opens the next at once; 정요란 cuts 의뢰 targets, 필살기 count (no charge),
+//   an 의뢰 carried into the boss fight (its clock stopped) and met there, no 만남 in the boss fight.
 // Scenario E: 엽전과 뽑기 (새 저장, 엽전 보관 → 1회·10회 뽑기는 영웅 조각만, 저장 코드, 손상된 저장 복구, 다 모으면 뽑기 불가).
 // Scenario F: 영웅 (시작 영웅 2명, 잠긴 영웅은 미리보기만, 조각으로 합류·성급, 레벨업·최대 레벨, 다음 판 반영).
 // Scenario G: 인연 호감도 (화면, 카드 없이 열린 인연이 나옴, 따르면 호감도 +1, 인연 단계가 수치를 올림).
@@ -31,7 +32,7 @@ const S = () => {
     evil: s.evil,
     unlocked: [...s.unlocked],
     bond: { ...s.bond },
-    gauge: s.gauge,
+    meetTimer: s.meetTimer,
     meetReady: s.meetReady,
     encounters: s.encounters,
     skills: s.skills.map(k => k.id),
@@ -65,8 +66,10 @@ async function setupFrom(g, stage) {
 }
 
 /** the 처치 게이지 fills (as kills would): the 만남 opens at the end of the next step */
+/** open a 만남 now (as its time would), unless one is open already (a met 의뢰 opens the next at once) */
 async function meet(g) {
-  await g.eval(() => window.__g.fillGauge());
+  if ((await g.mode()) === 'choice') return;
+  await g.eval(() => window.__g.readyMeet());
   await g.step(2);
 }
 
@@ -166,7 +169,7 @@ async function scenarioA(browser, stage, seed) {
   check(
     f,
     /^S\d .+ · 만남 \d+%$/.test(hud[0]) && /만남 0번 · 보스까지/.test(hud[1]),
-    `stage box: gauge and distance (${hud})`,
+    `stage box: 만남 time and distance (${hud})`,
   );
 
   // attack and health are whole numbers from the tier ladder (docs/balance-baseline.md): no distance multiplier
@@ -235,12 +238,10 @@ async function scenarioA(browser, stage, seed) {
   const want = ['cheolgol', 'gitan', 'hoechun'];
   for (let level = 1; level <= 4; level++) {
     const before = await g.state(S);
-    // the first time she is the only 인연 unlocked; from 선 3 on 청운 도인 could come too, so she is called
+    // the first time she is the only 인연 unlocked; from 선 3 on 청운 도인 could come too, so she is called (the
+    // 만남 after a met 의뢰 opens at once)
     if (level === 1) await meet(g);
-    else {
-      await g.eval(() => window.__g.meet('yakseon'));
-      await g.step(1);
-    }
+    check(f, (await g.mode()) === 'choice', `만남 ${level + 1} is open`);
     const tag = await g.page.$eval('#choice .card .tag', e => e.textContent);
     check(f, (await g.choiceTitle()) === '인연' && /정파/.test(tag), `만남 ${level + 1}: an 인연 (${tag})`);
     const reward = await g.page.$eval('#choice .act', e => e.textContent);
@@ -253,6 +254,7 @@ async function scenarioA(browser, stage, seed) {
     await g.step(2);
     s = await g.state(S);
     check(f, s.quest?.npc === 'yakseon' && s.good === before.good + 1, `따른다: 선 +1 (선 ${s.good})`);
+    if (level < 4) await g.eval(() => (window.__g.state.forceNpc = 'yakseon'));
     await succeed(g);
     s = await g.state(S);
     if (level <= 3) {
@@ -271,6 +273,10 @@ async function scenarioA(browser, stage, seed) {
     check(f, s.path.at(-1).result === '성취', 'path records 성취');
   }
   check(f, s.unlocked.join() === 'yakseon,dosa,monk', `선 5: 청운 도인 and 철벽 노승 unlocked too (${s.unlocked})`);
+  // the last met 의뢰 opened 만남 6 at once
+  check(f, (await g.mode()) === 'choice', 'a met 의뢰 opens the next 만남 at once');
+  await g.act(0);
+  await g.step(2);
 
   // distance → warning → boss → victory
   const phase = await reachBoss(g);
@@ -284,7 +290,7 @@ async function scenarioA(browser, stage, seed) {
     'formation',
     'formation',
     'stage',
-    ...Array(5).fill(['encounter', 'stage']).flat(),
+    ...Array(6).fill(['encounter', 'stage']).flat(),
     'result',
   ];
   const got = await g.eval(() => window.__g.sceneLog);
@@ -332,6 +338,8 @@ async function scenarioB(browser, seed) {
   );
   check(f, s.unlocked.join() === 'yeonhyeop,yakseon', `선 1 unlocks 떠돌이 약선 too (${s.unlocked})`);
   const coins = s.coins;
+  // the 만남 a met 의뢰 opens: 비연 낭자 again
+  await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
   await succeed(g);
   s = await g.state(S);
   check(
@@ -339,19 +347,20 @@ async function scenarioB(browser, seed) {
     s.coins === coins + 50 && !s.bond.yeonhyeop && !s.skills.length,
     `defied and met: 엽전 +50, no level (${coins} → ${s.coins})`,
   );
-  // 만남 3: 비연 낭자 again; follow, and let the next gauge fill first → the 의뢰 fails, the point stays
-  await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
-  await meet(g);
+  // 만남 3: 비연 낭자 again; follow, and let its time run out → the 의뢰 fails, the point stays
+  check(f, (await g.mode()) === 'choice', 'the met 의뢰 opened 만남 3 at once');
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
   check(f, s.evil === 2 && s.good === 1, `따른다: 악 +1 (선 ${s.good} · 악 ${s.evil})`);
-  await meet(g);
+  check(f, (await g.state(() => window.__g.state.quest.left)) > 59, 'an 의뢰 has 60 s');
+  await g.eval(() => (window.__g.state.quest.left = 0.05));
+  await g.seconds(0.3);
   s = await g.state(S);
   check(
     f,
     s.path.at(-1).result === '미달' && s.evil === 2,
-    `the next 만남 fails the open 의뢰 (${JSON.stringify(s.path.at(-1))})`,
+    `its time runs out: the 의뢰 fails (${JSON.stringify(s.path.at(-1))})`,
   );
   check(f, (await g.choiceTitle()) === '인연', 'and a new 만남 opens');
   await g.act(0);
@@ -484,35 +493,69 @@ async function scenarioC(browser, seed) {
   return { name: `C seed ${seed}`, failures: f, log: [eyebrow] };
 }
 
-// Scenario D: the gauge's rules and the 의뢰 deadline around the boss.
+// Scenario D: 만남 timing and the 의뢰 deadline around the boss.
 async function scenarioD(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
   await setup(g, 0);
   await g.eval(() => window.__g.god());
-  // a 필살기 that kills 300 at once (S1 gauge 36): one 만남 waits, the carry stops below full
-  await g.eval(() => {
-    window.__g.state.gauge = 0;
-  });
-  await blastKills(g, 300);
+  // the first 만남 comes after 10 s of flight
   let s = await g.state(S);
-  check(f, s.meetReady && s.gauge === 35, `one 만남 waits, the carry stays below full (gauge ${s.gauge})`);
-  check(f, s.bombs === 0, `필살기 used: count 1 → 0, no charge (${s.bombs})`);
-  await g.step(2);
-  check(f, (await g.mode()) === 'choice', 'the waiting 만남 opens at the end of the step');
+  check(f, s.encounters === 0 && s.meetTimer > 9 && s.meetTimer <= 10, `the first 만남 waits 10 s (${s.meetTimer})`);
+  await g.eval(() => (window.__g.state.meetTimer = 0.5));
+  await g.seconds(0.3);
+  const early = await g.mode();
+  await g.seconds(0.4);
+  check(f, early === 'play' && (await g.mode()) === 'choice', `the 만남 opens when its wait runs out (${early})`);
+  check(f, (await g.choiceTitle()) === '행인', 'nothing unlocked: a passer-by');
+  // after a passer-by the next 만남 waits 10 s
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
-  check(f, s.gauge === 35 && !s.meetReady, `the carry is kept for the next gauge (${s.gauge})`);
-  // 정요란 fills it 1.5× while she fights
+  check(f, s.mode === 'play' && s.meetTimer > 9.9 && s.meetTimer <= 10, `then 10 s to the next (${s.meetTimer})`);
+  // an 인연's 의뢰 has 60 s; run out, it fails and the next 만남 opens
+  await g.eval(() => window.__g.meet('yeonhyeop'));
+  await g.act(0);
+  await g.step(2);
+  check(f, (await g.state(() => window.__g.state.quest.left)) > 59.9, 'an 의뢰 has 60 s');
   await g.eval(() => {
-    const st = window.__g.state;
-    st.formation[st.active] = 'yoran';
-    st.gauge = 0;
+    window.__g.state.quest.left = 0.5;
+    window.__g.state.forceNpc = 'yeonhyeop';
   });
-  await blastKills(g, 1);
-  const yoran = await g.state(() => window.__g.state.gauge);
-  check(f, yoran === 1.5, `정요란: a kill fills 1.5 (${yoran})`);
+  await g.seconds(0.3);
+  const running = await g.state(() => [window.__g.mode, window.__g.state.quest.failed]);
+  await g.seconds(0.4);
+  s = await g.state(S);
+  check(
+    f,
+    running.join() === 'play,false' && s.mode === 'choice' && s.path.at(-1).result === '미달',
+    `run out: the 의뢰 fails and the next 만남 opens (${running}, ${s.mode}, ${JSON.stringify(s.path.at(-1))})`,
+  );
+  // met: the next 만남 opens at once
+  await g.act(0);
+  await g.step(2);
+  await succeed(g);
+  check(f, (await g.mode()) === 'choice', 'a met 의뢰 opens the next 만남 at once');
+  await g.act(0);
+  await g.step(2);
+  // a 필살기 counts down with no charge
+  await blastKills(g, 3);
+  s = await g.state(S);
+  check(f, s.bombs === 0, `필살기 used: count 1 → 0, no charge (${s.bombs})`);
+  // 정요란 cuts 의뢰 targets while she fights (−15% at her first star level)
+  const cut = await g.eval(() => {
+    const G = window.__g,
+      st = G.state,
+      was = st.formation[st.active],
+      c = { n: 30 };
+    st.formation[st.active] = 'pungun';
+    const plain = G.questTarget(c, 2);
+    st.formation[st.active] = 'yoran';
+    const yoran = G.questTarget(c, 2);
+    st.formation[st.active] = was;
+    return [plain, yoran];
+  });
+  check(f, cut.join() === '30,26', `정요란: an 의뢰 of 30 asks 26 (${cut})`);
   // 스침 on enemies: one enemy passing close beside counts once, slipping between two counts twice
   const grazes = await g.eval(() => {
     const G = window.__g,
@@ -661,12 +704,12 @@ async function scenarioD(browser, seed) {
     phase === 'boss' && s.quest?.npc === 'milsa' && !s.quest.failed,
     `the 의뢰 is still open in the boss fight (${phase})`,
   );
-  const gauge = s.gauge;
-  await blastKills(g, 3);
-  await g.eval(() => window.__g.fillGauge());
+  const left = await g.state(() => window.__g.state.quest.left);
+  await g.seconds(1);
+  check(f, (await g.state(() => window.__g.state.quest.left)) === left, 'the 의뢰 clock stops in the boss fight');
+  await g.eval(() => window.__g.readyMeet());
   await g.step(2);
   check(f, (await g.mode()) === 'play', 'no 만남 in the boss fight');
-  check(f, (await g.state(S)).gauge === gauge, 'kills in the boss fight do not fill the gauge');
   const bombs = (await g.state(S)).bombs;
   await succeed(g);
   s = await g.state(S);
@@ -1273,7 +1316,7 @@ async function scenarioH(browser, seed) {
     drops.every(n => n === 1),
     `a kill drops one 엽전 (${drops})`,
   );
-  // 무아지경: rows come by distance (as much faster as it runs), it cuts through them: the kills fill the gauge,
+  // 무아지경: rows come by distance (as much faster as it runs), it cuts through them: the kills
   // count for the 연속·근접·스침 의뢰 and drop 엽전 only (no items)
   await g.eval(() => {
     const s = window.__g.state;
@@ -1281,8 +1324,8 @@ async function scenarioH(browser, seed) {
     window.__g.pickups.length = 0;
     s.distance = 3000;
     s.rowTimer = 0;
-    s.gauge = 0;
-    s.gaugeEarned = 0;
+    s.meetTimer = 1e6;
+    if (s.quest) s.quest.left = 1e6;
     s.stats = {};
     s.hyper = 2;
   });
@@ -1298,19 +1341,17 @@ async function scenarioH(browser, seed) {
   }
   const h1 = await g.state(() => ({
     kills: window.__g.state.kills,
-    gauge: window.__g.state.gaugeEarned,
     stats: window.__g.state.stats,
   }));
   const hyperKills = h1.kills - k0;
   check(
     f,
     hyperKills >= 15 &&
-      h1.gauge >= hyperKills &&
       h1.stats.nearKill >= 10 &&
       h1.stats.graze === h1.stats.nearKill &&
       items.length === 0 &&
       nearLabels.length === 0,
-    `2 s of 무아지경: rows by distance, kills fill the gauge and the 의뢰, no items, no 근접 × (${nearLabels} ` +
+    `2 s of 무아지경: rows by distance, kills count for the 의뢰, no items, no 근접 × (${nearLabels} ` +
       `${hyperKills} kills, ${JSON.stringify(h1)}, items ${items})`,
   );
   // 기준 점수 of each stage: whole thousands
@@ -1328,7 +1369,7 @@ async function scenarioH(browser, seed) {
 // Scenario I: the Dragon Flight baseline (docs/balance-baseline.md) on S1: the tier ladder by the stage's progress
 // (weak slot = the step's tier), rows twice as fast at the boss, 무아지경 3 s ending in a screen burst that turns
 // the enemies into 엽전, a 보물상자 bursting into 10 보석 worth 5 엽전 each, items hanging at the top of their pop, and
-// the 운석 warned 2 s ahead, and the gauge filled by the kill's tier.
+// the 운석 warned 2 s ahead.
 async function scenarioI(browser, seed) {
   const f = [];
   const g = await openGame(file, { browser, seed });
@@ -1338,7 +1379,8 @@ async function scenarioI(browser, seed) {
     g.eval(async p => {
       const G = window.__g;
       G.state.distance = p * G.stageDistance;
-      G.state.gauge = -1e6;
+      G.state.meetTimer = 1e6;
+      if (G.state.quest) G.state.quest.left = 1e6;
       G.enemies.length = 0;
       G.state.rowTimer = 0;
       return null;
@@ -1408,37 +1450,6 @@ async function scenarioI(browser, seed) {
     Math.abs(hyper - 3) < 0.05 && before > 0 && after.alive === 0 && after.coins >= before,
     `무아지경 3 s (${hyper}); its end bursts ${before} enemies into 엽전 (${JSON.stringify(after)})`,
   );
-  // the 처치 게이지 fills by the kill's tier
-  const worth = await g.eval(() => {
-    const G = window.__g,
-      out = [];
-    for (const tier of [1, 4, 6]) {
-      G.state.gauge = 0;
-      G.state.meetReady = false;
-      const e = {
-        x: 240,
-        y: 200,
-        hp: 1,
-        maxHp: 1,
-        type: 1,
-        rank: tier - 1,
-        tier,
-        r: 22,
-        row: -1,
-        dead: false,
-        size: 80,
-        color: '#fff',
-        phase: 0,
-        hit: 0,
-      };
-      G.enemies.push(e);
-      G.kill(e);
-      out.push(G.state.gauge);
-    }
-    G.state.gauge = 0;
-    return out;
-  });
-  check(f, worth.join() === '1,4,6', `a kill fills the gauge by its tier (${worth})`);
   // 보물상자: bursts into 10 보석; a 보석 is 5 엽전
   await g.eval(() => {
     const G = window.__g;

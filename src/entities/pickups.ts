@@ -28,7 +28,7 @@ export type PickupKind = 'coin' | 'gem' | 'hyper' | 'magnet' | 'double' | 'dual'
 /** the items a kill can drop (picked by BASELINE.itemDrop.weights) */
 export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
 /** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
-export const ITEM_SECONDS = 10;
+export const ITEM_SECONDS = 3;
 /** how a pickup moves: it is thrown up at `pop` px/s (it rises about 120-200 px), sideways up to `spread` px/s
  *  (it bounces off the screen's sides), and gravity pulls it down to `max` px/s */
 export const PICKUP_FALL = { pop: [560, 720], spread: 170, gravity: 1250, max: 380 };

@@ -56,7 +56,7 @@ export function questReward(q: Pick<Quest, 'npc' | 'mode'>): Reward {
     ? { level: next, coins: 0, double: false }
     : { level: 0, coins: QUEST_COINS, double: false };
 }
-/** "1단계 「철골」", "엽전 50냥", "점수 두 배 10초" */
+/** "1단계 「철골」", "엽전 50냥", "점수 두 배 3초" */
 export function rewardName(q: Pick<Quest, 'npc' | 'mode'>) {
   const r = questReward(q);
   if (r.level) return `${r.level}단계 「${SKILLS[NPCS[q.npc as string].levels[r.level - 1]].name}」`;

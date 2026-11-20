@@ -250,7 +250,7 @@ async function scenarioA(browser, stage, seed) {
     /^돕는다 · 적 처치 (3\d|40)/.test(acts[0]) &&
       /엽전 50냥/.test(acts[0]) &&
       /^무시한다 · 엽전 획득 (2\d|30)/.test(acts[1]) &&
-      /점수 두 배 10초/.test(acts[1]) &&
+      /점수 두 배 3초/.test(acts[1]) &&
       [acts[0], acts[1]]
         .map(t => (/정 \+1/.test(t) ? '정' : /사 \+1/.test(t) ? '사' : '?'))
         .sort()
@@ -403,8 +403,8 @@ async function scenarioB(browser, seed) {
   await succeed(g);
   check(
     f,
-    Math.abs((await g.state(() => window.__g.state.double)) - 10) < 0.1,
-    'the 엽전 의뢰 met: 점수 두 배 10 s at once',
+    Math.abs((await g.state(() => window.__g.state.double)) - 3) < 0.1,
+    'the 엽전 의뢰 met: 점수 두 배 3 s at once',
   );
   // 만남 2: 비연 낭자 (사파); defy → 정 +1; success pays 엽전
   await nextMeet(g);
@@ -1247,7 +1247,7 @@ async function scenarioG(browser, seed) {
 }
 
 // Scenario H: 의뢰 targets 5/6 of the full count ±10% each time, the row gap (2 s → 0.8 s with
-// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (10 s, retaken = full time), one
+// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (3 s, retaken = full time), one
 // 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 기준 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
@@ -1325,7 +1325,7 @@ async function scenarioH(browser, seed) {
     q1 && Math.abs(q1.px + 110 - q1.x) < 60 && q1.y < q1.py - 100,
     `무아지경 does not pull 엽전 in (${JSON.stringify([q0, q1])})`,
   );
-  // the 자석 item: 10 s, pickups within reach are pulled in
+  // the 자석 item: 3 s, pickups within reach are pulled in
   await g.eval(() => {
     window.__g.pickups.length = 0;
     const pl = window.__g.player;
@@ -1333,7 +1333,7 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   let s = await g.state(() => ({ magnet: window.__g.state.magnet, coins: window.__g.state.coins }));
-  check(f, Math.abs(s.magnet - 10) < 0.05, `자석 runs 10 s (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 3) < 0.05, `자석 runs 3 s (${s.magnet})`);
   await g.eval(() => {
     const pl = window.__g.player;
     window.__g.addPickup('coin', pl.x + 110, pl.y - 200);
@@ -1348,7 +1348,7 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   s = await g.state(() => ({ magnet: window.__g.state.magnet }));
-  check(f, Math.abs(s.magnet - 10) < 0.05, `retaking 자석 sets it back to 10 s, no stacking (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 3) < 0.05, `retaking 자석 sets it back to 3 s, no stacking (${s.magnet})`);
   // 점수 두 배: a 엽전 is worth 20 while it runs
   await g.eval(() => {
     const pl = window.__g.player;
@@ -1364,8 +1364,8 @@ async function scenarioH(browser, seed) {
   const after = await g.state(() => window.__g.state.score);
   check(
     f,
-    Math.abs(before.double - 10) < 0.05 && after - before.score > 20 && after - before.score < 21,
-    `점수 두 배: 10 s, a 엽전 scores 20 (+${after - before.score})`,
+    Math.abs(before.double - 3) < 0.05 && after - before.score > 20 && after - before.score < 21,
+    `점수 두 배: 3 s, a 엽전 scores 20 (+${after - before.score})`,
   );
   // one 엽전 a kill (an item drops with 3%, so a few kills are checked)
   const drops = await g.eval(() => {
@@ -1588,7 +1588,7 @@ async function scenarioI(browser, seed) {
     picks.magnet === 400 && picks.double === 400 && picks.dual === 400 && picks.hyper === 200,
     `items picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2 (${JSON.stringify(picks)})`,
   );
-  // 듀얼샷: two lines of basic shots for 10 s
+  // 듀얼샷: two lines of basic shots for 3 s
   const dual = await g.eval(() => {
     const G = window.__g;
     G.pickups.length = 0;
@@ -1603,7 +1603,7 @@ async function scenarioI(browser, seed) {
     window.__step(1);
     return { left: G.state.dual, shots: G.shots.filter(s => s.basic).length };
   });
-  check(f, lines.left > 9.9 && lines.shots === 2, `듀얼샷: 10 s of two lines (${JSON.stringify(lines)}${dual ?? ''})`);
+  check(f, lines.left > 2.9 && lines.shots === 2, `듀얼샷: 3 s of two lines (${JSON.stringify(lines)}${dual ?? ''})`);
   // items hang at the top of their pop before they fall; 엽전 do not
   await g.eval(() => {
     window.__g.pickups.length = 0;

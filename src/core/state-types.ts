@@ -64,6 +64,10 @@ export interface RunState {
   phaseTimer: number;
   rowTimer: number;
   meteorTimer: number;
+  /** a 운석 소나기 running (systems/shower.ts): 운석 marked so far, seconds to the next mark, seconds until rows */
+  shower?: { marked: number; next: number; left: number };
+  /** the tier steps whose end has had its 운석 소나기 */
+  showerSteps: number[];
   elapsed: number;
   cleared: number;
   trailTimer: number;

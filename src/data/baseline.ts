@@ -33,6 +33,9 @@ export const BASELINE = {
   shotSpeed: 1760,
   /** 운석: one comes after a random wait of `every` seconds (30 on average), warned `warn` s ahead, aimed */
   meteor: { every: [15, 45], warn: 2 },
+  /** 운석 소나기 (systems/shower.ts): at the end of each step from `fromStep` on, no rows and `count` 운석 marked `gap`
+   *  s apart (the last `aimed` where the hero is); rows come back when the `resumeWith`-th starts to fall */
+  shower: { fromStep: 3, count: 5, gap: 0.5, aimed: 2, resumeWith: 4 },
   /** 무아지경: `seconds` long at `speed` × the running speed, it cuts through everything; at its end the screen
    *  bursts and the enemies left turn into 엽전 */
   hyper: { seconds: 2, speed: 6, descent: 2.5 },

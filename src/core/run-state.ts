@@ -30,6 +30,7 @@ export function createRunState(meta: Meta): RunState {
     rowTimer: 0.8,
     /** the first 운석 (then BASELINE.meteor.every) */
     meteorTimer: 25,
+    showerSteps: [],
     elapsed: 0,
     cleared: 0,
     trailTimer: 0,

@@ -422,6 +422,53 @@ button:disabled {
 .tile.locked .tile-grade {
   color: #6f857b;
 }
+/* the 영웅 screen: portrait tiles with the name, level and 성급 small on the portrait */
+.collection-grid.portraits {
+  gap: 7px;
+}
+.tile.portrait {
+  padding: 0;
+  overflow: hidden;
+}
+.tile.portrait .tile-art {
+  height: 118px;
+  border-radius: 0;
+}
+.tile.portrait .tile-art img {
+  object-fit: cover;
+  object-position: top;
+}
+.tile-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 2px 4px;
+  background: linear-gradient(transparent, #061513e6 55%);
+}
+.tile-label b {
+  font-size: 12px;
+  line-height: 1.2;
+  color: #fff0c4;
+  white-space: nowrap;
+}
+.tile-label .tile-grade {
+  font-size: 9px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.tile.portrait.locked .tile-label b {
+  color: #9fb5aa;
+}
+/* the close button stays at the bottom of a collection screen while the grid scrolls */
+#collectionClose {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
 .meter {
   display: block;
   height: 4px;

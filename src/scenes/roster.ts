@@ -25,17 +25,14 @@ function toNext(id: HeroId): [number, number] {
 
 function tile(id: HeroId): Tile {
   const h = HEROES[id];
-  if (!heroOwned(id))
-    return { id, name: h.name, image: heroPictures[id], color: h.color, locked: true, note: '뽑기에서 획득' };
-  const [now, goal] = toNext(id);
+  if (!heroOwned(id)) return { id, name: h.name, image: heroPictures[id], color: h.color, locked: true };
+  // on the portrait: the name, the level and the 성급 (pieces are in the popup)
   return {
     id,
     name: h.name,
     image: heroPictures[id],
     color: h.color,
-    grade: `${starText(heroStars(id))} Lv ${profile.levels[id]}`,
-    note: heroStars(id) >= LEVEL_MAX ? '최고 성급' : `조각 ${now} / ${goal}`,
-    progress: [now, goal],
+    grade: `Lv ${profile.levels[id]} ${starText(heroStars(id))}`,
   };
 }
 
@@ -128,6 +125,7 @@ const ROSTER: Collection = {
   // joined heroes first, the rest in roster order
   tiles: () => [...HERO_IDS].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a))).map(tile),
   detail: id => detail(id as HeroId),
+  portraits: true,
 };
 
 export const openRoster = () => openCollection(ROSTER);

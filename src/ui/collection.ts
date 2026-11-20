@@ -48,6 +48,8 @@ export type Collection = {
   summary: () => string;
   tiles: () => Tile[];
   detail: (id: string) => Detail;
+  /** portrait tiles: the name and grade sit small on the portrait; no note or bar (the 영웅 screen) */
+  portraits?: boolean;
 };
 
 let current: Collection | null = null,
@@ -59,6 +61,17 @@ const bar = (now: number, goal: number) =>
 function renderGrid() {
   const c = current!;
   $('collectionSummary').innerHTML = c.summary();
+  $('collectionGrid').classList.toggle('portraits', !!c.portraits);
+  if (c.portraits) {
+    $('collectionGrid').innerHTML = c
+      .tiles()
+      .map(
+        t =>
+          `<button class="tile portrait${t.locked ? ' locked' : ''}" data-id="${t.id}" style="--c:${t.color}" aria-label="${t.name}${t.locked ? ` (${t.lockText ?? '잠김'})` : ''}"><span class="tile-art"><img alt="" src="${t.image}" draggable="false">${t.locked ? `<em>${t.lockText ?? '잠김'}</em>` : ''}<span class="tile-label"><b>${t.name}</b>${t.grade ? `<span class="tile-grade">${t.grade}</span>` : ''}</span></span></button>`,
+      )
+      .join('');
+    return;
+  }
   $('collectionGrid').innerHTML = c
     .tiles()
     .map(

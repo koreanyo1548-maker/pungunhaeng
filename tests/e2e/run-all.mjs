@@ -1004,8 +1004,8 @@ async function scenarioF(browser, seed) {
   );
   check(
     f,
-    tiles.slice(2).every(t => /뽑기에서 획득/.test(t.text)),
-    'locked tiles say they come from 뽑기',
+    tiles.slice(2).every(t => /잠김/.test(t.text)) && /Lv 1/.test(tiles[0].text) && /★☆☆☆☆/.test(tiles[0].text),
+    `portrait tiles: the name, Lv and 성급 on joined heroes, 잠김 on the rest (${tiles[0].text} | ${tiles[2].text})`,
   );
   const owned0 = await detailOf(g, 0),
     locked0 = await detailOf(g, 2);

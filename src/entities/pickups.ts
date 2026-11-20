@@ -14,6 +14,7 @@ import { chime, tone } from '../core/audio';
 import { rnd } from '../core/math';
 import { random } from '../core/rng';
 import { burst, label, ring } from '../render/fx';
+import { actionCallout } from '../render/callout';
 import { pfx, ramp } from '../render/pfx';
 import { announce } from '../ui/hud';
 import { hyperItemScale } from '../systems/hero-effects';
@@ -89,16 +90,19 @@ export function collect(p) {
     if (!pfx('collect', p.x, p.y + 40, { palette: COIN })) burst(p.x, p.y, '#ffdf87', 3, 60);
   } else if (p.kind === 'magnet') {
     G.state.magnet = ITEM_SECONDS;
+    actionCallout('magnet');
     ring(G.player.x, G.player.y, '#8fe3b0', 10, 170, 0.4);
     label('자석 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#8fe3b0', 18);
     chime();
   } else if (p.kind === 'double') {
     G.state.double = ITEM_SECONDS;
+    actionCallout('double');
     ring(G.player.x, G.player.y, '#ffd36e', 10, 170, 0.4);
     label('점수 두 배 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#ffd36e', 18);
     chime();
   } else {
     G.state.hyper = Math.max(G.state.hyper, BASELINE.hyper.seconds * hyperItemScale());
+    actionCallout('hyper');
     G.player.inv = Math.max(G.player.inv, G.state.hyper + 0.6);
     G.hazards = [];
     G.flash = 0.22;

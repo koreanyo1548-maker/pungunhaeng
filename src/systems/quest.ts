@@ -20,6 +20,7 @@ import type { NpcId } from '../data/roster';
 import { SKILLS } from '../data/skills';
 import type { Quest } from '../core/state-types';
 import { label, ring } from '../render/fx';
+import { actionCallout } from '../render/callout';
 import { announce, notify, syncHUD } from '../ui/hud';
 import { learn } from './abilities';
 import { moveAlign, moveText } from './alignment';
@@ -119,8 +120,10 @@ export function completeQuest() {
   // met: the reward shows, then the next 만남 comes (systems/encounter.ts)
   G.state.meetTimer = G.state.meetWait = BASELINE.meet.reward + BASELINE.meet.after;
   if (reward.level) raiseBond(q.npc as string);
-  else if (reward.double) G.state.double = ITEM_SECONDS;
-  else G.state.coins += reward.coins;
+  else if (reward.double) {
+    G.state.double = ITEM_SECONDS;
+    actionCallout('double');
+  } else G.state.coins += reward.coins;
   if (G.state.questPath) G.state.questPath.result = '성취';
   const name = q.npc ? NPCS[q.npc].name : (q.who?.name ?? '행인');
   announce(

@@ -159,6 +159,8 @@ export interface Shot {
   art?: string;
   skill?: string;
   basic?: boolean;
+  /** Cosmetic growth snapshot for 풍운객's basic shot, retained across hero swaps. */
+  pungunShotLevel?: number;
   color?: string;
   pierce?: boolean;
   w?: number;

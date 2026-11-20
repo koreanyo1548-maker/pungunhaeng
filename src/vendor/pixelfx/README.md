@@ -7,4 +7,4 @@ category `_lib.js`) are copied. Files are unmodified except `core/painter.js`, w
 
 To add an effect: copy `src/fx/<category>/<name>.js` (and that category's `_lib.js` if missing) from the same
 commit, then register it in `effects.js`. Used by `src/render/pfx.ts` (one-shot effects) and `src/render/glows.ts`
-(looping glows rendered to frames once: `fire/fireball`, `projectiles/laser-bolt`, `holy/sunburst`).
+(looping glows rendered to frames once: `fire/fireball`, `projectiles/laser-bolt`, `holy/sunburst`, `projectiles/plasma-shot`).

@@ -9,6 +9,7 @@ export type PixelEffectId =
   | 'explosions/plasma-explosion'
   | 'fire/fireball'
   | 'projectiles/laser-bolt'
+  | 'projectiles/plasma-shot'
   | 'holy/sunburst';
 export interface PixelEffectModule {
   meta: { size: [number, number]; origin: [number, number]; duration: number; loop?: boolean; fps?: number };

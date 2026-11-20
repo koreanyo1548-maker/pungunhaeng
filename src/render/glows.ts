@@ -14,6 +14,7 @@ import { pfxOn } from './pfx';
 
 const JADE = ['#06210f', '#11553a', '#2fae6f', '#9cf2b8', '#ffffff'];
 const CYAN = ['#031a22', '#0b5f78', '#2fc4e6', '#a6f2ff', '#ffffff'];
+const CORAL = ['#260b06', '#7a2a18', '#e8664a', '#ffc2a8', '#ffffff'];
 
 type GlowDef = {
   id: PixelEffectId;
@@ -32,6 +33,8 @@ const DEFS = {
   cyan: { id: 'holy/sunburst', options: { palette: CYAN }, fps: 8 },
   /** 자석: jade rays */
   jade: { id: 'holy/sunburst', options: { palette: JADE }, fps: 8 },
+  /** 듀얼샷: coral rays */
+  coral: { id: 'holy/sunburst', options: { palette: CORAL }, fps: 8 },
 } satisfies Record<string, GlowDef>;
 export type GlowKind = keyof typeof DEFS;
 

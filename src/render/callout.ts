@@ -39,6 +39,7 @@ export const ACTION_CALLOUTS = {
   hyper: { name: '무아지경', color: '#c5ffff', seal: '無' },
   magnet: { name: '자석', color: '#8fe3b0', seal: '磁' },
   double: { name: '점수 두 배', color: '#ffd36e', seal: '倍' },
+  dual: { name: '듀얼샷', color: '#ff9a7a', seal: '雙' },
 };
 /** 필살기, 무아지경, 자석 or 점수 두 배 went off: always shown (it takes the oldest line when both are busy). */
 export function actionCallout(kind: keyof typeof ACTION_CALLOUTS) {

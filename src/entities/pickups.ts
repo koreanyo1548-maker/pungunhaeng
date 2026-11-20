@@ -7,6 +7,7 @@
 //          the end bursts the screen (entities/enemies.ts hyperFinish)
 //   magnet 자석: pickups are pulled in for ITEM_SECONDS
 //   double 점수 두 배: score counts twice for ITEM_SECONDS (systems/score.ts addScore)
+//   dual   듀얼샷: the basic attack fires two lines for ITEM_SECONDS (entities/player.ts shoot)
 // Taking an item whose effect is running sets it back to its full time (it does not stack).
 import { G } from '../core/context';
 import { emit } from '../core/events';
@@ -23,10 +24,10 @@ import { BASELINE } from '../data/baseline';
 
 const COIN = ramp('#ffdf87');
 
-export type PickupKind = 'coin' | 'gem' | 'hyper' | 'magnet' | 'double';
+export type PickupKind = 'coin' | 'gem' | 'hyper' | 'magnet' | 'double' | 'dual';
 /** the items a kill can drop (picked by BASELINE.itemDrop.weights) */
-export const ITEMS = ['hyper', 'magnet', 'double'] as const;
-/** seconds the 자석 and 점수 두 배 items last */
+export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
+/** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
 export const ITEM_SECONDS = 10;
 /** how a pickup moves: it is thrown up at `pop` px/s (it rises about 120-200 px), sideways up to `spread` px/s
  *  (it bounces off the screen's sides), and gravity pulls it down to `max` px/s */
@@ -99,6 +100,12 @@ export function collect(p) {
     actionCallout('double');
     ring(G.player.x, G.player.y, '#ffd36e', 10, 170, 0.4);
     label('점수 두 배 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#ffd36e', 18);
+    chime();
+  } else if (p.kind === 'dual') {
+    G.state.dual = ITEM_SECONDS;
+    actionCallout('dual');
+    ring(G.player.x, G.player.y, '#ff9a7a', 10, 170, 0.4);
+    label('듀얼샷 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#ff9a7a', 18);
     chime();
   } else {
     G.state.hyper = Math.max(G.state.hyper, BASELINE.hyper.seconds * hyperItemScale());

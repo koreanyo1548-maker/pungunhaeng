@@ -44,6 +44,7 @@ export function update(dt) {
   if (hyperBefore > 0 && G.state.hyper <= 0) hyperFinish();
   G.state.magnet = Math.max(0, G.state.magnet - dt);
   G.state.double = Math.max(0, G.state.double - dt);
+  G.state.dual = Math.max(0, G.state.dual - dt);
   G.player.inv = Math.max(0, G.player.inv - dt);
   G.player.muzzle = Math.max(0, G.player.muzzle - dt);
   G.shake = Math.max(0, G.shake - realDt * 22);

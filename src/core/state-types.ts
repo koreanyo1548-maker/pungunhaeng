@@ -52,8 +52,10 @@ export interface RunState {
   magnet: number;
   /** seconds left of the 점수 두 배 item */
   double: number;
+  /** seconds left of the 듀얼샷 item (two lines of basic shots) */
+  dual: number;
   hyperDrops: number;
-  drops: { hyper: number; magnet: number; double: number; chest: number };
+  drops: { hyper: number; magnet: number; double: number; dual: number; chest: number };
   combo: number;
   comboTimer: number;
   stage: number;

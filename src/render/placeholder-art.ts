@@ -1,5 +1,5 @@
 // Stand-in art until Codex delivers the real pictures (docs/codex-art-handoff.md): tinted copies of tier 4 for tiers
-// 5 and 6, a drawn 보물상자 and a drawn 보석. Made once, cached; cosmetic only.
+// 5 and 6, a drawn 보물상자, a drawn 보석 and a drawn 듀얼샷 item. Made once, cached; cosmetic only.
 type Canvas = HTMLCanvasElement;
 const tintCache = new Map<CanvasImageSource, Map<string, Canvas>>();
 
@@ -90,4 +90,26 @@ export function drawGem(ctx: CanvasRenderingContext2D) {
   ctx.fill();
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(-5, -9, 3, 3);
+}
+
+/** draws the 듀얼샷 item (two qi bolts side by side, about 44 px) at the origin */
+export function drawDualIcon(ctx: CanvasRenderingContext2D) {
+  for (const x of [-9, 9]) {
+    const g = ctx.createLinearGradient(0, 20, 0, -22);
+    g.addColorStop(0, '#ff9a7a00');
+    g.addColorStop(0.55, '#ffb59a');
+    g.addColorStop(1, '#ffffff');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x, -22);
+    ctx.quadraticCurveTo(x + 6, -8, x + 3, 20);
+    ctx.lineTo(x - 3, 20);
+    ctx.quadraticCurveTo(x - 6, -8, x, -22);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.font = "900 11px 'Noto Serif KR', 'Batang', serif";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('雙', 0, 4);
 }

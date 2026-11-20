@@ -1577,17 +1577,33 @@ async function scenarioI(browser, seed) {
   await g.step(1);
   const c1 = await g.state(() => window.__g.state.coins);
   check(f, gems === 10 && c1 - c0 === 5, `보물상자 → ${gems} 보석; a 보석 is ${c1 - c0} 엽전`);
-  // an item drops with 3% a kill, picked 자석 4 : 점수 두 배 4 : 무아지경 2
+  // an item drops with 3% a kill, picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2
   const picks = await g.eval(() => {
-    const out = { hyper: 0, magnet: 0, double: 0 };
-    for (let i = 0; i < 1000; i++) out[window.__g.pickItem((i + 0.5) / 1000)]++;
+    const out = { hyper: 0, magnet: 0, double: 0, dual: 0 };
+    for (let i = 0; i < 1400; i++) out[window.__g.pickItem((i + 0.5) / 1400)]++;
     return out;
   });
   check(
     f,
-    picks.magnet === 400 && picks.double === 400 && picks.hyper === 200,
-    `items picked 자석 4 : 점수 두 배 4 : 무아지경 2 (${JSON.stringify(picks)})`,
+    picks.magnet === 400 && picks.double === 400 && picks.dual === 400 && picks.hyper === 200,
+    `items picked 자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2 (${JSON.stringify(picks)})`,
   );
+  // 듀얼샷: two lines of basic shots for 10 s
+  const dual = await g.eval(() => {
+    const G = window.__g;
+    G.pickups.length = 0;
+    G.addPickup('dual', G.player.x, G.player.y);
+    return null;
+  });
+  await g.step(2);
+  const lines = await g.eval(() => {
+    const G = window.__g;
+    G.shots.length = 0;
+    G.player.fire = 0;
+    window.__step(1);
+    return { left: G.state.dual, shots: G.shots.filter(s => s.basic).length };
+  });
+  check(f, lines.left > 9.9 && lines.shots === 2, `듀얼샷: 10 s of two lines (${JSON.stringify(lines)}${dual ?? ''})`);
   // items hang at the top of their pop before they fall; 엽전 do not
   await g.eval(() => {
     window.__g.pickups.length = 0;

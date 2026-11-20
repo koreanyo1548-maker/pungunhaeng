@@ -4,7 +4,7 @@ import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
 import { drawGlow } from './glows';
-import { drawGem } from './placeholder-art';
+import { drawDualIcon, drawGem } from './placeholder-art';
 
 export function blade(x, y, angle, length, color) {
   drawVfxSprite(projectileArt[6], x, y, length, length, angle);
@@ -85,6 +85,7 @@ const ITEM_TINT = {
   magnet: { line: '#8fe3b0', fill: '#10322adc', art: 6 },
   double: { line: '#ffd36e', fill: '#3a2a08dc', art: 7 },
 };
+const DUAL_TINT = { line: '#ff9a7a', fill: '#3a140cdc' };
 export function drawPickup(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
@@ -99,13 +100,22 @@ export function drawPickup(p) {
     return;
   }
   const coin = p.kind === 'coin',
-    tint = ITEM_TINT[p.kind],
+    tint = ITEM_TINT[p.kind] ?? (p.kind === 'dual' ? DUAL_TINT : undefined),
     // it springs out of the kill (small to full in 0.15 s) and leans with its throw
     grow = Math.min(1, 0.55 + (10 - p.life) * 3),
     lean = Math.max(-0.5, Math.min(0.5, (p.vx || 0) / 340));
   ctx.scale(grow, grow);
-  // rays behind an item: gold for 점수 두 배, sky blue for 무아지경, jade for 자석 (render/glows.ts); none behind 엽전
-  if (!coin) drawGlow(p.kind === 'double' ? 'gold' : p.kind === 'magnet' ? 'jade' : 'cyan', 0, 0, 1.28, 0, p.phase);
+  // rays behind an item: gold for 점수 두 배, sky blue for 무아지경, jade for 자석, coral for 듀얼샷 (render/glows.ts);
+  // none behind 엽전
+  if (!coin)
+    drawGlow(
+      p.kind === 'double' ? 'gold' : p.kind === 'magnet' ? 'jade' : p.kind === 'dual' ? 'coral' : 'cyan',
+      0,
+      0,
+      1.28,
+      0,
+      p.phase,
+    );
   ctx.strokeStyle = coin ? '#ffdf80' : (tint?.line ?? '#c9c0ff');
   ctx.fillStyle = coin ? '#37280be0' : (tint?.fill ?? '#201e48dc');
   ctx.lineWidth = coin ? 2 : 2.5;
@@ -125,9 +135,13 @@ export function drawPickup(p) {
     ctx.rotate(lean);
     ctx.scale(Math.max(0.2, Math.abs(Math.cos(G.time * (p.vy < 0 ? 16 : 8) + p.phase))), 1);
     drawVfxSprite(propArt[3], 0, 0, 30, 30);
+  } else if (p.kind === 'dual') {
+    // 듀얼샷 (a stand-in until its art comes, docs/codex-art-handoff.md)
+    ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
+    drawDualIcon(ctx);
   } else if (tint) {
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
-    drawVfxSprite(propArt[tint.art], 0, 0, 56, 56);
+    drawVfxSprite(propArt[(tint as (typeof ITEM_TINT)['magnet']).art], 0, 0, 56, 56);
   } else {
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
     drawVfxSprite(propArt[5], 0, 0, 58, 58);

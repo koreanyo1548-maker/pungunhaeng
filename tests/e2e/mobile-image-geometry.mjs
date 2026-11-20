@@ -25,7 +25,7 @@ async function layout(file, viewport) {
         '.hub-menu',
         '#choice',
         '#choice .panel',
-        '.formation-body',
+        '.party-portrait',
         '#formationConfirm',
         '#blast',
       ];

@@ -67,10 +67,20 @@ async function run(viewport) {
   await click('#choice button.card');
   await step(2);
   await snap('formation');
-  await click('#choice button.card');
-  await click('#formationConfirm');
-  await click('#choice button.card');
-  await click('#formationConfirm');
+  // the 편대 screen (one screen: two heroes, then 출발) or the older two-step one
+  if (await page.$('#choice .party-hero')) {
+    await page.evaluate(() => {
+      const h = document.querySelectorAll('#choice .party-hero');
+      h[0].click();
+      h[1].click();
+    });
+    await click('#formationConfirm');
+  } else {
+    await click('#choice button.card');
+    await click('#formationConfirm');
+    await click('#choice button.card');
+    await click('#formationConfirm');
+  }
   await step(2);
   await snap('crossroads');
   await click('#choice .act');

@@ -37,11 +37,14 @@ try {
     // on purpose: his trait (+1 health) and entry skill (불굴) are tested in heroines.mjs.
     window.begin = () => {
       M.start();
-      for (const i of [0, 0, 1]) {
-        const confirm = document.getElementById('formationConfirm');
-        document.querySelectorAll('#choice button.card')[i].click();
-        confirm?.click();
-      }
+      document.querySelector('#choice button.card').click();
+      ((a = 0, b = 1) => {
+        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+        const h = [...document.querySelectorAll('#choice .party-hero')];
+        h[a].click();
+        h[b].click();
+        document.getElementById('formationConfirm').click();
+      })(0, 2);
       M.G.player.inv = 0;
       M.G.time = 10;
     };

@@ -16,6 +16,8 @@ export function openChoice(o) {
   box.innerHTML = '';
   $('choice').querySelector('.formation-preview')?.remove();
   $('choice').querySelector('#formationConfirm')?.remove();
+  $('choice').classList.remove('party-screen');
+  box.classList.remove('party-cards');
   $('choice').classList.toggle('formation-screen', !!o.confirm);
   $('choice').classList.toggle('reward-screen', !!o.reward);
   box.classList.toggle('hero-grid', !!o.confirm);

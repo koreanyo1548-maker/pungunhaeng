@@ -68,6 +68,18 @@ export async function openGame(
         el.click();
         confirm?.click();
       }, i),
+    /** the 편대 screen: clear the party, pick the heroes at grid indexes a and b (선봉, 후발), then 출발 */
+    party: (a = 0, b = 1) =>
+      page.evaluate(
+        ([a, b]) => {
+          for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+          const h = [...document.querySelectorAll('#choice .party-hero')];
+          h[a].click();
+          h[b].click();
+          document.getElementById('formationConfirm').click();
+        },
+        [a, b],
+      ),
     /** click the enabled card with this title; returns false if it is missing or disabled */
     pickTitled: title =>
       page.evaluate(title => {

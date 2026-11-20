@@ -26,6 +26,8 @@ export type Profile = {
   bonds: Record<NpcId, number>;
   /** stages opened, 1 to 6: beating a stage's boss opens the next */
   stages: number;
+  /** the last run's party (선봉, 후발), filled in on the formation screen; empty before the first run */
+  formation: HeroId[];
 };
 
 const fresh = (): Profile => ({
@@ -36,6 +38,7 @@ const fresh = (): Profile => ({
   levels: Object.fromEntries(HERO_IDS.map(id => [id, 1])) as Profile['levels'],
   bonds: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Profile['bonds'],
   stages: ROSTER ? STAGE_COUNT : 1,
+  formation: [],
 });
 
 const whole = (n: unknown, max = Number.MAX_SAFE_INTEGER) =>
@@ -53,6 +56,9 @@ export function sanitize(raw: any): Profile {
   for (const id of HERO_IDS) p.levels[id] = Math.max(1, whole(raw.levels?.[id], levelCap(pieceLevel(p.heroes[id]))));
   for (const id of NPC_IDS) p.bonds[id] = whole(raw.bonds?.[id]);
   p.stages = Math.max(p.stages, whole(raw.stages, STAGE_COUNT));
+  // two different heroes the player has, or none
+  const party = Array.isArray(raw.formation) ? raw.formation.filter(id => HERO_IDS.includes(id)) : [];
+  if (party.length === 2 && party[0] !== party[1] && party.every(id => p.heroes[id] > 0)) p.formation = party;
   return p;
 }
 

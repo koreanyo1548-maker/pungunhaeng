@@ -41,12 +41,22 @@ async function run(file, seed, steps, course, frameMs) {
         document.querySelector('#choice .act') || document.querySelector('#choice button.card:not([disabled])');
       if (el) el.click();
     });
-  for (const i of [course, 0, 0])
-    await page.evaluate(i => {
+  await page.evaluate(i => document.querySelectorAll('#choice button.card')[i].click(), course);
+  // the 편대 screen: one screen (pick the first two, then 출발) in newer builds, two steps in older ones
+  await page.evaluate(() => {
+    const party = document.querySelectorAll('#choice .party-hero');
+    if (party.length) {
+      party[0].click();
+      party[1].click();
+      document.getElementById('formationConfirm').click();
+      return;
+    }
+    for (let i = 0; i < 2; i++) {
       const confirm = document.getElementById('formationConfirm');
-      document.querySelectorAll('#choice button.card')[i].click();
+      document.querySelectorAll('#choice button.card')[0].click();
       confirm?.click();
-    }, i);
+    }
+  });
   await pick();
   await page.evaluate(ids => {
     window.__g.god();

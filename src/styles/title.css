@@ -62,6 +62,14 @@
   color: #bcd4c9;
   font-size: 12px;
 }
+.title-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+.title-bar #resetData.armed {
+  border-color: #ff9a7a;
+  color: #ffc2a8;
+}
 .title-bar .sound-toggle {
   padding: 6px 11px;
   border-radius: 99px;

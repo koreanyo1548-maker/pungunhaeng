@@ -261,7 +261,7 @@ export function drawSkillAnimations() {
   for (const [id, a] of auras) drawSkillFrame(id, f, G.player.x, G.player.y, a.size, 0.38);
 }
 /** heroes' basic shots are drawn this many times their old size (40 px with a hero's own art, 36 px for 검기) */
-export const BASIC_SHOT_ART = 2;
+export const BASIC_SHOT_ART = 3;
 /**
  * A skill's projectile is drawn larger than a basic shot (36 to 48 px) and leaves two fading copies of itself
  * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.

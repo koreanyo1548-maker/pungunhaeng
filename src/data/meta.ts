@@ -45,8 +45,6 @@ export const levelCost = (level: number) => level * 20;
 export const weaponStage = (level: number) => (level >= 20 ? 3 : level >= 10 ? 2 : 1);
 
 // ---- in a run (provisional numbers)
-/** 엽전 given to a passer-by at level 2 (systems/virtue.ts) */
-export const ALMS = 20;
 /** 엽전 an 의뢰 pays when it does not raise an 인연: defied, or the 인연 is already at level 3 */
 export const QUEST_COINS = 50;
 
@@ -65,7 +63,7 @@ export const emptyMeta = (): Meta => ({
   cards: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Meta['cards'],
 });
 
-/** 엽전 a run adds to the bank: what is left, + `bonus` of it (악 and the share of the 기준 점수, systems/score.ts),
+/** 엽전 a run adds to the bank: what is left, + `bonus` of it (사 and the share of the 기준 점수, systems/score.ts),
  *  plus the clear bonus. */
 export function settle(coins: number, victory: boolean, bonus = 0): number {
   return Math.floor(coins * (1 + bonus) + (victory ? CLEAR_BONUS : 0));

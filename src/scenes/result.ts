@@ -11,7 +11,7 @@ import { bondLevel } from '../systems/relationship';
 // Run results are stored as 성취 / 미달 / 진행 중; shown in plain words.
 const RESULT_TEXT = { 성취: '성공', 미달: '실패' };
 
-/** The road so far (pause and result screens): party, 선·악, the 만남 in order, 인연 levels and their skills. */
+/** The road so far (pause and result screens): party, 정·사, the 만남 in order, 인연 levels and their skills. */
 export function runSummary() {
   if (!G.state) return '';
   const path =
@@ -19,7 +19,7 @@ export function runSummary() {
       .map(p =>
         p.npc
           ? `만남 ${p.stage} · ${NPCS[p.npc].name} — ${p.mode === 'follow' ? '따름' : '거스름'} (${COND[p.t].label.replace(/ \(.*\)$/, '')}) · <b>${RESULT_TEXT[p.result] ?? p.result}</b>`
-          : `만남 ${p.stage} · ${p.who} (행인) — <b>${p.result}</b>`,
+          : `만남 ${p.stage} · ${p.who} (행인) — ${p.mode === 'help' ? '돕기' : '무시'} (${COND[p.t].label}) · <b>${RESULT_TEXT[p.result] ?? p.result}</b>`,
       )
       .join('<br>') || '아직 없음';
   const bonds =

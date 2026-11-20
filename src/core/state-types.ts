@@ -6,8 +6,14 @@ export interface SkillInstance {
   flash?: number;
 }
 export interface Quest {
-  npc: string;
+  /** the 인연's id, or null for a passer-by's 의뢰 */
+  npc: string | null;
+  /** a passer-by's portrait (ambient art key) and name */
+  who?: { art: string; name: string };
+  /** follow / defy (인연), help / ignore (passer-by) */
   mode: string;
+  /** the side the choice adds a point to (+1 정, −1 사) */
+  move: number;
   t: string;
   target: number;
   prog: number;
@@ -88,12 +94,14 @@ export interface RunState {
   meta: Meta;
   /** debug: the 인연 the next 만남 brings */
   forceNpc: string | null;
-  /** 선 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
+  /** 정 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
   good: number;
-  /** 악 points this run: only grow; each adds 5% to the 엽전 banked */
+  /** 사 points this run: only grow; each adds 5% to the 엽전 banked */
   evil: number;
-  /** 인연 the points have unlocked this run */
-  unlocked: string[];
+  /** who comes to a 만남: the weights of a passer-by, a 정파 and a 사파 인연 (systems/alignment.ts) */
+  meetOdds: { passer: number; good: number; evil: number };
+  /** the 의뢰 the open 만남 offers (rolled when it opens: the cards show them), by choice */
+  offer?: Quest[];
   /** each 인연's level this run, 0 to 3 */
   bond: Record<string, number>;
   /** seconds of flight before the next 만남 when no 의뢰 runs, and the whole wait (systems/encounter.ts) */
@@ -104,7 +112,7 @@ export interface RunState {
   meetReady: boolean;
   /** 만남 so far this run */
   encounters: number;
-  /** passers-by met this run (their level and portrait) */
+  /** passers-by met this run (their portrait goes in order) */
   passers: number;
   /** a hero entered during this step, so a 만남 waits one step (cleared when the next step starts) */
   enteredStep?: boolean;

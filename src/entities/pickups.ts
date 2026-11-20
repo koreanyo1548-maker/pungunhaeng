@@ -9,6 +9,7 @@
 //   double 점수 두 배: score counts twice for ITEM_SECONDS (systems/score.ts addScore)
 // Taking an item whose effect is running sets it back to its full time (it does not stack).
 import { G } from '../core/context';
+import { emit } from '../core/events';
 import { chime, tone } from '../core/audio';
 import { rnd } from '../core/math';
 import { random } from '../core/rng';
@@ -77,11 +78,13 @@ export function collect(p) {
     const n = BASELINE.chest.gemCoins;
     G.state.coins += n;
     addScore(COIN_SCORE * n);
+    emit('coin', { n });
     tone(1700, 0.06, 'sine', 0.05, 2300);
     burst(p.x, p.y, '#ff6f8e', 5, 80);
   } else if (p.kind === 'coin') {
     G.state.coins++;
     addScore(COIN_SCORE);
+    emit('coin', { n: 1 });
     if (G.state.coins % 3 === 0) tone(1400 + (G.state.coins % 5) * 100, 0.045, 'sine', 0.045, 1800);
     if (!pfx('collect', p.x, p.y + 40, { palette: COIN })) burst(p.x, p.y, '#ffdf87', 3, 60);
   } else if (p.kind === 'magnet') {

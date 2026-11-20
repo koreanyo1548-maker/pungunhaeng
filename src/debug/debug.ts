@@ -7,7 +7,7 @@ import { loadProfile, profile } from '../core/profile';
 import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
 import { questEvent, questTarget, raiseBond } from '../systems/quest';
-import { moveAlign } from '../systems/alignment';
+import { moveAlign, rollMeet } from '../systems/alignment';
 import { referenceScore, rowGap } from '../systems/score';
 import { addPickup, pickItem } from '../entities/pickups';
 import { go } from '../systems/scene-flow';
@@ -95,8 +95,10 @@ if (location.hash.includes('debug'))
     get stats() {
       return { attack: shotPower(), tiers: [1, 2, 3, 4, 5, 6].map(enemyHealth), boss: bossHealth() };
     },
-    /** add 선 (positive) or 악 (negative) points (unlocks as play would) */
+    /** add 정 (positive) or 사 (negative) points (moves the 만남 odds as play would) */
     moveAlign,
+    /** who the next 만남 brings by the run's odds (an 인연's id, or null for a passer-by; uses gameplay random) */
+    rollMeet,
     /** a stage's 기준 점수 (systems/score.ts) */
     referenceScore,
     /** raise an 인연 one level (teaches the skill), as a met 의뢰 would */

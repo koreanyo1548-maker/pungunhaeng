@@ -198,7 +198,7 @@ try {
     // 정요란: 의뢰 targets −15% while she fights
     party('yoran', 'pungun');
     out.yoran = M.traitActive('yoran');
-    out.yoranTarget = M.questTarget({ n: 30 }, 2);
+    out.yoranTarget = M.questTarget({ n: 30 }, 0);
     // 운학 (party): one more 필살기 at the start, even as second
     party('pungun', 'unhak');
     out.unhak = G.state.bombs;
@@ -227,7 +227,7 @@ try {
   assert.equal(traits.soun, 1.5);
   assert.equal(traits.ayeong, 1.2, '아영: attack +20% while she fights');
   assert.equal(traits.yoran, true);
-  assert.equal(traits.yoranTarget, 26, '정요란: an 의뢰 of 30 asks 26');
+  assert.equal(traits.yoranTarget, 21, '정요란: an 의뢰 of 30 (asks 25) asks 21');
   assert.equal(traits.unhak, 2, 'one 필살기 + 1');
   assert.deepEqual(traits.yeoncheong, { second: 2, first: 2, afterFall: 0 });
   assert.deepEqual(traits.offWhileWaiting, { graze: 1.4, crit: false });

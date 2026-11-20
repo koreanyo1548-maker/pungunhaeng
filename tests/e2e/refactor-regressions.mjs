@@ -94,7 +94,7 @@ try {
     Object.assign(M.G.state, {
       good: 4,
       evil: 2,
-      unlocked: ['yakseon'],
+      meetOdds: { passer: 0, good: 8, evil: 2 },
       bond: { yakseon: 2 },
       meetTimer: 3,
       encounters: 3,
@@ -113,7 +113,7 @@ try {
       auras: M.skillAnimationSnapshot().auras.length,
       run: [
         M.G.state.good + M.G.state.evil,
-        M.G.state.unlocked.length,
+        Object.values(M.G.state.meetOdds).join(':'),
         Object.keys(M.G.state.bond).length,
         M.G.state.meetTimer,
         M.G.state.meetReady,
@@ -131,7 +131,7 @@ try {
     best: 100000,
     cues: 0,
     auras: 0,
-    run: '0,0,0,10,false,0,0',
+    run: '0,6:2:2,0,10,false,0,0',
   });
   assert.deepEqual(errors, []);
   console.log(

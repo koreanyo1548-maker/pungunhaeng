@@ -15,6 +15,8 @@ export interface GameEvents {
   kill: { e: any };
   /** a full row cleared without any enemy slipping past */
   rowClear: undefined;
+  /** 엽전 taken (a 보석 is 5) */
+  coin: { n: number };
   /** 필살기 (bomb) used */
   blast: { killed: number };
 }

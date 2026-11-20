@@ -1,6 +1,7 @@
 import { G } from '../core/context';
 import { profile } from '../core/profile';
 import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
+import { ambientPictures } from '../core/ambient-art';
 import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
@@ -112,10 +113,10 @@ export function syncQuestHUD() {
   el.classList.toggle('hidden', !show);
   if (!show) return;
   el.style.setProperty('--c', BR[q.br].color);
-  $('questTitle').textContent = q.mode === 'follow' ? '따름' : '거스름';
-  $('questImg').classList.toggle('defy', q.mode !== 'follow');
+  $('questTitle').textContent = { follow: '따름', defy: '거스름', help: '돕기', ignore: '무시' }[q.mode] ?? '';
+  $('questImg').classList.toggle('defy', q.mode === 'defy');
   el.classList.toggle('hot', !q.done && !q.failed && q.prog / q.target >= 0.8);
-  const qp = npcPictures[q.npc] || '';
+  const qp = (q.npc ? npcPictures[q.npc] : q.who && ambientPictures[q.who.art + '-neutral']) || '';
   if ($('questImg').dataset.src !== qp) {
     $('questImg').dataset.src = qp;
     $('questImg').src = qp;

@@ -1,10 +1,20 @@
 import { G } from '../core/context';
-import { propArt, rockHitArt } from '../core/assets';
+import { greenwoodFrames, propArt, rockHitArt } from '../core/assets';
 import { reduced } from '../core/dom';
 import { enemyFrameIndex } from './util';
 import { skyStage } from '../systems/flow';
 import { RANKS } from '../data/enemies';
 import { chestArt, tinted } from './placeholder-art';
+
+function flightPose(e) {
+  return reduced ? 0 : Math.floor(G.time * 5 + (e.phase || 0)) % 4;
+}
+
+export function greenwoodArt(e) {
+  if (e.boss || e.rock || e.chest) return;
+  const frames = greenwoodFrames[G.state.stage]?.[e.rank];
+  return frames?.[skyStage() ? flightPose(e) : enemyFrameIndex(e)];
+}
 
 /** Share the exact art between alive, hit and defeated enemies. */
 export function enemyArt(e) {
@@ -13,9 +23,11 @@ export function enemyArt(e) {
     const index = e.baseX < 240 ? 0 : 1;
     return { image: propArt[index], white: rockHitArt[index], size: (e.r + 6) * 2 };
   }
+  const greenwood = greenwoodArt(e);
+  if (greenwood) return { ...greenwood, size: e.size };
   if (skyStage() && !e.boss) {
     const rank = Math.min(2, e.rank);
-    const pose = reduced ? 0 : Math.floor(G.time * 5 + (e.phase || 0)) % 4,
+    const pose = flightPose(e),
       image = G.skyEnemyFrames?.[rank]?.[pose] || G.skyEnemies?.[rank],
       // sky tiers above 3 share tier 3's art: tiers 5 and 6 are tinted
       tint = RANKS[e.rank]?.tint;

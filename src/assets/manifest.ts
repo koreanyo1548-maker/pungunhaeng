@@ -1,4 +1,6 @@
 import combatProjectiles from './images/combat-projectiles.webp';
+import greenwoodAir from './images/enemies/greenwood-air-bird-variants-4x6.webp';
+import greenwoodGround from './images/enemies/greenwood-ground-6x2.webp';
 import simma from './images/simma.webp';
 import skyMotion from './images/sky-enemies-motion.webp';
 import skyEnemies from './images/sky-enemies.webp';
@@ -35,6 +37,8 @@ export const IMG: Record<string, string> = {
   bosses: bosses,
   simma: simma,
   'combat-projectiles': combatProjectiles,
+  'greenwood-air': greenwoodAir,
+  'greenwood-ground': greenwoodGround,
 };
 
 // Pictures for one character each (see images/characters/README.md): every WebP in images/characters is registered

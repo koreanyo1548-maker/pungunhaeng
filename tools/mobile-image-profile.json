@@ -40,6 +40,16 @@
       ],
       "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
     },
+    "enemies/greenwood-air-bird-variants-4x6.webp": {
+      "scale": 0.75,
+      "grid": [4, 6],
+      "reason": "최대 표시 크기 128px에서 날개와 무기 윤곽 유지"
+    },
+    "enemies/greenwood-ground-6x2.webp": {
+      "scale": 0.75,
+      "grid": [6, 2],
+      "reason": "최대 표시 크기 128px에서 두건과 무기 윤곽 유지"
+    },
     "hero-fly.webp": {
       "scale": 0.75,
       "grid": [

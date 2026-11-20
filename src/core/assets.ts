@@ -156,6 +156,23 @@ export async function loadNewArt() {
   $('heroArt').src = heroPictures.pungun;
   $('blast').querySelector('.blast-icon').innerHTML = artImage(skillPictures[9]);
 }
+
+type EnemyFrame = { image: HTMLCanvasElement; white: HTMLCanvasElement };
+export const greenwoodFrames: Record<number, EnemyFrame[][]> = {};
+
+async function loadGreenwoodArt() {
+  const [ground, air] = await Promise.all([loadImage(IMG['greenwood-ground']), loadImage(IMG['greenwood-air'])]);
+  const groundSize = imageDimensions['enemies/greenwood-ground-6x2.webp'].source;
+  const airSize = imageDimensions['enemies/greenwood-air-bird-variants-4x6.webp'].source;
+  const pair = (image: HTMLCanvasElement): EnemyFrame => ({ image, white: makeWhite(image) });
+  greenwoodFrames[1] = Array.from({ length: 6 }, (_, rank) =>
+    [0, 1].map(pose => pair(atlasCell(ground, 6, 2, rank, pose, groundSize))),
+  );
+  greenwoodFrames[4] = Array.from({ length: 6 }, (_, rank) =>
+    [0, 1, 2, 3].map(pose => pair(atlasCell(air, 4, 6, pose, rank, airSize))),
+  );
+}
+
 export async function load() {
   try {
     const [art, world, mobs, bosses, skyEnemies, skyMotion, simma] = await Promise.all([
@@ -249,7 +266,7 @@ export async function load() {
     await loadNewArt();
     await loadCombatArt();
     await loadPortraitProps();
-    await Promise.all([loadSkillArt(), loadAmbientArt()]);
+    await Promise.all([loadSkillArt(), loadAmbientArt(), loadGreenwoodArt()]);
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

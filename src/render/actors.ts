@@ -1,5 +1,5 @@
 import { drawSwapPose } from './skill-animation';
-import { enemyArt } from './enemy-art';
+import { enemyArt, greenwoodArt } from './enemy-art';
 import { G } from '../core/context';
 import { projectileArt, propArt, rockHitArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
@@ -10,8 +10,19 @@ import { enemyFrameIndex } from './util';
 import { movementTier, region, skyStage } from '../systems/flow';
 import { activeFrames, activeHeroId } from '../systems/formation';
 
-export function drawActor(type, x, y, size, pose = 0, angle = 0, hit = 0, sx = 1, sy = 1) {
-  const im = G.enemyFrames[type]?.[pose] || G.sprite[type];
+export function drawActor(
+  type,
+  x,
+  y,
+  size,
+  pose = 0,
+  angle = 0,
+  hit = 0,
+  sx = 1,
+  sy = 1,
+  art?: ReturnType<typeof greenwoodArt>,
+) {
+  const im = art?.image ?? (G.enemyFrames[type]?.[pose] || G.sprite[type]);
   if (!im) return;
   ctx.save();
   ctx.translate(x, y);
@@ -22,7 +33,7 @@ export function drawActor(type, x, y, size, pose = 0, angle = 0, hit = 0, sx = 1
   ctx.drawImage(im, -size / 2, -size / 2, size, size);
   if (hit > 0) {
     ctx.globalAlpha *= Math.min(0.65, (hit / 0.055) ** 2 * 0.65);
-    ctx.drawImage(G.enemyWhites[type]?.[pose] || G.whiteSprite[type], -size / 2, -size / 2, size, size);
+    ctx.drawImage(art?.white ?? (G.enemyWhites[type]?.[pose] || G.whiteSprite[type]), -size / 2, -size / 2, size, size);
   }
   ctx.restore();
 }
@@ -81,7 +92,7 @@ export function drawEnemy(e) {
       return;
     }
   }
-  drawActor(e.type, e.x, e.y + bob - recoil * 5, e.size, pose, angle, e.hit, sx, sy);
+  drawActor(e.type, e.x, e.y + bob - recoil * 5, e.size, pose, angle, e.hit, sx, sy, greenwoodArt(e));
 }
 export function drawHeroSprite(pose, x, y, angle = 0, alpha = 1, ghost = false) {
   if (!ghost && drawSwapPose(activeHeroId(), x, y, angle, alpha)) return;

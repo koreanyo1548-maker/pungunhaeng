@@ -72,38 +72,6 @@ button:disabled {
   width: 100%;
   margin-top: 8px;
 }
-.result-score {
-  font-size: 48px;
-  color: #ffe5a1;
-  font-variant-numeric: tabular-nums;
-  display: block;
-  letter-spacing: -2px;
-}
-.result-score-label {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: #a5bfb5;
-}
-.stats {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid #adcfbf22;
-  margin: 27px 0;
-  padding-top: 22px;
-}
-.stats div {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.stats b {
-  font-size: 17px;
-  color: #eef4df;
-}
-.stats span {
-  font-size: 10px;
-  color: #8faaa6;
-}
 @media (max-height: 620px) {
   .primary {
     padding: 13px;
@@ -141,19 +109,55 @@ button:disabled {
   margin-top: 8px;
 }
 
-/* Result: what this run added to the bank. */
-.settle {
-  margin: -12px 0 18px;
-  padding: 9px 10px;
+/* Result: the score and the 엽전 banked, each with the bonuses it got (systems/flow.ts end). */
+.result-section {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid #caa56866;
   border-radius: 8px;
-  background: #0a1f1a99;
-  border: 1px solid #ffd77a44;
-  font-size: 12px;
-  color: #d9e6dc;
-  line-height: 1.5;
+  background: #0d2023cc;
 }
-.settle b {
-  color: #ffd77a;
+.result-section h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #d8b86a;
+}
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 14px;
+  color: #e8e2cf;
+}
+.result-row b {
+  color: #ffe3a3;
+  font-variant-numeric: tabular-nums;
+}
+.result-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #caa56844;
+}
+.result-total span {
+  font-size: 13px;
+  color: #d8b86a;
+}
+.result-total strong {
+  font-size: 34px;
+  color: #ffe08a;
+  font-family: 'Noto Serif KR', 'Batang', serif;
+  font-variant-numeric: tabular-nums;
+}
+.result-total strong.coin {
+  font-size: 26px;
+}
+#result #retry {
+  margin-top: 16px;
 }
 
 /* 뽑기: bank, rates, the two draw buttons, then what came out (as collection tiles). */
@@ -418,6 +422,66 @@ button:disabled {
 .tile.locked .tile-grade {
   color: #6f857b;
 }
+/* the 영웅 screen: portrait tiles with the name, level and 성급 small on the portrait */
+.collection-grid.portraits {
+  gap: 7px;
+}
+.tile.portrait {
+  padding: 0;
+  overflow: hidden;
+}
+.tile.portrait .tile-art {
+  height: 118px;
+  border-radius: 0;
+}
+.tile.portrait .tile-art img {
+  object-fit: cover;
+  object-position: top;
+}
+.tile-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 2px 4px;
+  background: linear-gradient(transparent, #061513e6 55%);
+}
+.tile-label b {
+  font-size: 12px;
+  line-height: 1.2;
+  color: #fff0c4;
+  white-space: nowrap;
+}
+.tile-label .tile-grade {
+  font-size: 13px;
+  line-height: 1.1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.tile-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: #061513d9;
+  border: 1px solid #f0c66e88;
+  color: #ffe3a3;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tile.portrait.locked .tile-label b {
+  color: #9fb5aa;
+}
+/* the close button stays at the bottom of a collection screen while the grid scrolls */
+#collectionClose {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
 .meter {
   display: block;
   height: 4px;
@@ -442,18 +506,66 @@ button:disabled {
   text-align: left;
   border-color: #ffd77a55;
 }
-.detail-close {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 50%;
-  background: transparent;
+/* the 영웅 popup: portrait on top, the summary under it, then tabs (ui/collection.ts renderTabbed) */
+.detail-head.stacked {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  padding-right: 0;
+  margin-bottom: 8px;
+}
+.detail-head.stacked .detail-art {
+  width: 140px;
+  height: 140px;
+}
+.detail-section .stars {
+  color: #ffd35c;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.detail-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+.detail-tabs button {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #caa56866;
+  border-radius: 6px;
+  background: #0c2a26cc;
   color: #cfe0d4;
-  font-size: 22px;
-  line-height: 1;
+  font-size: 14px;
+}
+.detail-tabs button[aria-selected='true'] {
+  border-color: #f0c66e;
+  background: linear-gradient(#3e5a4c, #142f31);
+  color: #ffe3a3;
+  font-weight: 700;
+}
+.detail-figure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.detail-figure img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #061513;
+  border: 1px solid #ffffff22;
+  mix-blend-mode: normal;
+}
+.detail-figure p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d9e6dc;
+}
+.detail-figure b {
+  color: #ffe3a3;
+  font-size: 14px;
 }
 .detail-head {
   display: grid;
@@ -582,6 +694,10 @@ button:disabled {
 }
 .detail-panel #detailBack {
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: linear-gradient(#1d3a33, #10251f);
 }
 
 /* Inline resource icons keep result tile geometry and the portrait intact. */

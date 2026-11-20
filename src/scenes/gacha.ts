@@ -58,7 +58,6 @@ function closeGacha() {
 $('drawOne').onclick = () => show(draw(1));
 $('drawTen').onclick = () => show(draw(10, DRAW_TEN_COST));
 $('openGacha').onclick = openGacha;
-$('resultGacha').onclick = openGacha;
 $('gachaClose').onclick = closeGacha;
 $('saveCopy').onclick = async () => {
   const box = $('saveCode') as HTMLTextAreaElement;

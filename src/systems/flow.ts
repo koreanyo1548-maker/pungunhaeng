@@ -107,39 +107,28 @@ export function end(victory = false) {
   if (record) profile.best = Math.floor(G.state.score);
   const kept = settle(G.state.coins, false, b.coinBonus),
     banked = settle(G.state.coins, victory, b.coinBonus),
-    opened = victory && openNextStage(G.state.stage),
-    r = region(),
     pct = (v: number) => Math.round(v * 100) + '%';
+  // beating the boss opens the next stage (the lobby shows it)
+  if (victory) openNextStage(G.state.stage);
   profile.coins += banked;
   saveProfile();
-  $('settle').innerHTML =
-    `기준 점수 ${fmt(b.max)}의 <b>${pct(b.share)}</b>` +
-    (b.scoreBonus ? ` · 정 ${G.state.good} 점수 +${pct(b.scoreBonus)}` : '') +
-    `<br>남은 엽전 <b>${fmt(G.state.coins)}냥</b>` +
-    (b.coinBonus
-      ? ` + <b>${fmt(kept - G.state.coins)}냥</b> (` +
-        [
-          b.tier ? `달성 +${pct(b.tier)}` : '',
-          G.state.evil ? `사 ${G.state.evil} +${pct(G.state.evil * VIRTUE_BONUS)}` : '',
-        ]
-          .filter(Boolean)
-          .join(' · ') +
-        ')'
-      : '') +
-    (banked > kept ? ` + 보스 처치 <b>${fmt(banked - kept)}냥</b>` : '') +
-    ` 보관 · 지닌 엽전 <b>${fmt(profile.coins)}냥</b>`;
-  $('resultTitle').textContent = victory ? r.name + ' 돌파' : '강호행 종료';
-  $('resultEyebrow').textContent =
-    `S${G.state.stage} ${r.name} · ` +
-    (victory
-      ? r.boss + ' 처치' + (opened ? ` · S${G.state.stage + 1} ${STAGES[G.state.stage].name} 열림` : '')
-      : `만남 ${G.state.encounters}번 · ${fmt(Math.min(G.state.distance, stageDistance()))} / ${fmt(stageDistance())} m`);
-  $('summary').innerHTML = runSummary();
+  // the result (docs/meta-progression-plan.md): the title, the score and the 엽전 banked, each with its bonuses
+  const row = (label: string, value: string) => `<div class="result-row"><span>${label}</span><b>${value}</b></div>`;
+  const left = G.state.coins,
+    fromEvil = Math.floor(left * G.state.evil * VIRTUE_BONUS),
+    fromTier = kept - left - fromEvil;
+  $('resultTitle').textContent = victory ? '강호행 승리' : '강호행 실패';
   $('newRecord').classList.toggle('hidden', !record);
+  $('scoreRows').innerHTML =
+    row('기본 점수', fmt(G.state.baseScore)) +
+    (b.scoreBonus ? row(`정도 보너스 +${pct(b.scoreBonus)}`, '+' + fmt(G.state.score - G.state.baseScore)) : '');
   $('finalScore').textContent = fmt(G.state.score);
-  $('finalDistance').textContent = fmt(G.state.distance) + ' m';
-  $('finalKills').textContent = G.state.kills;
-  $('finalCoins').textContent = G.state.coins;
+  $('coinRows').innerHTML =
+    row('남은 엽전', fmt(left) + '냥') +
+    (fromEvil ? row(`사도 보너스 +${pct(G.state.evil * VIRTUE_BONUS)}`, `+${fmt(fromEvil)}냥`) : '') +
+    (b.tier ? row(`기준 점수 달성 +${pct(b.tier)}`, `+${fmt(fromTier)}냥`) : '') +
+    (banked > kept ? row('보스 처치', `+${fmt(banked - kept)}냥`) : '');
+  $('bankedCoins').textContent = fmt(banked) + '냥';
   $('result').classList.remove('hidden');
   $('toast').classList.remove('show');
   showBest();

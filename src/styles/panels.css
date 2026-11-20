@@ -506,18 +506,66 @@ button:disabled {
   text-align: left;
   border-color: #ffd77a55;
 }
-.detail-close {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 50%;
-  background: transparent;
+/* the 영웅 popup: portrait on top, the summary under it, then tabs (ui/collection.ts renderTabbed) */
+.detail-head.stacked {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  padding-right: 0;
+  margin-bottom: 8px;
+}
+.detail-head.stacked .detail-art {
+  width: 140px;
+  height: 140px;
+}
+.detail-section .stars {
+  color: #ffd35c;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.detail-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+.detail-tabs button {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #caa56866;
+  border-radius: 6px;
+  background: #0c2a26cc;
   color: #cfe0d4;
-  font-size: 22px;
-  line-height: 1;
+  font-size: 14px;
+}
+.detail-tabs button[aria-selected='true'] {
+  border-color: #f0c66e;
+  background: linear-gradient(#3e5a4c, #142f31);
+  color: #ffe3a3;
+  font-weight: 700;
+}
+.detail-figure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.detail-figure img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #061513;
+  border: 1px solid #ffffff22;
+  mix-blend-mode: normal;
+}
+.detail-figure p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d9e6dc;
+}
+.detail-figure b {
+  color: #ffe3a3;
+  font-size: 14px;
 }
 .detail-head {
   display: grid;
@@ -646,6 +694,10 @@ button:disabled {
 }
 .detail-panel #detailBack {
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: linear-gradient(#1d3a33, #10251f);
 }
 
 /* Inline resource icons keep result tile geometry and the portrait intact. */

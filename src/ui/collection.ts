@@ -42,6 +42,17 @@ export type Detail = {
   track?: { title: string; steps: Step[] };
   /** buttons at the bottom (none yet: level-ups and 초월 go here) */
   actions?: Action[];
+  /** tabs under the summary (레벨 · 성급 on the 영웅 popup): each with its own blocks and buttons */
+  tabs?: DetailTab[];
+};
+export type DetailTab = {
+  label: string;
+  /** a picture with a line beside it (the basic shot) */
+  figure?: { image: string; text: string };
+  progress?: Detail['progress'];
+  sections?: Detail['sections'];
+  track?: Detail['track'];
+  actions?: Action[];
 };
 export type Collection = {
   eyebrow: string;
@@ -55,7 +66,8 @@ export type Collection = {
 };
 
 let current: Collection | null = null,
-  shown: string | null = null;
+  shown: string | null = null,
+  tab = 0;
 
 const bar = (now: number, goal: number) =>
   `<span class="meter"><i style="width:${goal ? Math.min(100, (100 * now) / goal) : 100}%"></i></span>`;
@@ -83,8 +95,18 @@ function renderGrid() {
     .join('');
 }
 
+const progressHtml = (p: Detail['progress']) =>
+  p ? `<div class="detail-progress"><span><b>${p.label}</b>${p.text}</span>${bar(p.now, p.goal)}</div>` : '';
+const sectionsHtml = (sections: Detail['sections']) =>
+  (sections ?? []).map(s => `<div class="detail-section"><b>${s.title}</b><p>${s.body}</p></div>`).join('');
+const trackHtml = (t: Detail['track']) =>
+  t
+    ? `<div class="detail-track"><b>${t.title}</b><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
+    : '';
+
 function renderDetail() {
   const d = current!.detail(shown!);
+  if (d.tabs) return renderTabbed(d);
   const p = d.progress,
     t = d.track;
   $('detailBody').innerHTML =
@@ -94,9 +116,28 @@ function renderDetail() {
     (t
       ? `<div class="detail-track"><b>${t.title}</b><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
       : '');
+  renderActions(d.actions);
+}
+/** The popup with a summary under the portrait and tabs (the 영웅 popup): the open tab's blocks and buttons. */
+function renderTabbed(d: Detail) {
+  const tabs = d.tabs!,
+    open = tabs[Math.min(tab, tabs.length - 1)];
+  $('detailBody').innerHTML =
+    `<div class="detail-head stacked${d.locked ? ' locked' : ''}" style="--c:${d.color}"><span class="detail-art"><img alt="" src="${d.image}" draggable="false"></span><div>${d.caption ? `<span class="detail-caption">${d.caption}</span>` : ''}<h3>${d.name}</h3>${d.grade ? `<span class="detail-grade">${d.grade}</span>` : ''}</div></div>` +
+    sectionsHtml(d.sections) +
+    `<div class="detail-tabs" role="tablist">${tabs.map((t, i) => `<button role="tab" data-tab="${i}" aria-selected="${t === open}">${t.label}</button>`).join('')}</div>` +
+    `<div class="detail-tab">${open.figure ? `<div class="detail-figure"><img alt="" src="${open.figure.image}" draggable="false"><p>${open.figure.text}</p></div>` : ''}${progressHtml(open.progress)}${sectionsHtml(open.sections)}${trackHtml(open.track)}</div>`;
+  for (const b of $('detailBody').querySelectorAll('.detail-tabs button') as NodeListOf<HTMLButtonElement>)
+    b.onclick = () => {
+      tab = Number(b.dataset.tab);
+      renderDetail();
+    };
+  renderActions(open.actions);
+}
+function renderActions(actions: Action[] | undefined) {
   const box = $('detailActions');
   box.innerHTML = '';
-  for (const a of d.actions ?? []) {
+  for (const a of actions ?? []) {
     const b = document.createElement('button');
     b.className = 'primary';
     b.disabled = !!a.disabled;
@@ -120,6 +161,7 @@ export function openCollection(c: Collection) {
 }
 export function openDetail(id: string) {
   shown = id;
+  tab = 0;
   renderDetail();
   $('detail').classList.remove('hidden');
   $('detail').querySelector('.panel').scrollTop = 0;
@@ -145,7 +187,6 @@ $('collectionGrid').addEventListener('click', e => {
   if (id) openDetail(id);
 });
 $('collectionClose').onclick = closeCollection;
-$('detailClose').onclick = closeDetail;
 $('detailBack').onclick = closeDetail;
 // tapping the dimmed backdrop around the popup closes it
 $('detail').addEventListener('click', e => {

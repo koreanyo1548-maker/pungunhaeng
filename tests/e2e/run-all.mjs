@@ -1010,14 +1010,46 @@ async function scenarioF(browser, seed) {
       !/Lv 1 ★/.test(tiles[0].text),
     `portrait tiles: the name, Lv and 성급 on joined heroes, 잠김 on the rest (${tiles[0].text} | ${tiles[2].text})`,
   );
-  const owned0 = await detailOf(g, 0),
-    locked0 = await detailOf(g, 2);
+  // the 영웅 popup: portrait, then Lv · 성급, trait, entry skill; tabs 레벨 (shot, attack, 레벨업) and 성급 (pieces, track)
+  const popup = i =>
+    g.eval(i => {
+      document.querySelectorAll('#collectionGrid .tile')[i].click();
+      const body = () => document.getElementById('detailBody');
+      const out = {
+        head: body().querySelector('.detail-head').textContent,
+        summary: [...body().querySelectorAll(':scope > .detail-section')].map(e => e.textContent).join(' | '),
+        tabs: [...body().querySelectorAll('.detail-tabs button')].map(b => b.textContent).join(),
+        level: body().querySelector('.detail-tab').textContent,
+        shot: !!body().querySelector('.detail-figure img'),
+        action: document.getElementById('detailActions').textContent,
+      };
+      body().querySelectorAll('.detail-tabs button')[1].click();
+      out.stars = body().querySelector('.detail-tab .detail-progress')?.textContent ?? '';
+      out.track = [...body().querySelectorAll('.detail-track li')].map(li => li.className).join();
+      document.getElementById('detailBack').click();
+      return out;
+    }, i);
+  const owned0 = await popup(0),
+    locked0 = await popup(2);
   check(
     f,
-    /성급 1/.test(owned0.head) && owned0.track.join() === 'current,next,next,next,next',
-    `a joined hero's popup: 성급 1 and the track (${owned0.head}, ${owned0.track})`,
+    /Lv 1/.test(owned0.summary) &&
+      /★☆☆☆☆/.test(owned0.summary) &&
+      /특성/.test(owned0.summary) &&
+      /등장 기술/.test(owned0.summary) &&
+      owned0.tabs === '레벨,성급' &&
+      owned0.shot &&
+      /공격력 10/.test(owned0.level) &&
+      /레벨업/.test(owned0.action) &&
+      /조각1 \/ 3/.test(owned0.stars) &&
+      owned0.track === 'current,next,next,next,next',
+    `a joined hero's popup: summary, 레벨 tab (shot, attack, 레벨업), 성급 tab (pieces, track) (${JSON.stringify(owned0)})`,
   );
-  check(f, /잠김/.test(locked0.head) && /뽑기/.test(locked0.progress), `a locked hero's popup (${locked0.progress})`);
+  check(
+    f,
+    /잠김/.test(locked0.head) && /뽑기/.test(locked0.level) && !locked0.shot && !/레벨업/.test(locked0.action),
+    `a locked hero's popup: how to join in the 레벨 tab (${JSON.stringify(locked0)})`,
+  );
   await g.eval(() => document.getElementById('collectionClose').click());
 
   // formation: owned first; a locked hero cannot be confirmed
@@ -1090,7 +1122,7 @@ async function scenarioF(browser, seed) {
     window.__g.loadProfile({ ...window.__g.profile, levels: { ...window.__g.profile.levels, pungun: 30 } }),
   );
   await g.eval(() => {
-    document.getElementById('detailClose').click();
+    document.getElementById('detailBack').click();
     document.querySelectorAll('#collectionGrid .tile')[0].click();
   });
   const capped = await button();
@@ -1647,7 +1679,7 @@ async function detailOf(g, i) {
     body: document.getElementById('detailBody').textContent,
     track: [...document.querySelectorAll('#detailBody .detail-track li')].map(li => li.className),
   }));
-  await g.eval(() => document.getElementById('detailClose').click());
+  await g.eval(() => document.getElementById('detailBack').click());
   return d;
 }
 

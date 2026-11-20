@@ -1,7 +1,8 @@
 // 영웅: who has joined, each hero's 성급 and level. Opened from the title screen.
 // Heroes join and rise in 성급 through pieces from 뽑기 (systems/gacha.ts); each 성급 opens ten levels, raised here
-// with banked 엽전 (레벨업). A level raises the attack and, at 10 and 20, the shots per volley.
+// with banked 엽전 (레벨업). A level raises the attack (one shot a volley at every level).
 import { heroPictures } from '../core/assets';
+import { shotPicture } from '../render/projectiles';
 import { $ } from '../core/dom';
 import { heroLevelCap, heroOwned, heroStars, levelUp, levelUpCost, profile } from '../core/profile';
 import { fmt } from '../core/math';
@@ -37,6 +38,8 @@ function tile(id: HeroId): Tile {
   };
 }
 
+/** The 영웅 popup: the portrait, then the level, 성급, trait and entry skill; tabs 레벨 (the basic shot, attack,
+ *  레벨업) and 성급 (pieces, what each 성급 brings). A hero not joined yet shows how to join in the 레벨 tab. */
 function detail(id: HeroId): Detail {
   const h = HEROES[id],
     stars = heroStars(id),
@@ -47,10 +50,8 @@ function detail(id: HeroId): Detail {
     cap = heroLevelCap(id);
   const sections = [
     {
-      title: `레벨 ${level} / ${cap}`,
-      body:
-        `공격력 ${attackAt(level)} · 한 번에 1발` +
-        `<br>레벨마다 공격력 +1. 성급이 오를 때마다 최대 레벨 +${LEVELS_PER_STAR}.`,
+      title: stars ? `Lv ${level} · <span class="stars">${starText(stars)}</span>` : '<span class="stars">☆☆☆☆☆</span>',
+      body: '',
     },
     {
       title: `특성 「${h.trait.name}」`,
@@ -62,7 +63,7 @@ function detail(id: HeroId): Detail {
     },
   ];
   const track = {
-    title: '성급 · 뽑기에서 같은 영웅의 조각을 모으면 오른다 (★3·★5에서 등장 기술 모양이 바뀜)',
+    title: '성급마다 · ★3·★5에서 등장 기술 모양이 바뀐다',
     steps: PIECE_STEPS.map((need, i) => ({
       label: `★${i + 1}`,
       text:
@@ -72,34 +73,38 @@ function detail(id: HeroId): Detail {
       state: (i + 1 < stars ? 'done' : i + 1 === stars ? 'current' : 'next') as 'done' | 'current' | 'next',
     })),
   };
-  if (!stars)
-    return {
-      name: h.name,
-      image: heroPictures[id],
-      color: h.color,
-      caption,
-      grade: '잠김',
-      locked: true,
-      progress: { label: '합류', text: LOCKED_HOW, now: 0, goal: 1 },
-      sections,
-      track,
-    };
   const [now, goal] = toNext(id);
+  const starTab = {
+    label: '성급',
+    progress: stars
+      ? {
+          label: '조각',
+          text: stars >= LEVEL_MAX ? `${now}개 · 최고 성급` : `${now} / ${goal} · 다음 성급까지 ${goal - now}개`,
+          now,
+          goal,
+        }
+      : { label: '조각', text: `0 / 1 · 1개면 합류`, now: 0, goal: 1 },
+    track,
+  };
+  const levelTab = stars
+    ? {
+        label: '레벨',
+        figure: {
+          image: shotPicture(id),
+          text: `<b>공격력 ${attackAt(level)}</b> · ${h.projectile} 한 번에 1발<br>레벨 ${level} / ${cap} · 레벨마다 공격력 +1, 성급마다 최대 레벨 +${LEVELS_PER_STAR}`,
+        },
+        actions: [levelAction(id)],
+      }
+    : { label: '레벨', sections: [{ title: '합류', body: LOCKED_HOW }] };
   return {
     name: h.name,
     image: heroPictures[id],
     color: h.color,
     caption,
-    grade: `${starText(stars)} 성급 ${stars}`,
-    progress: {
-      label: '조각',
-      text: stars >= LEVEL_MAX ? `${now}개 · 최고 성급` : `${now} / ${goal} · 다음 성급까지 ${goal - now}개`,
-      now,
-      goal,
-    },
+    locked: !stars,
+    grade: stars ? '' : '잠김',
     sections,
-    track,
-    actions: [levelAction(id)],
+    tabs: [levelTab, starTab],
   };
 }
 

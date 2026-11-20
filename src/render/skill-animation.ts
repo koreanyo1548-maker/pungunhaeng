@@ -278,6 +278,11 @@ export function drawSkillShot(s: any) {
       drawSkillFrame(s.skill, frame, s.x - s.vx * back, s.y + vy * back, size * 0.92, alpha, angle, true);
   return drawSkillFrame(s.skill, frame, s.x, s.y, size, 1, angle, true);
 }
+/** A hero's own basic-shot frame (the heroines'), or null for the shared 검기 (render/projectiles.ts) */
+export function heroShotFrame(id: string): CanvasImageSource | null {
+  const sheet = heroineSkillSheets[id];
+  return sheet === undefined ? null : (frames[sheet]?.[1]?.[2] ?? null);
+}
 /** Runtime inspection for the visual regression harness, never used to drive gameplay. */
 export function skillAnimationSnapshot() {
   return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: frames.length, shield, negate };

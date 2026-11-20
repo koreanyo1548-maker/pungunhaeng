@@ -15,7 +15,7 @@ import { graze, grazeEnemy } from './combat';
 import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
 import { RUN_SCORE, addScore, runSpeed } from './score';
-import { speedFactor } from './ladder';
+import { descentFactor, speedFactor } from './ladder';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
@@ -157,7 +157,7 @@ function updateEnemies(dt: number): boolean {
       if (G.mode !== 'play') return false;
       continue;
     }
-    e.y += dt * descent * speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
+    e.y += dt * descent * descentFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);

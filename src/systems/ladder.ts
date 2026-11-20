@@ -12,6 +12,10 @@ const TOP = BASELINE.tierHealthMultipliers.length;
 export const stageProgress = () => Math.min(1, Math.max(0, G.state.distance / stageDistance()));
 /** how much faster the run is than at its start: 1 → 1 + speedUp at the boss */
 export const speedFactor = () => 1 + BASELINE.speedUp * stageProgress();
+/** how much faster rows come down than at the start: like the run, but on S1 it grows twice as fast in time (the
+ *  square of the run's) and stops at BASELINE.s1DescentMax */
+export const descentFactor = () =>
+  G.state.stage === 1 ? Math.min(BASELINE.s1DescentMax / BASELINE.s1Descent, speedFactor() ** 2) : speedFactor();
 /** the tier step now: 1 to BASELINE.steps */
 export const ladderStep = () => Math.min(BASELINE.steps, Math.floor(stageProgress() * BASELINE.steps) + 1);
 /** 0 at the start of the step, 1 at its end */

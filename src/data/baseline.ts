@@ -38,7 +38,7 @@ export const BASELINE = {
   hyper: { seconds: 2, speed: 6, descent: 2.5 },
   /** a kill drops an item with `chance`; which one is picked by `weights` (무아지경 4 : 자석 4 : 점수 두 배 2);
    *  a 무아지경 kill drops none */
-  itemDrop: { chance: 0.01, weights: { hyper: 4, magnet: 4, double: 2 } },
+  itemDrop: { chance: 0.03, weights: { hyper: 4, magnet: 4, double: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
   /** 만남 (systems/encounter.ts): the first comes `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has

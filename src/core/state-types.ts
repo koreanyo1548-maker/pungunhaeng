@@ -45,8 +45,6 @@ export interface RunState {
   /** seconds left of the 점수 두 배 item */
   double: number;
   hyperDrops: number;
-  /** run elapsed time when the normal 무아지경 drop chance returns */
-  hyperDropReducedUntil: number;
   drops: { hyper: number; magnet: number; double: number; chest: number };
   combo: number;
   comboTimer: number;

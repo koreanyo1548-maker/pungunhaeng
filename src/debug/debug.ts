@@ -9,7 +9,7 @@ import { damagePlayer } from '../entities/player';
 import { questEvent, raiseBond } from '../systems/quest';
 import { moveAlign } from '../systems/alignment';
 import { referenceScore, rowGap } from '../systems/score';
-import { addPickup } from '../entities/pickups';
+import { addPickup, pickItem } from '../entities/pickups';
 import { go } from '../systems/scene-flow';
 import { bossHealth, enemyHealth, region, stageDistance } from '../systems/flow';
 import { shotPower } from '../systems/combat';
@@ -53,6 +53,7 @@ if (location.hash.includes('debug'))
     },
     /** drop a pickup ('coin', 'hyper', 'magnet', 'double') at (x, y), as a kill would */
     addPickup,
+    pickItem,
     /** kill an enemy as a hit would (score, gauge, drops) */
     kill,
     /** the 인연 data (data/npcs.ts) */

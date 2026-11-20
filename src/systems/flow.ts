@@ -1,3 +1,4 @@
+import { lobbyStage, lobbyStageOpen, showLobby } from '../ui/lobby';
 import { createRunState, createPlayer, createRunTransient } from '../core/run-state';
 import { clearSkillAnimations } from '../render/skill-animation';
 import { clearCallouts } from '../render/callout';
@@ -48,7 +49,7 @@ export function bossHealth() {
   return Math.round((BASELINE.bossSeconds * TUNE.attack) / BASELINE.fireInterval);
 }
 export function start() {
-  if (!G.loaded) return;
+  if (!G.loaded || !lobbyStageOpen()) return;
   seedRun();
   initAudio();
   for (const id of ['intro', 'result', 'pausePanel']) $(id).classList.add('hidden');
@@ -68,7 +69,9 @@ export function start() {
   showBest();
   syncHUD();
   tone(440, 0.2, 'triangle', 0.2, 880);
-  go('stageSelect');
+  // the stage on the lobby card, then the 편대 screen
+  G.state.stage = lobbyStage();
+  go('formation');
 }
 export function pause() {
   if (G.mode === 'play') {
@@ -154,6 +157,7 @@ export function home() {
   $('intro').classList.remove('hidden');
   showBest();
   showBank();
+  showLobby();
 }
 export function beginStage() {
   const r = region();

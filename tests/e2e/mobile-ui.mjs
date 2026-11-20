@@ -17,12 +17,15 @@ try {
     const shot = async name => {
       if (output) await g.page.screenshot({ path: `${output}/${name}-${viewport.width}.png` });
     };
+    // the lobby: the stage card opens on the highest open stage (S6 in the debug roster); turn it to S4 부유암 (운해:
+    // left-right only) with the arrows, then 강호에 나서기
+    assert.ok(await g.page.locator('#stageNext').isDisabled(), 'S6 first, nothing after it');
+    await shot('lobby');
+    for (let i = 0; i < 2; i++) await g.page.locator('#stagePrev').tap();
+    assert.match(await g.page.locator('#stageCard').textContent(), /S4/);
     await g.page.locator('#start').tap();
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '어디로 갈까');
-    await shot('stages');
-    await g.pick(3); // S4 부유암 (운해: left-right only)
-    await g.step(2);
+    assert.equal(await g.choiceTitle(), '편대');
     // 편대: tap two heroes (1 선봉, 2 후발); nothing commits until 출발, which needs both
     const formation = await g.state(() => [...window.__g.state.formation]);
     const roster = g.page.locator('#choice .party-hero');
@@ -108,7 +111,7 @@ try {
     assert.deepEqual(g.errors, []);
     await g.page.close();
     console.log(
-      `PASS ${viewport.width}: stage select, preview/confirm, touch drag, hidden swap slot, blast, 만남, no page errors`,
+      `PASS ${viewport.width}: lobby stage card, 편대 (two then 출발), touch drag, hidden swap slot, blast, 만남, no page errors`,
     );
   }
 } finally {

@@ -41,8 +41,8 @@ try {
   await p.locator('#gachaClose').click();
   const begin = () =>
     p.evaluate(() => {
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       M.start();
-      document.querySelector('#choice button.card').click();
       ((a = 0, b = 1) => {
         for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
         const h = [...document.querySelectorAll('#choice .party-hero')];

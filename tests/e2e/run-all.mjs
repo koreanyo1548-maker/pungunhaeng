@@ -50,16 +50,14 @@ const S = () => {
   };
 };
 
-/** title → stage (index into the stage list) → 선봉 → 후발: play starts */
+/** lobby: the stage card (index, 0 = S1) → 강호에 나서기 → 편대 (the first two heroes) → 출발: play starts */
 async function setup(g, stage = 0) {
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
   await setupFrom(g, stage);
 }
-/** from the stage select already open: stage → 선봉 → 후발 */
+/** from the lobby: stage card → 강호에 나서기 → 편대 → 출발 */
 async function setupFrom(g, stage) {
-  await g.pick(stage);
+  await g.setOut(stage);
   await g.step(2);
   await g.party(0, 1);
   await g.step(2);
@@ -157,15 +155,12 @@ async function scenarioA(browser, stage, seed) {
   const g = await openGame(file, { browser, seed });
   const log = [];
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  const list = await g.cards();
+  // the lobby opens on the highest open stage: all six in the debug roster
+  const lobby = await g.lobby();
   check(
     f,
-    list.length === 6 &&
-      list.every(c => !c.disabled) &&
-      list.map(c => c.title).join() === '산길,청죽림,폐사,부유암,유운봉,천마성',
-    `stage select: six stages, all open in debug roster (${list.map(c => c.title + (c.disabled ? '×' : '')).join(' ')})`,
+    lobby.dots === 6 && lobby.on === 6 && /S6/.test(lobby.text) && /천마성/.test(lobby.text) && lobby.start,
+    `lobby: six stages, S6 shown first (${JSON.stringify(lobby)})`,
   );
   await setupFrom(g, stage);
   let s = await g.state(S);
@@ -348,7 +343,7 @@ async function scenarioA(browser, stage, seed) {
   s = await g.state(S);
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
   check(f, s.mode === 'result' && /돌파/.test(title), `beating the boss ends the run (${title})`);
-  const wantScenes = ['stageSelect', 'formation', 'stage', ...Array(6).fill(['encounter', 'stage']).flat(), 'result'];
+  const wantScenes = ['formation', 'stage', ...Array(6).fill(['encounter', 'stage']).flat(), 'result'];
   const got = await g.eval(() => window.__g.sceneLog);
   check(
     f,
@@ -490,13 +485,14 @@ async function scenarioC(browser, seed) {
   const P = () => g.state(() => JSON.parse(JSON.stringify(window.__g.profile)));
   check(f, (await P()).stages === 1, 'a new save opens S1');
   await g.eval(() => window.__g.traceScenes());
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  let list = await g.cards();
+  // the lobby: S1, and S2 locked behind the arrow (강호에 나서기 off there)
+  let lobby = await g.lobby();
+  await g.eval(() => document.getElementById('stageNext').click());
+  const next = await g.lobby();
   check(
     f,
-    list.map(c => c.disabled).join() === 'false,true,true,true,true,true' && /잠김/.test(list[1].tag),
-    `only S1 can be picked (${list.map(c => c.tag)})`,
+    lobby.dots === 2 && lobby.on === 1 && lobby.start && next.locked && !next.start && /잠김/.test(next.text),
+    `only S1 can set out; S2 shows locked (${JSON.stringify([lobby, next])})`,
   );
   await setupFrom(g, 0);
   await g.eval(() => window.__g.god());
@@ -506,11 +502,15 @@ async function scenarioC(browser, seed) {
   const won = await P();
   check(f, won.stages === 2 && /S2 청죽림 열림/.test(eyebrow), `beating S1 opens S2 (${eyebrow})`);
   check(f, won.coins >= 300, `a victory banks the clear bonus (${won.coins})`);
-  // S1 again: nothing more opens
+  // S1 again: nothing more opens. 다시 강호로 goes back to the lobby, which shows S2 (the highest open) first
   await g.eval(() => document.getElementById('retry').click());
   await g.step(2);
-  list = await g.cards();
-  check(f, list.map(c => c.disabled).join() === 'false,false,true,true,true,true', 'S1 and S2 can be picked now');
+  lobby = await g.lobby();
+  check(
+    f,
+    (await g.mode()) === 'title' && lobby.dots === 3 && lobby.on === 2 && lobby.start,
+    `back in the lobby: S1 and S2 open, S2 first, S3 locked (${JSON.stringify(lobby)})`,
+  );
   await setupFrom(g, 0);
   await g.eval(() => window.__g.god());
   await reachBoss(g);
@@ -1010,9 +1010,7 @@ async function scenarioF(browser, seed) {
   await g.eval(() => document.getElementById('collectionClose').click());
 
   // formation: owned first; a locked hero cannot be confirmed
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  await g.pick(0); // S1 산길
+  await g.setOut(0); // S1 산길
   await g.step(2);
   let cards = await formation();
   check(
@@ -1051,7 +1049,7 @@ async function scenarioF(browser, seed) {
   await waitForDeath(g);
 
   // 레벨업 on the 영웅 screen: 엽전 for one level, capped by 성급 (풍운객 is ★3 now: up to Lv 30)
-  await g.eval(() => document.getElementById('home').click());
+  await g.eval(() => document.getElementById('retry').click());
   await g.eval(() => window.__g.loadProfile({ ...window.__g.profile, coins: 1000 }));
   await g.eval(() => document.getElementById('openRoster').click());
   const button = () =>
@@ -1096,9 +1094,7 @@ async function scenarioF(browser, seed) {
   await g.eval(() => document.getElementById('collectionClose').click());
 
   // next run: 철혈 joined, 풍운객 ★3 (6 pieces) and Lv 2 in the preview and the snapshot
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
-  await g.pick(0);
+  await g.setOut(0);
   await g.step(2);
   cards = await formation();
   check(
@@ -1179,7 +1175,7 @@ async function scenarioG(browser, seed) {
     window.__g.player.inv = 0;
   });
   await waitForDeath(g);
-  await g.eval(() => document.getElementById('home').click());
+  await g.eval(() => document.getElementById('retry').click());
   await g.eval(() => document.getElementById('openCards').click());
   const grid = await g.page.$$eval('#collectionGrid .tile', els => els.map(e => e.textContent));
   // 인연 order: 청운 도인, 혈마 밀사, 철벽 노승, 비연 낭자, 떠돌이 약선, 녹림 의적
@@ -1215,8 +1211,6 @@ async function scenarioG(browser, seed) {
   check(f, afterOne.join() === 'true,false' && afterTwo, `Escape closes the popup, then the screen`);
 
   // a run with these 호감도: the snapshot, and the level at work
-  await g.eval(() => document.getElementById('start').click());
-  await g.step(2);
   await setupFrom(g, 0);
   const meta = await g.state(() => window.__g.state.meta.cards);
   check(

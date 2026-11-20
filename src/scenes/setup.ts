@@ -2,34 +2,11 @@ import { done } from '../systems/scene-flow';
 import { G } from '../core/context';
 import { artImage, heroPictures } from '../core/assets';
 import { $ } from '../core/dom';
-import { STAGES } from '../data/stages';
-import { fmt } from '../core/math';
 import { heroOwned, profile, saveProfile } from '../core/profile';
 import { HEROES } from '../data/heroes';
 import { HERO_IDS, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
-import { openChoice } from './choice';
 
-/** Stage select: six stages opened in order; beating a stage's boss opens the next (profile.stages). */
-export function openStageSelect() {
-  openChoice({
-    eyebrow: '스테이지',
-    title: '어디로 갈까',
-    sub: '보스를 잡으면 다음 스테이지가 열린다. 적을 처치해 게이지를 채우면 인연이나 행인을 만난다.',
-    cards: STAGES.map((st, i) => {
-      const n = i + 1,
-        locked = n > profile.stages;
-      return {
-        color: st.color,
-        disabled: locked,
-        tag: locked ? `잠김 · S${n - 1} 보스를 잡으면 열림` : `S${n} · ${st.world === 2 ? '하늘' : '땅'}`,
-        title: st.name,
-        desc: `보스 <b>${st.boss}</b> · ${fmt(st.distance)}m<br>${st.hint}`,
-        onPick: () => done('stageSelect', n),
-      };
-    }),
-  });
-}
 export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
 /** "특성 「질풍」 근접 처치 시 …" with its scope; a trait that waits for a later step says so. */
 export function traitText(id: HeroId, L: number) {

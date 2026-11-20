@@ -36,8 +36,8 @@ try {
     // stage 1, then the vanguard (first card: 풍운객) and the second (second card after him: 묵영). 철혈 is left out
     // on purpose: his trait (+1 health) and entry skill (불굴) are tested in heroines.mjs.
     window.begin = () => {
+      while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       M.start();
-      document.querySelector('#choice button.card').click();
       ((a = 0, b = 1) => {
         for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
         const h = [...document.querySelectorAll('#choice .party-hero')];

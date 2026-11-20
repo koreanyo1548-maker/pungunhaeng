@@ -1,3 +1,4 @@
+import { showLobby } from '../ui/lobby';
 import imageDimensions from '../assets/image-dimensions.json';
 import { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
 export { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
@@ -153,7 +154,6 @@ export function artImage(src, cls = 'ability-icon') {
 export async function loadNewArt() {
   const [[icons]] = await Promise.all([Promise.all(Object.values(NEW_ART).map(loadImage)), loadCharacterArt()]);
   for (let i = 0; i < 16; i++) skillPictures.push(cropArt(icons, 4, 4, i % 4, Math.floor(i / 4)).toDataURL());
-  $('heroArt').src = heroPictures.pungun;
   $('blast').querySelector('.blast-icon').innerHTML = artImage(skillPictures[9]);
 }
 export async function load() {
@@ -256,6 +256,7 @@ export async function load() {
     $('start').textContent = '강호에 나서기';
     showBest();
     showBank();
+    showLobby();
     // title menu icons: a hero, an 인연 and a coin stand for 영웅, 인연 and 뽑기
     $('hubHeroIcon').src = heroPictures.bicheon;
     $('hubCardIcon').src = npcPictures.yeonhyeop;

@@ -28,33 +28,28 @@ PR 작성자는 늘 사용자 계정이라 PR 목록만으로는 구분되지 �
 
 ## 3. 완료 기준
 
-두 도구가 같은 기준으로 확인한다. **모든 PR에서 GitHub Actions의 `PR checks`(`.github/workflows/pr-checks.yml`)가 아래 검사를 같은 환경에서 돌린다.** 이 검사가 통과해야 완료다. 커밋은 하지 않는다.
+두 도구가 같은 기준으로 확인한다. **모든 PR에서 GitHub Actions의 `PR checks`(`.github/workflows/pr-checks.yml`)가 빠른 코드 점검을 돌린다(1~2분).** 이 검사가 통과해야 완료다. 커밋은 하지 않는다. (2026-11 변경: 브라우저로 게임을 켜는 테스트를 PR마다 돌리던 것을 뺐다. 7분쯤 걸리고, 대부분 규칙을 바꿀 때 옛 기대값을 고치는 일이었다.)
 
 **PR checks가 돌리는 것**
 
 | 묶음 | 명령 |
 |---|---|
 | 타입·형식 | `npm run typecheck`, `npm run format:check` |
-| 빌드·이미지 | `npm run build`, `python tools/convert-webp.py --check`, `node tests/e2e/webp-assets.mjs`(Chromium·WebKit), `npm run build:single` |
-| 흐름·모바일 화면 | `npm test`의 e2e(시나리오 A~G), `npm run test:ui`(360·390·1280) |
-| 영웅·기술·그림·회귀 (Vite 개발 서버) | `hero-kit`, `hero-lives`, `skill-art`, `ambient-art`, `refactor-regressions` (`tests/e2e/`) |
-| 재현성 | 같은 빌드를 두 번 돌린 시드 비교 `IDENTICAL` |
-| 기준 브랜치와 비교 | 전투 화면 배치(`combat-layout.mjs`)와 이미지 기하(`mobile-image-geometry.mjs`)가 같아야 한다. 시드 비교는 결과만 요약에 적는다 |
+| 빌드·이미지 | `npm run build`, `python tools/convert-webp.py --check`, `npm run build:single` |
 
 - 실패하면 고치고 다시 올린다. 검사를 끄거나 건너뛰지 않는다.
-- 결과 화면(요약)에 기준 브랜치와의 시드 비교가 `IDENTICAL`인지 `DIVERGED`인지 나온다. 게임 규칙을 바꾸지 않는 작업(그림, 연출, 리팩터링, 리소스)은 `IDENTICAL`이어야 한다.
-- 실행 결과의 artifact에 이 PR의 단일 HTML 빌드와 검사 스크린숏이 14일 동안 남는다.
+- 실행 결과의 artifact에 이 PR의 단일 HTML 빌드가 14일 동안 남는다.
 
 **PR을 올리기 전에 각자 돌리는 것**
 
-- 최소: `npm run typecheck`, `npm run format:check`, `npm test`
-- 손댄 곳의 검사(위 표). 자기 환경에서 못 돌리는 검사(예: Claude 클라우드 환경의 WebKit)는 PR checks에 맡기고, PR 본문에 그렇게 적는다.
-- 기준 브랜치 비교를 직접 할 때: 기준 브랜치를 먼저 빌드해 `test-results/base.html`로 복사한 뒤 `node tests/equivalence/run.mjs test-results/base.html dist-single/index.html 12345 2400 0`, `node tests/equivalence/combat-layout.mjs …`, `node tests/e2e/mobile-image-geometry.mjs …`
+- 늘: `npm run typecheck`, `npm run format:check`
+- **게임을 켜는 테스트**(`npm test`의 e2e, `npm run test:ui`, `tests/e2e/`의 `hero-kit`·`hero-lives`·`skill-art`·`ambient-art`·`refactor-regressions`·`webp-assets`, `tests/equivalence/`)는 큰 구조 변경(여러 시스템에 걸친 리팩터링, 판 흐름·저장 형식 변경)이나 사용자가 요청할 때만 직접 돌린다. 돌렸으면 PR 본문 "검증"에 적는다.
+- 전투 화면 배치를 지켜야 하는 작업(AGENTS.md)에서 배치를 건드렸을 수 있으면 `node tests/equivalence/combat-layout.mjs <기준 빌드> dist-single/index.html`로 확인한다.
 
 **게임 규칙을 바꾸는 작업**
 
-- 바뀐 규칙을 확인하는 e2e 항목을 더한다
 - 설계 문서(`docs/`)의 해당 장에 바뀐 점과 이유를 적는다
+- 테스트(`tests/e2e/`)는 지우지 않는다. 다음에 게임 테스트를 돌릴 때 옛 기대값이 걸리면 그때 새 규칙에 맞춘다
 
 **점검 대상이 아닌 것**
 
@@ -99,5 +94,5 @@ PR 작성자는 늘 사용자 계정이라 PR 목록만으로는 구분되지 �
 
 - 조정은 이 순서로 반복한다: 사용자가 조정안을 정한다 → 에이전트가 적용하고 PR을 연다 → 사용자가 머지하고 플레이한다 → 다음 조정안.
 - 에이전트는 밸런스 봇(`tests/sim/balance.mjs`, `npm run test:sim`)으로 밸런스를 판단하거나 수치를 맞추지 않는다. 봇 수치로 "이 정도면 맞다"고 말하지 않는다.
-- 3장의 완료 기준(타입·형식·`npm test`·PR checks)은 그대로 돌린다. 이것은 코드가 깨지지 않았는지만 본다. 수치를 바꿔 기존 e2e가 옛 값을 기대하면 새 값에 맞춰 고친다.
+- 3장의 완료 기준(타입·형식·빌드, PR checks)은 그대로 돌린다. 이것은 코드가 깨지지 않았는지만 본다. 게임 테스트를 돌릴 때 옛 수치를 기대하는 항목은 새 값에 맞춰 고친다.
 - 수치를 바꾸면 데이터 파일(`src/data/`)과 설계 문서의 해당 장을 함께 고치고, PR 본문에 바뀐 값(이전 → 이후)을 적어 사용자가 플레이할 때 무엇을 볼지 알 수 있게 한다.

@@ -1,5 +1,5 @@
-# PR checks: the same checks for every PR, whichever tool made it (docs/workflow.md, section 3).
-# Read-only: it never commits. The single-file build is uploaded so the PR can be played.
+# PR checks: the same fast code checks for every PR, whichever tool made it (docs/workflow.md, section 3): types,
+# format and builds. Read-only: it never commits. The single-file build is uploaded so the PR can be played.
 name: PR checks
 
 on:
@@ -16,14 +16,9 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      SCREENSHOT_DIR: test-results/shots
-      NODE_PATH: ${{ github.workspace }}/node_modules
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -33,11 +28,11 @@ jobs:
           python-version: '3.12'
       - name: Install
         run: |
-          mkdir -p test-results
           npm ci
-          npx playwright install --with-deps chromium webkit
           python -m pip install -r tools/requirements-assets.txt
 
+      # Fast code checks only (docs/workflow.md, section 3). The game tests that open a browser (tests/e2e,
+      # tests/equivalence) are run by hand for large structural changes, not on every PR.
       - name: Types and format
         run: |
           npm run typecheck
@@ -46,55 +41,13 @@ jobs:
         run: |
           npm run build
           python tools/convert-webp.py --check
-          node tests/e2e/webp-assets.mjs
           npm run build:single
-      - name: Flow and mobile UI
-        run: |
-          npm run test:e2e
-          npm run test:ui
-      - name: Heroes, skills, art and regressions (dev server)
-        run: |
-          node tests/e2e/hero-kit.mjs
-          node tests/e2e/hero-lives.mjs
-          node tests/e2e/skill-art.mjs
-          node tests/e2e/ambient-art.mjs
-          node tests/e2e/refactor-regressions.mjs
-      - name: Same build, same seed (reproducible)
-        run: |
-          cp dist-single/index.html test-results/this.html
-          cp dist-single/index.html test-results/this-again.html
-          node tests/equivalence/run.mjs test-results/this.html test-results/this-again.html 12345 2400 0 | tail -1 | grep -x IDENTICAL
 
-      # Against the base branch: the combat layout and the image geometry must not move (AGENTS.md). The seed
-      # comparison is only reported: a PR that changes gameplay on purpose diverges.
-      - name: Build the base branch
-        if: github.event_name == 'pull_request'
-        run: |
-          git worktree add ../base ${{ github.event.pull_request.base.sha }}
-          ln -s "$GITHUB_WORKSPACE/node_modules" ../base/node_modules
-          (cd ../base && npm run build:single)
-          cp ../base/dist-single/index.html test-results/base.html
-      - name: Layout against the base branch
-        if: github.event_name == 'pull_request'
-        run: |
-          node tests/equivalence/combat-layout.mjs test-results/base.html dist-single/index.html
-          node tests/e2e/mobile-image-geometry.mjs test-results/base.html dist-single/index.html
-      - name: Gameplay against the base branch (report only)
-        if: github.event_name == 'pull_request'
-        run: |
-          for args in "12345 2400 0" "777 2400 3"; do
-            result=$(node tests/equivalence/run.mjs test-results/base.html dist-single/index.html $args | grep -oE '^(IDENTICAL|DIVERGED at snapshot [0-9]+)' | head -1 || true)
-            echo "seed $args: $result"
-            echo "- 시드 비교 (base → 이 PR) \`$args\`: **$result**" >> "$GITHUB_STEP_SUMMARY"
-          done
-
-      - name: Upload the playable build and screenshots
+      - name: Upload the playable build
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pungunhaeng-${{ github.event.pull_request.head.sha || github.sha }}
-          path: |
-            dist-single/index.html
-            test-results/shots
+          path: dist-single/index.html
           retention-days: 14
           if-no-files-found: ignore

@@ -15,10 +15,10 @@ export const BASELINE = {
   speedUp: 1,
   /** starting row descent in px/s, before the stage progress multiplier */
   descent: 592,
-  /** S1 rows start at `s1Descent` px/s and speed up twice as fast as the run, up to `s1DescentMax` (about 1:30 into
+  /** S1 rows start at `s1Descent` px/s and speed up twice as fast as the run, up to `s1DescentMax` (about 2:10 into
    *  the flight; systems/ladder.ts `descentFactor`) */
   s1Descent: 300,
-  s1DescentMax: 600,
+  s1DescentMax: 800,
   /** seconds between rows at the start and at the boss (by the stage's progress) */
   rowGap: { start: 1.7, end: 1.45 },
   /** health as basic shots of the reference growth (Lv1: 10 a shot): tier 2 is 3 shots, then about × 1.4 */

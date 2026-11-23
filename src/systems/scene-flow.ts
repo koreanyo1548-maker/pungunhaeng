@@ -1,4 +1,5 @@
 import { applyStartTraits } from './hero-effects';
+import { rollElite } from './elite';
 // Run flow as a scene state machine. Every screen of a run is a scene. A scene only reports that it finished
 // (done), and this file alone decides what comes next, so changing the order of a run means editing the
 // transitions below, not the scenes.
@@ -45,6 +46,7 @@ export function done(scene: Scene, outcome?: any): void {
   switch (scene) {
     case 'formation': // the party is set (G.state.formation)
       applyStartTraits();
+      rollElite();
       return go('stage');
     case 'encounter': // an interrupt: the stage keeps running where it paused
       enter('stage');

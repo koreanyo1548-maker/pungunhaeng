@@ -22,6 +22,7 @@ import { difficulty, enemyHealth, region } from '../systems/flow';
 import { slotTier, strongTier, weakTier } from '../systems/ladder';
 import { BASELINE } from '../data/baseline';
 import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero-effects';
+import { catchElite } from '../systems/elite';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
@@ -111,7 +112,7 @@ export function spawnRow() {
 /** The end of 무아지경: the whole screen bursts, and every enemy on it (not the boss) turns into 엽전. */
 export function hyperFinish() {
   if (G.mode !== 'play') return;
-  for (const e of G.enemies) if (!e.dead && !e.boss && e.y > -40) kill(e, true);
+  for (const e of G.enemies) if (!e.dead && !e.boss && !e.elite && e.y > -40) kill(e, true);
   G.flash = Math.max(G.flash, 0.35);
   G.shake = Math.max(G.shake, 8);
   ring(G.player.x, G.player.y, '#fff2b0', 20, 520, 0.55);
@@ -138,6 +139,29 @@ export function resolveRow(e, missed = false) {
 }
 export function kill(e, byHyper = false) {
   if (e.dead) return;
+  if (e.elite) {
+    // the 정예 적: no kill count, combo or loot, a 장비 상자 (systems/elite.ts)
+    e.dead = true;
+    const art = enemyArt(e);
+    G.wrecks.push({
+      image: art.image,
+      artSize: art.size,
+      x: e.x,
+      y: e.y,
+      type: e.type,
+      size: e.size,
+      angle: 0,
+      spin: fxRnd(-2, 2),
+      life: 0.6,
+      total: 0.6,
+      boss: false,
+      pose: enemyFrameIndex(e),
+    });
+    G.shake = Math.max(G.shake, 8);
+    boom(true);
+    catchElite(e);
+    return;
+  }
   e.dead = true;
   G.state.kills++;
   G.state.combo++;
@@ -223,6 +247,18 @@ export function kill(e, byHyper = false) {
 }
 export function hitEnemy(e, damage, skill?: string) {
   if (e.dead || (e.boss && ['enter', 'return'].includes(e.action))) return;
+  if (e.elite) {
+    // every hit takes one, whatever its damage (docs/equipment-plan.md, 2장)
+    e.hp -= 1;
+    e.hit = 0.055;
+    e.recoil = 0.12;
+    if (G.time - (e.lastImpact ?? -1) > 0.085) {
+      e.lastImpact = G.time;
+      contactFX(e);
+    }
+    if (e.hp <= 0) kill(e);
+    return;
+  }
   const armor = bondArmor();
   if (armor > 1 && (e.rank >= 2 || e.boss || e.rock)) {
     damage *= armor;

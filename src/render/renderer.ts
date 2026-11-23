@@ -5,6 +5,7 @@ import { G } from '../core/context';
 import { H, W, ctx, reduced } from '../core/dom';
 import { clamp, fxRnd } from '../core/math';
 import { drawEnemy, drawEnemyAura, drawMartialPlayer } from './actors';
+import { drawBoxFly, drawEliteAura, drawEliteBar } from './elite-art';
 import { drawBanner, drawBossWarnings } from './boss-ui';
 import { drawBossIntro, drawBossTrails, drawExtraFX, drawFinisher, drawPaintedFX, drawSkillFX } from './fx';
 import { drawMartialHazard, drawMartialShots, drawPickup } from './projectiles';
@@ -26,6 +27,12 @@ export function draw() {
 
   for (const e of G.enemies) {
     if (e.dead) continue;
+    if (e.elite) {
+      drawEliteAura(e);
+      drawEnemy(e);
+      drawEliteBar(e);
+      continue;
+    }
     drawEnemyAura(e);
     drawEnemy(e);
     if (!e.boss && e.hp < e.maxHp) {
@@ -78,6 +85,7 @@ export function draw() {
   drawBossWarnings();
   drawQuestCue();
   drawMartialPlayer();
+  drawBoxFly();
   drawHeroEffect();
   drawSkillAnimations();
   for (const p of G.particles) {

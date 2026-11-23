@@ -922,11 +922,11 @@ async function scenarioE(browser, seed) {
     document.getElementById('hubHeroes').textContent,
     document.getElementById('hubCards').textContent,
   ]);
-  check(f, /\/ 12/.test(hub[0]) && /호감도 0/.test(hub[1]), `the title shows the new counts (${hub})`);
+  check(f, /\/ 5/.test(hub[0]) && /호감도 0/.test(hub[1]), `the title shows the new counts (${hub})`);
   // save code: export, wipe, import
   await g.eval(() => document.getElementById('openGacha').click());
   const code = await g.eval(() => document.getElementById('saveCode').value);
-  check(f, code.startsWith('PUNGUN2:'), 'save code has the new prefix');
+  check(f, code.startsWith('PUNGUN3:'), 'save code has the new prefix');
   await g.eval(() => window.__g.loadProfile({}));
   check(f, (await P()).coins === 0, 'profile wiped');
   await g.eval(code => {
@@ -999,8 +999,8 @@ async function scenarioF(browser, seed) {
   );
   check(
     f,
-    tiles.length === 12 && tiles.filter(t => t.locked).length === 10 && !tiles[0].locked && !tiles[1].locked,
-    `영웅 grid: 2 joined, then 10 locked (${tiles.map(t => t.locked)})`,
+    tiles.length === 5 && tiles.filter(t => t.locked).length === 3 && !tiles[0].locked && !tiles[1].locked,
+    `영웅 grid (5 heroes in play): 2 joined, then 3 locked (${tiles.map(t => t.locked)})`,
   );
   check(
     f,
@@ -1010,7 +1010,8 @@ async function scenarioF(browser, seed) {
       !/Lv 1 ★/.test(tiles[0].text),
     `portrait tiles: the name, Lv and 성급 on joined heroes, 잠김 on the rest (${tiles[0].text} | ${tiles[2].text})`,
   );
-  // the 영웅 popup: portrait, then Lv · 성급, trait, entry skill; tabs 레벨 (shot, attack, 레벨업) and 성급 (pieces, track)
+  // the 영웅 popup: portrait, then Lv · 성급, trait, entry skill; tabs 레벨 (shot, attack, 레벨업), 장비 and 성급 (pieces,
+  // track); a locked hero has no 장비 tab
   const popup = i =>
     g.eval(i => {
       document.querySelectorAll('#collectionGrid .tile')[i].click();
@@ -1023,7 +1024,7 @@ async function scenarioF(browser, seed) {
         shot: !!body().querySelector('.detail-figure img'),
         action: document.getElementById('detailActions').textContent,
       };
-      body().querySelectorAll('.detail-tabs button')[1].click();
+      [...body().querySelectorAll('.detail-tabs button')].find(b => b.textContent === '성급').click();
       out.stars = body().querySelector('.detail-tab .detail-progress')?.textContent ?? '';
       out.track = [...body().querySelectorAll('.detail-track li')].map(li => li.className).join();
       document.getElementById('detailBack').click();
@@ -1037,7 +1038,7 @@ async function scenarioF(browser, seed) {
       /★☆☆☆☆/.test(owned0.summary) &&
       /특성/.test(owned0.summary) &&
       /등장 기술/.test(owned0.summary) &&
-      owned0.tabs === '레벨,성급' &&
+      owned0.tabs === '레벨,장비,성급' &&
       owned0.shot &&
       /공격력 10/.test(owned0.level) &&
       /레벨업/.test(owned0.action) &&
@@ -1058,8 +1059,8 @@ async function scenarioF(browser, seed) {
   let cards = await formation();
   check(
     f,
-    cards.length === 12 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
-    `출전: 2 owned first, 10 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
+    cards.length === 5 && cards.slice(0, 2).every(c => !c.locked) && cards.slice(2).every(c => c.locked),
+    `출전: 2 owned first, 3 locked (${cards.map(c => c.name + (c.locked ? '×' : '')).join(' ')})`,
   );
   // a locked hero is dim and does nothing; 출발 needs two
   const stuck = await g.eval(() => {
@@ -1080,9 +1081,9 @@ async function scenarioF(browser, seed) {
   );
   await g.party(0, 1);
   await g.step(2);
-  // a piece of 철혈 and pieces of 풍운객 arrive mid-run (as from 뽑기): this run keeps its snapshot
+  // a piece of 홍련 and pieces of 풍운객 arrive mid-run (as from 뽑기): this run keeps its snapshot
   await g.eval(() =>
-    window.__g.loadProfile({ ...window.__g.profile, heroes: { pungun: 6, bicheon: 1, cheolhyeol: 1 } }),
+    window.__g.loadProfile({ ...window.__g.profile, heroes: { pungun: 6, bicheon: 1, hongryeon: 1 } }),
   );
   check(f, (await g.state(() => window.__g.state.meta.heroes.pungun)) === 0, 'the run keeps the 성급 it started with');
   await g.eval(() => {
@@ -1136,7 +1137,7 @@ async function scenarioF(browser, seed) {
   );
   await g.eval(() => document.getElementById('collectionClose').click());
 
-  // next run: 철혈 joined, 풍운객 ★3 (6 pieces) and Lv 2 in the preview and the snapshot
+  // next run: 홍련 joined, 풍운객 ★3 (6 pieces) and Lv 2 in the preview and the snapshot
   await g.setOut(0);
   await g.step(2);
   cards = await formation();
@@ -1158,7 +1159,7 @@ async function scenarioF(browser, seed) {
   await g.party(0, 1);
   await g.step(2);
   const level = await g.state(() => window.__g.state.meta.heroes);
-  check(f, level.pungun === 2 && level.cheolhyeol === 0, `snapshot has 성급 − 1 (${JSON.stringify(level)})`);
+  check(f, level.pungun === 2 && level.hongryeon === 0, `snapshot has 성급 − 1 (${JSON.stringify(level)})`);
   const lv = await g.state(() => ({ level: window.__g.state.meta.levels.pungun, attack: window.__g.stats.attack }));
   check(f, lv.level === 2 && lv.attack === 11, `the run takes Lv 2: attack 11 (${JSON.stringify(lv)})`);
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
@@ -1530,7 +1531,10 @@ async function scenarioI(browser, seed) {
     for (let i = 0; i < 6; i++) {
       await rows(p);
       await g.step(1);
-      const es = await g.state(() => window.__g.enemies.filter(e => !e.chest).map(e => ({ t: e.tier, w: e.weak })));
+      // (the 정예 적 and 보물상자 stand apart from the ladder)
+      const es = await g.state(() =>
+        window.__g.enemies.filter(e => !e.chest && !e.elite).map(e => ({ t: e.tier, w: e.weak })),
+      );
       for (const e of es) {
         seen.all.add(e.t);
         if (e.w) seen.weak.add(e.t);
@@ -1669,6 +1673,110 @@ async function scenarioI(browser, seed) {
   return { name: `I seed ${seed}`, failures: f, log: [`descent ${Math.round(v0)} → ${Math.round(v1)} px/s`] };
 }
 
+/** J: 장비 and the 정예 적 (docs/equipment-plan.md): worn gear reaches the run through the factors; the 장비 tab
+ *  equips and 강화; the 정예 적 takes one per hit, gives a 장비 상자 opened on the result screen. */
+async function scenarioJ(browser, seed) {
+  const f = [];
+  const g = await openGame(file, { browser, seed, roster: false });
+  await g.eval(() =>
+    window.__g.loadProfile({
+      coins: 1000,
+      gear: [
+        { uid: 1, item: 'cheonggang', grade: 3, plus: 5 },
+        { uid: 2, item: 'cheolpo', grade: 1, plus: 0 },
+        { uid: 3, item: 'cheonggang', grade: 1, plus: 0 },
+      ],
+      equipped: { pungun: { robe: 2 } },
+      nextUid: 4,
+    }),
+  );
+  // the 장비 tab: put 청강검 ★3 +5 on 풍운객 (강화 is off: it is at +5)
+  await g.eval(() => document.getElementById('openRoster').click());
+  await g.eval(() => {
+    document.querySelector('#collectionGrid .tile[data-id="pungun"]').click();
+    [...document.querySelectorAll('.detail-tabs button')].find(b => b.textContent === '장비').click();
+    document.querySelector('.gear-slot[data-slot="weapon"]').click();
+    document.querySelector('.gear-item[data-uid="1"]').click();
+  });
+  const tab = await g.eval(() => ({
+    worn: JSON.stringify(window.__g.profile.equipped.pungun),
+    sum: document.querySelector('.gear-sum p').textContent,
+    plus: document.querySelector('[data-act="plus"]').disabled,
+  }));
+  check(
+    f,
+    tab.worn === '{"robe":2,"weapon":1}' && /공격력 \+30%/.test(tab.sum) && /최대 체력 \+1/.test(tab.sum) && tab.plus,
+    `장비 tab: worn, the sum of its factors, 강화 off at +5 (${JSON.stringify(tab)})`,
+  );
+  await g.eval(() => {
+    document.getElementById('detailBack').click();
+    document.getElementById('collectionClose').click();
+  });
+  // a run: the fighting hero's gear is in the snapshot and in the shots and health
+  await g.setOut(0);
+  await g.step(2);
+  await g.eval(() => {
+    const h = [...document.querySelectorAll('#choice .party-hero')],
+      ids = h.map(e => e.dataset.id);
+    for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+    h[ids.indexOf('pungun')].click();
+    h[ids.indexOf('bicheon')].click();
+    document.getElementById('formationConfirm').click();
+  });
+  await g.seconds(0.5);
+  const run = await g.state(() => ({
+    shot: window.__g.shots.find(s => s.basic)?.damage,
+    hp: window.__g.state.heroHealth.pungun.maxHp,
+    other: window.__g.state.heroHealth.bicheon.maxHp,
+  }));
+  check(
+    f,
+    run.shot === 13 && run.hp === 2 && run.other === 1,
+    `gear in the run: attack 13, health 2 (${JSON.stringify(run)})`,
+  );
+  // the 정예 적: out at once, the hero under it, every hit takes one
+  await g.eval(() => {
+    const s = window.__g.state;
+    s.elite.at = s.distance + 1;
+    s.meetTimer = s.meetWait = 1e6;
+    s.showerSteps = [1, 2, 3, 4, 5, 6];
+    window.__g.player.inv = 1e6;
+  });
+  await g.seconds(0.3);
+  const out = await g.state(() => window.__g.enemies.find(e => e.elite)?.maxHp);
+  let caught = false;
+  for (let i = 0; i < 100 && !caught; i++) {
+    await g.eval(() => {
+      const e = window.__g.enemies.find(e => e.elite);
+      if (e) window.__g.player.target = e.x;
+    });
+    await g.seconds(0.1);
+    caught = await g.state(() => window.__g.state.elite.caught);
+  }
+  const box = await g.state(() => window.__g.state.elite.boxes);
+  check(f, out === 50 && caught && box === 1, `정예 적: health 50, caught, one 장비 상자 (${out}, ${caught}, ${box})`);
+  await g.eval(() => {
+    window.__g.player.inv = 0;
+    window.__g.fell();
+  });
+  await g.seconds(0.3);
+  await g.eval(() => window.__g.fell());
+  await g.seconds(0.3);
+  const result = await g.eval(() => ({
+    shown: !document.getElementById('gearSection').classList.contains('hidden'),
+    rows: document.querySelectorAll('#gearRows .result-gear-item').length,
+    held: window.__g.profile.gear.length,
+  }));
+  check(
+    f,
+    result.shown && result.rows === 1 && result.held === 4,
+    `the box opens on the result screen (${JSON.stringify(result)})`,
+  );
+  check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
+  await g.page.close();
+  return { name: `J seed ${seed}`, failures: f, log: [] };
+}
+
 /** Opens the detail popup of the i-th tile on the open collection screen, reads it, and closes it. */
 async function detailOf(g, i) {
   await g.eval(i => document.querySelectorAll('#collectionGrid .tile')[i].click(), i);
@@ -1695,6 +1803,7 @@ results.push(await scenarioF(browser, 707));
 results.push(await scenarioG(browser, 808));
 results.push(await scenarioH(browser, 909));
 results.push(await scenarioI(browser, 1010));
+results.push(await scenarioJ(browser, 1111));
 await browser.close();
 
 let failed = 0;

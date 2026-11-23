@@ -830,3 +830,32 @@ button:disabled {
   font-size: 12px;
   color: #9fb5aa;
 }
+
+/* 장비 상자 opened on the result screen (the 정예 적, docs/equipment-plan.md) */
+.result-gear {
+  display: grid;
+  gap: 6px;
+}
+.result-gear-item {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.result-gear-item img {
+  width: 44px;
+  height: 44px;
+}
+.result-gear-item span {
+  display: grid;
+  gap: 1px;
+}
+.result-gear-item b {
+  font-size: 14px;
+  color: #ffe3a3;
+}
+.result-gear-item em {
+  font-style: normal;
+  font-size: 12px;
+  color: #cfe0d4;
+}

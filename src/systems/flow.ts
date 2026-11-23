@@ -18,6 +18,10 @@ import { closeQuest } from './quest';
 import { VICTORY_SCORE, runBonus } from './score';
 import { VIRTUE_BONUS } from './alignment';
 import { factor } from './factors';
+import { openBox } from './gear';
+import { gearFactors, gearName } from '../data/gear';
+import { factorText } from '../data/factors';
+import { gearPicture } from '../render/gear-art';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
 import { prepareGlows } from '../render/glows';
@@ -135,6 +139,19 @@ export function end(victory = false) {
     (b.tier ? row(`기준 점수 달성 +${pct(b.tier)}`, `+${fmt(fromTier)}냥`) : '') +
     (banked > kept ? row('보스 처치', `+${fmt(banked - kept)}냥`) : '');
   $('bankedCoins').textContent = fmt(banked) + '냥';
+  // the 장비 상자 won from the 정예 적 open now (kept even when the run is lost)
+  const won = Array.from({ length: G.state.elite?.boxes ?? 0 }, () => openBox('elite'));
+  $('gearSection').classList.toggle('hidden', !won.length);
+  $('gearRows').innerHTML = won
+    .map(
+      g =>
+        `<div class="result-gear-item"><img alt="" src="${gearPicture(g.item, g.grade)}" draggable="false"><span><b>${gearName(g)}</b><em>${gearFactors(
+          g,
+        )
+          .map(f => factorText(f.factor, f.value))
+          .join(' · ')}</em></span></div>`,
+    )
+    .join('');
   $('result').classList.remove('hidden');
   $('toast').classList.remove('show');
   showBest();

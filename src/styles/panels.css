@@ -713,3 +713,120 @@ button:disabled {
   object-fit: contain;
   flex: 0 0 auto;
 }
+
+/* 장비 tab of the 영웅 popup (docs/equipment-plan.md, 3장) */
+.gear-sum {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid #caa56844;
+  border-radius: 6px;
+  background: #0c2a2699;
+}
+.gear-sum b {
+  font-size: 12px;
+  color: #ffe3a3;
+}
+.gear-sum p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d9e6dc;
+}
+.gear-slots {
+  display: grid;
+  gap: 6px;
+}
+.gear-slot,
+.gear-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #caa56855;
+  border-radius: 8px;
+  background: #0b1d1acc;
+  color: #e8efe6;
+  text-align: left;
+}
+.gear-slot.open {
+  border-color: #f0c66e;
+  background: linear-gradient(#2c4a3e, #102825);
+}
+.gear-slot img,
+.gear-item img {
+  width: 48px;
+  height: 48px;
+}
+.gear-slot span,
+.gear-item span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.gear-slot small,
+.gear-item small {
+  font-size: 10px;
+  color: #9fb5aa;
+}
+.gear-slot b,
+.gear-item b {
+  font-size: 14px;
+  color: #ffe3a3;
+}
+.gear-slot em,
+.gear-item em {
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #cfe0d4;
+}
+.gear-slot em i,
+.gear-item em i {
+  font-style: normal;
+  color: #c9b6ff;
+}
+.gear-panel {
+  display: grid;
+  gap: 6px;
+  margin: -2px 0 4px 14px;
+  padding-left: 10px;
+  border-left: 2px solid #f0c66e66;
+}
+.gear-acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+}
+.gear-acts button {
+  padding: 7px 6px;
+  font-size: 13px;
+}
+.gear-acts button small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.gear-acts button[data-act='off'] {
+  border: 1px solid #caa56866;
+  border-radius: 6px;
+  background: #0c2a26cc;
+  color: #cfe0d4;
+}
+.gear-acts .armed,
+.gear-item.armed {
+  border-color: #ff9a7a;
+  box-shadow: 0 0 0 1px #ff9a7a66;
+}
+.gear-head {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #9fb5aa;
+}
+.gear-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #9fb5aa;
+}

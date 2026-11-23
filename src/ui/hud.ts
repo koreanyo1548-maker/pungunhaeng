@@ -6,7 +6,7 @@ import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
 import { HEROES } from '../data/heroes';
-import { DRAW_COST, HERO_IDS, NPC_IDS } from '../data/meta';
+import { DRAW_COST, NPC_IDS, PLAYABLE_HEROES } from '../data/meta';
 import { NPCS } from '../data/npcs';
 import { SKILLS } from '../data/skills';
 import { region, stageDistance } from '../systems/flow';
@@ -33,10 +33,10 @@ export function showBest() {
 export function showBank() {
   $('bankCoins').textContent = fmt(profile.coins) + '냥';
   // the three ways in on the title: how far each one has come, and a mark on 뽑기 when a draw can be paid for
-  const heroes = HERO_IDS.filter(id => profile.heroes[id] > 0).length,
+  const heroes = PLAYABLE_HEROES.filter(id => profile.heroes[id] > 0).length,
     bonds = NPC_IDS.reduce((a, id) => a + profile.bonds[id], 0),
     canDraw = profile.coins >= DRAW_COST;
-  $('hubHeroes').textContent = `${heroes} / ${HERO_IDS.length}`;
+  $('hubHeroes').textContent = `${heroes} / ${PLAYABLE_HEROES.length}`;
   $('hubCards').textContent = `호감도 ${bonds}`;
   $('hubDraw').textContent = canDraw ? '뽑기 가능' : `1회 ${DRAW_COST}냥`;
   $('hubBadge').classList.toggle('hidden', !canDraw);

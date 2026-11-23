@@ -2,7 +2,7 @@
 // Draws use Math.random, never the seeded run streams (core/rng.ts), so drawing cannot change any run.
 // 인연 are not drawn: they grow by 호감도 in runs (core/profile.ts addBond).
 import { profile, saveProfile } from '../core/profile';
-import { DRAW_COST, HERO_IDS, PIECES_MAX, pieceLevel } from '../data/meta';
+import { DRAW_COST, PIECES_MAX, PLAYABLE_HEROES, pieceLevel } from '../data/meta';
 
 export type Drawn = {
   kind: 'hero';
@@ -14,8 +14,8 @@ export type Drawn = {
   to: number;
 };
 
-/** what can still come out: heroes not at their last 성급 */
-const open = () => HERO_IDS.filter(id => profile.heroes[id] < PIECES_MAX);
+/** what can still come out: heroes in play not at their last 성급 */
+const open = () => PLAYABLE_HEROES.filter(id => profile.heroes[id] < PIECES_MAX);
 
 /** Draws that can be paid for and still give something, up to n. */
 export function drawable(n: number) {

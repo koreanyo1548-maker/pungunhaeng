@@ -198,7 +198,8 @@ function updateHazards(dt: number): boolean {
       continue;
     }
     const slow = hazardSpeed();
-    h.y += h.vy * dt * slow;
+    // 운석 fall faster as the rows do (the same factor; their warning stays the same)
+    h.y += h.vy * dt * slow * (h.kind === 'meteor' ? descentFactor() : 1);
     h.x += (h.vx || 0) * dt * slow;
     const d = Math.hypot(h.x - G.player.x, h.y - G.player.y);
     if (!h.grazed && !h.dead && d >= h.r + 10 && d < h.r + 10 + grazeR && G.player.hp > 0) {

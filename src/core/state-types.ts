@@ -68,6 +68,9 @@ export interface RunState {
   shower?: { marked: number; next: number; left: number };
   /** the tier steps whose end has had its 운석 소나기 */
   showerSteps: number[];
+  /** the 정예 적 of this run (systems/elite.ts): the distance it comes at (−1: none this run), whether it is out and
+   *  caught, the 장비 상자 won, and the box flying to the hero */
+  elite?: { at: number; out: boolean; caught: boolean; boxes: number; fly?: { x: number; y: number; t: number } };
   elapsed: number;
   cleared: number;
   trailTimer: number;
@@ -210,4 +213,6 @@ export interface Enemy {
   orbHit?: number;
   grazed?: boolean;
   lastImpact?: number;
+  /** a 정예 적 (systems/elite.ts): every hit takes 1 */
+  elite?: boolean;
 }

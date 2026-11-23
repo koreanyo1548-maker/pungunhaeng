@@ -16,6 +16,8 @@ import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
 import { RUN_SCORE, addScore, runSpeed } from './score';
 import { descentFactor, speedFactor } from './ladder';
+import { factor } from './factors';
+import { moveElite, updateElite } from './elite';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
@@ -58,6 +60,7 @@ export function update(dt) {
   if (G.mode !== 'play') return;
   updateSkills(dt);
   if (G.mode !== 'play') return;
+  updateElite(dt);
   updateShots(dt);
   if (!updateEnemies(dt)) return;
   if (!updateHazards(dt)) return;
@@ -89,7 +92,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += BASELINE.fireInterval / bondFireRate();
+    G.player.fire += (BASELINE.fireInterval * (1 - factor('fireRatePct'))) / bondFireRate();
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -156,6 +159,11 @@ function updateEnemies(dt: number): boolean {
     if (e.boss) {
       updateBoss(e, dt);
       if (G.mode !== 'play') return false;
+      continue;
+    }
+    // the 정예 적 keeps its own path (무아지경 does not cut it down)
+    if (e.elite) {
+      if (!moveElite(e, dt)) return false;
       continue;
     }
     e.y += dt * descent * descentFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();

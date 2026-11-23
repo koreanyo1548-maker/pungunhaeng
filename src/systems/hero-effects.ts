@@ -16,6 +16,7 @@ import { burst, label, ring } from '../render/fx';
 import { skillAura, skillCue } from '../render/skill-animation';
 import { D, aoe, clearBullets, fireShot } from './combat';
 import { activeHeroId, heroLevel } from './formation';
+import { factor, heroGearFactor } from './factors';
 
 // ---------------------------------------------------------------- traits
 
@@ -35,22 +36,25 @@ export function traitValue(id: HeroId): number | undefined {
   return HEROES[id].trait.value?.(heroLevel(id));
 }
 
-/** 묵영: graze reach multiplier. */
-export const grazeReach = () => traitValue('mukyoung') ?? 1;
+/** graze reach multiplier: 묵영's trait, and the 스침 범위 factor (gear) */
+export const grazeReach = () => (traitValue('mukyoung') ?? 1) * (1 + factor('grazePct'));
 /** reach of the 자석 item (the same scale as 황연청's trait: 엽전 within 150 px × reach, items within 65 px × reach) */
 export const MAGNET_ITEM_REACH = 2;
 /** How far pickups are pulled in: 0 without a magnet. 황연청 in the party is a magnet of her own; the 자석 item is
  *  another (the larger counts). */
-export const magnetReach = () => Math.max(traitValue('yeoncheong') ?? 0, G.state.magnet > 0 ? MAGNET_ITEM_REACH : 0);
+export const magnetReach = () =>
+  Math.max(traitValue('yeoncheong') ?? 0, G.state.magnet > 0 ? MAGNET_ITEM_REACH : 0) * (1 + factor('magnetPct'));
 /** 한소운: 무아지경 item duration multiplier. */
 export const hyperItemScale = () => 1 + (traitValue('soun') ?? 0);
+/** seconds of a 무아지경 item: the base × 한소운, + the 무아지경 시간 factor (gear) */
+export const hyperSeconds = (base: number) => base * hyperItemScale() + factor('hyperSeconds');
 /** The fighting hero's level, as the run started with it (core/profile.ts levels). */
 export const fighterLevel = () => G.state?.meta?.levels?.[activeHeroId()] ?? 1;
 /** The attack of the fighting hero: the base attack plus one per level above 1 (docs/combat-stats.md). */
 export const heroAttack = () => TUNE.attack + fighterLevel() - 1;
-/** Attack bonus in %: 아영's trait while she fights, and 매의 눈 ★5 adds to it. */
+/** Attack bonus in %: the 공격력 factor (아영's trait, gear), and 매의 눈 ★5 adds to it. */
 export function attackBonus() {
-  return (traitValue('ayeong') ?? 0) + (effectOn('ayeong') && G.state.effect.level >= 4 ? 0.1 : 0);
+  return factor('attackPct') + (effectOn('ayeong') && G.state.effect.level >= 4 ? 0.1 : 0);
 }
 
 /** Traits that act once, when the party is set: 철혈's health, 운학's 필살기. */
@@ -64,15 +68,23 @@ export function applyStartTraits() {
     if (id === 'unhak') {
       s.bombs += HEROES.unhak.trait.value(heroLevel('unhak'));
     }
+    // 최대 체력 from the hero's own gear
+    const more = heroGearFactor(id, 'maxHp');
+    if (more) {
+      const h = s.heroHealth[id];
+      h.maxHp += more;
+      h.hp += more;
+    }
   }
 }
 
 /** 엽전 a kill drops: one */
 export const KILL_COINS = 1;
-/** 매설영: how many coins a kill drops (one, plus the bonus share carried between kills). */
+/** How many coins a kill drops: one, plus the bonus share (매설영's trait, the 엽전 획득 factor) carried between
+ *  kills. */
 export function coinsForKill(): number {
-  const bonus = traitValue('seolyeong');
-  if (bonus === undefined) return KILL_COINS;
+  const bonus = (traitValue('seolyeong') ?? 0) + factor('coinPct');
+  if (!bonus) return KILL_COINS;
   const s = G.state;
   s.coinFrac = (s.coinFrac ?? 0) + KILL_COINS * bonus;
   const extra = Math.floor(s.coinFrac + 1e-9);
@@ -107,7 +119,7 @@ let noCrit = false;
 export function critical(e, damage: number): number {
   if (noCrit || G.state.blasting) return damage;
   const all = effectOn('hongryeon'),
-    chance = all ? 1 : (traitValue('hongryeon') ?? 0);
+    chance = all ? 1 : factor('critChance');
   if (chance <= 0 || (chance < 1 && rnd(0, 1) >= chance)) return damage;
   const L = all ? G.state.effect.level : 0,
     mult = all && L >= 2 ? 2.5 : 2;
@@ -310,7 +322,7 @@ export function cloneOffsets(): number[] {
 /** Extra properties of a basic shot from traits and effects (aim, pierce, bullet erasing). */
 export function basicShotOptions() {
   const aim = effectOn('ayeong'),
-    pierce = (traitValue('cheongwan') ?? 0) + (aim && G.state.effect.level >= 2 ? 1 : 0);
+    pierce = (traitValue('cheongwan') ?? 0) + factor('pierce') + (aim && G.state.effect.level >= 2 ? 1 : 0);
   return {
     homing: aim || undefined,
     pierceLeft: pierce || undefined,

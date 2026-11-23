@@ -3,9 +3,10 @@
 // hero; more raise its 성급 (★1 to ★5), and each 성급 opens ten more levels. 인연 grow by 호감도: every time an
 // 인연's 의뢰 is followed (docs/combat-stats.md, docs/meta-progression-plan.md).
 
-import { HERO_IDS, NPC_IDS } from './roster';
+import { HERO_IDS, NPC_IDS, PLAYABLE_HEROES, playable } from './roster';
 import type { HeroId, NpcId } from './roster';
-export { HERO_IDS, NPC_IDS };
+import type { FactorEntry } from './factors';
+export { HERO_IDS, NPC_IDS, PLAYABLE_HEROES, playable };
 export type { HeroId, NpcId };
 
 /** 엽전 added to the bank for beating a stage's boss. */
@@ -54,11 +55,14 @@ export type Meta = {
   levels: Record<HeroId, number>;
   /** each 인연's level from 호감도, 0 to 5: raises that 인연's skills (+10% per level above 1) */
   cards: Record<NpcId, number>;
+  /** each hero's equipped gear, as factors (docs/equipment-plan.md): on while that hero fights */
+  gear: Record<HeroId, FactorEntry[]>;
 };
 export const emptyMeta = (): Meta => ({
   heroes: Object.fromEntries(HERO_IDS.map(id => [id, 0])) as Meta['heroes'],
   levels: Object.fromEntries(HERO_IDS.map(id => [id, 1])) as Meta['levels'],
   cards: Object.fromEntries(NPC_IDS.map(id => [id, 0])) as Meta['cards'],
+  gear: Object.fromEntries(HERO_IDS.map(id => [id, []])) as Meta['gear'],
 });
 
 /** 엽전 a run adds to the bank: what is left, + `bonus` of it (사 and the share of the 기준 점수, systems/score.ts),

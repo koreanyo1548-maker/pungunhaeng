@@ -53,6 +53,9 @@ export type DetailTab = {
   sections?: Detail['sections'];
   track?: Detail['track'];
   actions?: Action[];
+  /** free markup after the blocks (the 장비 tab), wired by `bind` once it is on the page */
+  html?: string;
+  bind?: (root: HTMLElement) => void;
 };
 export type Collection = {
   eyebrow: string;
@@ -126,12 +129,13 @@ function renderTabbed(d: Detail) {
     `<div class="detail-head stacked${d.locked ? ' locked' : ''}" style="--c:${d.color}"><span class="detail-art"><img alt="" src="${d.image}" draggable="false"></span><div>${d.caption ? `<span class="detail-caption">${d.caption}</span>` : ''}<h3>${d.name}</h3>${d.grade ? `<span class="detail-grade">${d.grade}</span>` : ''}</div></div>` +
     sectionsHtml(d.sections) +
     `<div class="detail-tabs" role="tablist">${tabs.map((t, i) => `<button role="tab" data-tab="${i}" aria-selected="${t === open}">${t.label}</button>`).join('')}</div>` +
-    `<div class="detail-tab">${open.figure ? `<div class="detail-figure"><img alt="" src="${open.figure.image}" draggable="false"><p>${open.figure.text}</p></div>` : ''}${progressHtml(open.progress)}${sectionsHtml(open.sections)}${trackHtml(open.track)}</div>`;
+    `<div class="detail-tab">${open.figure ? `<div class="detail-figure"><img alt="" src="${open.figure.image}" draggable="false"><p>${open.figure.text}</p></div>` : ''}${progressHtml(open.progress)}${sectionsHtml(open.sections)}${trackHtml(open.track)}${open.html ?? ''}</div>`;
   for (const b of $('detailBody').querySelectorAll('.detail-tabs button') as NodeListOf<HTMLButtonElement>)
     b.onclick = () => {
       tab = Number(b.dataset.tab);
       renderDetail();
     };
+  open.bind?.($('detailBody').querySelector('.detail-tab') as HTMLElement);
   renderActions(open.actions);
 }
 function renderActions(actions: Action[] | undefined) {

@@ -40,8 +40,9 @@ export function addScore(points: number) {
   G.state.score += points * (G.state.double > 0 ? 2 : 1);
 }
 
-/** The end-of-run bonuses for a score (before the 정 bonus) on a stage, with the run's 선 and 사 points. */
-export function runBonus(score: number, stage: number, good: number, evil: number) {
+/** The end-of-run bonuses for a score (before the 정 bonus) on a stage, with the run's 선 and 사 points;
+ *  `virtuePct`: the 정도 점수 보너스 factor (gear) raises the 정 bonus by that share. */
+export function runBonus(score: number, stage: number, good: number, evil: number, virtuePct = 0) {
   const max = referenceScore(stage),
     share = score / max,
     tier = ACHIEVE_TIERS.find(t => share >= t.share)?.bonus ?? 0;
@@ -51,7 +52,7 @@ export function runBonus(score: number, stage: number, good: number, evil: numbe
     /** 엽전 bonus for the share reached */
     tier,
     /** final score bonus from 정 */
-    scoreBonus: good * VIRTUE_BONUS,
+    scoreBonus: good * VIRTUE_BONUS * (1 + virtuePct),
     /** final 엽전 bonus from 사 and the share reached */
     coinBonus: evil * VIRTUE_BONUS + tier,
   };

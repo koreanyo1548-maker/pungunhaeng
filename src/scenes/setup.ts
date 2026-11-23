@@ -4,7 +4,7 @@ import { artImage, heroPictures } from '../core/assets';
 import { $ } from '../core/dom';
 import { heroOwned, profile, saveProfile } from '../core/profile';
 import { HEROES } from '../data/heroes';
-import { HERO_IDS, pieceLevel, starText } from '../data/meta';
+import { PLAYABLE_HEROES, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
 
 export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
@@ -25,7 +25,7 @@ const scopeLabel = (id: HeroId) => (HEROES[id].trait.scope === 'party' ? '지원
  *  (two at most); tapping a chosen one takes it out, and the 후발 moves up to 선봉. 출발 starts once both are set.
  *  The last run's party is filled in to begin with (profile.formation). Locked heroes are dim and do nothing. */
 export function openFormation() {
-  const ids = [...HERO_IDS].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
+  const ids = [...PLAYABLE_HEROES].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
   const party: HeroId[] = profile.formation.filter(id => heroOwned(id)).slice(0, 2);
   let shown: HeroId | null = party[1] ?? party[0] ?? null;
   G.mode = 'choice';

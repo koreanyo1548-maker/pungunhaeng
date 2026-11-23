@@ -18,7 +18,8 @@ import { burst, label, ring } from '../render/fx';
 import { actionCallout } from '../render/callout';
 import { pfx, ramp } from '../render/pfx';
 import { announce } from '../ui/hud';
-import { hyperItemScale } from '../systems/hero-effects';
+import { hyperSeconds } from '../systems/hero-effects';
+import { factor } from '../systems/factors';
 import { COIN_SCORE, addScore } from '../systems/score';
 import { BASELINE } from '../data/baseline';
 
@@ -29,6 +30,9 @@ export type PickupKind = 'coin' | 'hyper' | 'magnet' | 'double' | 'dual';
 export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
 /** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
 export const ITEM_SECONDS = 3;
+/** seconds of 점수 두 배: ITEM_SECONDS + the 점수 두 배 시간 factor (gear) */
+export const doubleSeconds = () => ITEM_SECONDS + factor('doubleSeconds');
+const secs = (n: number) => +n.toFixed(1);
 /** how a pickup moves: it is thrown up at `pop` px/s (it rises about 90-145 px), sideways up to `spread` px/s
  *  (it bounces off the screen's sides), and gravity pulls it down faster and faster, up to `max` px/s (from the
  *  middle of the screen it reaches the hero about 1.1 s after the kill) */
@@ -57,7 +61,7 @@ export function addPickup(kind: PickupKind, x: number, y: number, burst = false)
 /** What a kill (not the boss) drops at (x, y): `coins` 엽전 and, with `items`, maybe one item. */
 export function dropLoot(x: number, y: number, coins: number, items = true) {
   for (let i = 0; i < coins; i++) addPickup('coin', x + rnd(-15, 15), y + rnd(-10, 10));
-  if (!items || random() >= BASELINE.itemDrop.chance) return;
+  if (!items || random() >= BASELINE.itemDrop.chance * (1 + factor('dropPct'))) return;
   const kind = pickItem(random());
   addPickup(kind, x, y);
   G.state.drops[kind]++;
@@ -89,19 +93,19 @@ export function collect(p) {
     label('자석 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#8fe3b0', 18);
     chime();
   } else if (p.kind === 'double') {
-    G.state.double = ITEM_SECONDS;
+    G.state.double = doubleSeconds();
     actionCallout('double');
     ring(G.player.x, G.player.y, '#ffd36e', 10, 170, 0.4);
-    label('점수 두 배 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#ffd36e', 18);
+    label('점수 두 배 ' + secs(G.state.double) + '초', G.player.x, G.player.y - 60, '#ffd36e', 18);
     chime();
   } else if (p.kind === 'dual') {
-    G.state.dual = ITEM_SECONDS;
+    G.state.dual = ITEM_SECONDS + factor('dualSeconds');
     actionCallout('dual');
     ring(G.player.x, G.player.y, '#ff9a7a', 10, 170, 0.4);
-    label('듀얼샷 ' + ITEM_SECONDS + '초', G.player.x, G.player.y - 60, '#ff9a7a', 18);
+    label('듀얼샷 ' + secs(G.state.dual) + '초', G.player.x, G.player.y - 60, '#ff9a7a', 18);
     chime();
   } else {
-    G.state.hyper = Math.max(G.state.hyper, BASELINE.hyper.seconds * hyperItemScale());
+    G.state.hyper = Math.max(G.state.hyper, hyperSeconds(BASELINE.hyper.seconds));
     actionCallout('hyper');
     G.player.inv = Math.max(G.player.inv, G.state.hyper + 0.6);
     G.hazards = [];

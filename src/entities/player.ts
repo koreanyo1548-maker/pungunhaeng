@@ -15,6 +15,7 @@ import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
 import { activeHeroId, replaceFallenHero } from '../systems/formation';
 import { basicShotOptions, cloneOffsets, unbowedHit } from '../systems/hero-effects';
+import { factor } from '../systems/factors';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
@@ -47,7 +48,7 @@ export function damagePlayer() {
   G.player.hp--;
   G.state.combo = 0;
   G.state.lastHurt = G.time;
-  G.player.inv = 1.9;
+  G.player.inv = 1.9 + factor('hitInvuln');
   G.state.combo = 0;
   G.state.comboTimer = 0;
   G.shake = 11;

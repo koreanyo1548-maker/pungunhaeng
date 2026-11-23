@@ -28,7 +28,7 @@ import { bondLevel } from './relationship';
 import { addBond } from '../core/profile';
 import { BASELINE } from '../data/baseline';
 import { traitValue } from './hero-effects';
-import { ITEM_SECONDS } from '../entities/pickups';
+import { doubleSeconds } from '../entities/pickups';
 
 export const BOND_MAX = 3;
 
@@ -60,7 +60,7 @@ export function questReward(q: Pick<Quest, 'npc' | 'mode'>): Reward {
 export function rewardName(q: Pick<Quest, 'npc' | 'mode'>) {
   const r = questReward(q);
   if (r.level) return `${r.level}단계 「${SKILLS[NPCS[q.npc as string].levels[r.level - 1]].name}」`;
-  return r.double ? `점수 두 배 ${ITEM_SECONDS}초` : `엽전 ${r.coins}냥`;
+  return r.double ? `점수 두 배 ${+doubleSeconds().toFixed(1)}초` : `엽전 ${r.coins}냥`;
 }
 
 /** An 의뢰 as offered at a 만남 (not yet accepted). */
@@ -121,7 +121,7 @@ export function completeQuest() {
   G.state.meetTimer = G.state.meetWait = BASELINE.meet.reward + BASELINE.meet.after;
   if (reward.level) raiseBond(q.npc as string);
   else if (reward.double) {
-    G.state.double = ITEM_SECONDS;
+    G.state.double = doubleSeconds();
     actionCallout('double');
   } else G.state.coins += reward.coins;
   if (G.state.questPath) G.state.questPath.result = '성취';

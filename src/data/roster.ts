@@ -18,6 +18,16 @@ export const HERO_IDS = [
   'ayeong',
 ] as const;
 export type HeroId = (typeof HERO_IDS)[number];
+/** the heroes in play (docs/equipment-plan.md, 5장): the others keep their data and art but are hidden from the
+ *  영웅 list, the 뽑기 and the formation */
+export const PLAYABLE_HEROES = [
+  'pungun',
+  'bicheon',
+  'hongryeon',
+  'yeoncheong',
+  'ayeong',
+] as const satisfies readonly HeroId[];
+export const playable = (id: string): id is HeroId => (PLAYABLE_HEROES as readonly string[]).includes(id);
 
 export const NPC_IDS = ['dosa', 'milsa', 'monk', 'yeonhyeop', 'yakseon', 'uijeok'] as const;
 export type NpcId = (typeof NPC_IDS)[number];

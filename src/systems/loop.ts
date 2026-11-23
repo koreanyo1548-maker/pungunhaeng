@@ -16,6 +16,7 @@ import { difficulty, skyStage } from './flow';
 import { updatePhase } from './stage-phases';
 import { RUN_SCORE, addScore, runSpeed } from './score';
 import { descentFactor, speedFactor } from './ladder';
+import { factor } from './factors';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
@@ -89,7 +90,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += BASELINE.fireInterval / bondFireRate();
+    G.player.fire += (BASELINE.fireInterval * (1 - factor('fireRatePct'))) / bondFireRate();
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 

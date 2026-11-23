@@ -17,6 +17,7 @@ import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
 import { VICTORY_SCORE, runBonus } from './score';
 import { VIRTUE_BONUS } from './alignment';
+import { factor } from './factors';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
 import { prepareGlows } from '../render/glows';
@@ -101,8 +102,10 @@ export function end(victory = false) {
   // 정산 (systems/score.ts): 정 adds to the score; 사 and the share of the 기준 점수 add to the 엽전 left, which go to
   // the bank with the clear bonus; beating the boss opens the next stage.
   G.state.baseScore = Math.round(G.state.score);
-  const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil);
-  G.state.score = Math.round(G.state.score * (1 + b.scoreBonus));
+  const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil, factor('virtueScorePct'));
+  // 거리 점수 보너스 (gear): a share of the distance run, in metres, added after the 정도 bonus
+  const distanceBonus = Math.floor(G.state.distance * factor('distanceScorePct'));
+  G.state.score = Math.round(G.state.score * (1 + b.scoreBonus)) + distanceBonus;
   const record = G.state.score > profile.best;
   if (record) profile.best = Math.floor(G.state.score);
   const kept = settle(G.state.coins, false, b.coinBonus),
@@ -121,7 +124,10 @@ export function end(victory = false) {
   $('newRecord').classList.toggle('hidden', !record);
   $('scoreRows').innerHTML =
     row('기본 점수', fmt(G.state.baseScore)) +
-    (b.scoreBonus ? row(`정도 보너스 +${pct(b.scoreBonus)}`, '+' + fmt(G.state.score - G.state.baseScore)) : '');
+    (b.scoreBonus
+      ? row(`정도 보너스 +${pct(b.scoreBonus)}`, '+' + fmt(G.state.score - distanceBonus - G.state.baseScore))
+      : '') +
+    (distanceBonus ? row('거리 점수 보너스', '+' + fmt(distanceBonus)) : '');
   $('finalScore').textContent = fmt(G.state.score);
   $('coinRows').innerHTML =
     row('남은 엽전', fmt(left) + '냥') +

@@ -1,7 +1,9 @@
-// 정예 적 (docs/equipment-plan.md, 2장): the way to 장비 in a run. When the party is set, a roll decides whether one
-// comes this run (BASELINE.elite.chance + the 정예 적 등장 factor of the 선봉's gear) and at what distance (between
-// the start of step 2 and the end of step 5). It comes down swaying, stops in front of the hero, then drops out of
-// the bottom of the screen; touching it is a hit. Every hit takes one of its health, whatever the damage, so what
+// 정예 적 (docs/equipment-plan.md, 2장): the way to 장비 in a run. One comes every run. When the party is set, rolls
+// decide in which tier step: step 2 with BASELINE.elite.chances[0], else step 3 with [1], else step 4 for sure (the
+// 정예 적 등장 factor of the 선봉's gear adds to each chance, so it tends to come earlier), and at a random distance
+// in that step. It never comes during a 운석 소나기: reaching its distance then, it waits for the shower to end (a
+// shower that starts once it is out is left as it is). It comes down swaying at one steady speed, stops in front of
+// the hero, then goes on down out of the bottom of the screen; touching it is a hit. Every hit takes one of its health, whatever the damage, so what
 // counts is how often it is hit. Caught, it gives a 장비 상자 at once, opened on the result screen. Rows keep coming
 // while it is out. Gameplay random only.
 import { G } from '../core/context';
@@ -16,28 +18,34 @@ import { burst, label, ring } from '../render/fx';
 import { announce, syncHUD } from '../ui/hud';
 import { factor } from './factors';
 import { stageDistance } from './flow';
+import { showerOn } from './shower';
 import { addScore } from './score';
 
 const E = () => BASELINE.elite;
 /** seconds a won 장비 상자 takes to fly to the hero */
 export const BOX_FLY = 0.7;
-/** whether this run brings a 정예 적: rolled once, when the party is set */
+/** The tier step the 정예 적 comes in (`rolls`: one 0-to-1 roll per step), by BASELINE.elite.chances from
+ *  BASELINE.elite.firstStep on, each raised by `bonus` (the 정예 적 등장 factor); the last step is sure. */
+export function eliteStep(rolls: number[], bonus = 0): number {
+  const c = E().chances;
+  for (let i = 0; i < c.length - 1; i++) if (rolls[i] < Math.min(1, c[i] + bonus)) return E().firstStep + i;
+  return E().firstStep + c.length - 1;
+}
+/** Where this run's 정예 적 comes: rolled once, when the party is set (the same number of rolls every run). */
 export function rollElite() {
   const s = G.state,
-    chance = Math.min(1, E().chance + factor('eliteChance')),
-    roll = random(),
-    where = random();
-  s.elite = { at: -1, out: false, caught: false, boxes: 0 };
-  if (roll >= chance) return;
-  const [from, to] = E().steps;
-  s.elite.at = stageDistance() * ((from - 1) / BASELINE.steps + where * ((to - from + 1) / BASELINE.steps));
+    rolls = E().chances.map(() => random()),
+    where = random(),
+    step = eliteStep(rolls, factor('eliteChance'));
+  s.elite = { at: stageDistance() * ((step - 1 + where) / BASELINE.steps), out: false, caught: false, boxes: 0 };
 }
 
-/** Brings the 정예 적 out when its distance is reached (during the flight only); moves a won box to the hero. */
+/** Brings the 정예 적 out when its distance is reached (during the flight, never during a 운석 소나기: it waits for
+ *  the shower to end); moves a won box to the hero. */
 export function updateElite(dt: number) {
   const el = G.state.elite;
   if (el?.fly && (el.fly.t += dt) > BOX_FLY) el.fly = undefined;
-  if (!el || el.out || el.at < 0 || G.state.phase !== 'flight' || G.state.distance < el.at) return;
+  if (!el || el.out || el.at < 0 || G.state.phase !== 'flight' || G.state.distance < el.at || showerOn()) return;
   el.out = true;
   const hp = E().health,
     x = rnd(150, W - 150);

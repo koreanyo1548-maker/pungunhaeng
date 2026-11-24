@@ -24,9 +24,10 @@ export const BASELINE = {
   rowGap: { start: 1.7, end: 1.45 },
   /** health as basic shots of the reference growth (Lv1: 10 a shot): tier 2 is 3 shots, then about × 1.4 */
   tierHealthMultipliers: [1, 3, 4, 6, 8, 12],
-  /** within a tier step k: the weak slot is tier k; each other slot is k+1 or k+2 with these chances, growing from
-   *  the start of the step to its end (the rest are tier k); tiers above 6 are 6 */
-  stepMix: { next: [0.2, 0.6], nextTwo: [0, 0.2] },
+  /** within a tier step k: every slot is tier k until `from` of the step; then the rest of the step is cut in
+   *  `slots` equal parts and 1, 2, … `slots` slots of a row are tier k+1, at random places (no slot is kept weak);
+   *  tiers above 6 are 6 */
+  stepRise: { from: 0.5, slots: 5 },
   /** the boss takes this many seconds of the reference growth's basic attack */
   bossSeconds: 30,
   /** the basic attack: one shot every `fireInterval` s (8 a second) at every level, shots fly `shotSpeed` px/s */

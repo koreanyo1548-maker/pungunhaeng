@@ -1,6 +1,8 @@
 // The tier ladder and the run's speed (docs/balance-baseline.md). A stage is split into BASELINE.steps equal
-// stretches of its length; in step k the weak slot of a row is tier k and the other slots are tiers k, k+1 and k+2,
-// the higher ones more often as the step goes on. The run speeds up with the stage's progress.
+// stretches of its length. In step k every slot of a row is tier k through the first half of the step; through the
+// second half, cut in five, one, two, three, four, then all five slots are tier k+1, at random places. No slot is
+// kept weak: a party that is not strong enough cannot break through. The next step starts all over at its own tier.
+// The run speeds up with the stage's progress.
 import { G } from '../core/context';
 import { random } from '../core/rng';
 import { BASELINE } from '../data/baseline';
@@ -23,18 +25,26 @@ export const ladderStep = () => Math.min(BASELINE.steps, Math.floor(stageProgres
 /** 0 at the start of the step, 1 at its end */
 export const stepProgress = () => Math.min(1, stageProgress() * BASELINE.steps - (ladderStep() - 1));
 
-const lerp = (range: number[], t: number) => range[0] + (range[1] - range[0]) * t;
-/** the tier of a slot that is not the weak one, in the current step (gameplay random) */
-export function slotTier(): number {
-  const k = ladderStep(),
-    t = stepProgress(),
-    roll = random(),
-    two = lerp(BASELINE.stepMix.nextTwo, t),
-    one = lerp(BASELINE.stepMix.next, t);
-  const tier = roll < two ? k + 2 : roll < two + one ? k + 1 : k;
-  return Math.min(TOP, tier);
+/** how many slots of a row are tier k+1 now: none in the first half of the step, then 1 to 5 by fifths of the
+ *  second half (BASELINE.stepRise: where it starts and how many it reaches) */
+export function strongSlots(t = stepProgress()): number {
+  const r = BASELINE.stepRise;
+  if (t < r.from) return 0;
+  return Math.min(r.slots, Math.floor(((t - r.from) / (1 - r.from)) * r.slots) + 1);
 }
-/** the weak slot's tier in the current step */
-export const weakTier = () => Math.min(TOP, ladderStep());
+/** The tiers of a row's five slots: the step's tier, and strongSlots() of them (at random places, gameplay random:
+ *  always the same number of rolls) one tier up. */
+export function rowTiers(): number[] {
+  const k = stepTier(),
+    order = [0, 1, 2, 3, 4];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const up = new Set(order.slice(0, strongSlots()));
+  return [0, 1, 2, 3, 4].map(i => (up.has(i) ? Math.min(TOP, k + 1) : k));
+}
+/** the tier of the current step */
+export const stepTier = () => Math.min(TOP, ladderStep());
 /** the step's strong tier (보물상자 health) */
 export const strongTier = () => Math.min(TOP, ladderStep() + 1);

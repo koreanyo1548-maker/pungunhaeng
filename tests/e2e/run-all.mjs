@@ -1528,32 +1528,28 @@ async function scenarioI(browser, seed) {
       G.state.rowTimer = 0;
       return null;
     }, p);
-  // the ladder: step 1 has tiers 1 to 3 with the weak slot at tier 1; step 6 has the weak slot at tier 6
+  // the ladder: in step k every slot is tier k through the first half, then 1 to 5 slots tier k+1 by fifths of the
+  // second half (no slot kept weak); a row's tiers, counted
   const sample = async p => {
-    const seen = { weak: new Set(), all: new Set() };
-    for (let i = 0; i < 6; i++) {
+    const rowsSeen = [];
+    for (let i = 0; i < 4; i++) {
       await rows(p);
       await g.step(1);
       // (the 정예 적 and 보물상자 stand apart from the ladder)
-      const es = await g.state(() =>
-        window.__g.enemies.filter(e => !e.chest && !e.elite).map(e => ({ t: e.tier, w: e.weak })),
-      );
-      for (const e of es) {
-        seen.all.add(e.t);
-        if (e.w) seen.weak.add(e.t);
-      }
+      const ts = await g.state(() => window.__g.enemies.filter(e => !e.chest && !e.elite).map(e => e.tier));
+      if (ts.length === 5) rowsSeen.push(ts.sort().join(''));
     }
-    return { weak: [...seen.weak].sort().join(), all: [...seen.all].sort().join() };
+    return [...new Set(rowsSeen)].join();
   };
-  const first = await sample(0.03),
-    last = await sample(0.97);
+  // step 1 (0 to 1/6 of the stage): at 18% all tier 1; at 66% (60 to 70%) two slots tier 2; at 96% all tier 2
+  const early = await sample(0.03),
+    mid = await sample(0.11),
+    late = await sample(0.16),
+    top = await sample(0.97);
   check(
     f,
-    first.weak === '1' &&
-      [...first.all].every(t => t === ',' || '123'.includes(t)) &&
-      last.weak === '6' &&
-      last.all === '6',
-    `tier ladder: step 1 weak 1 (tiers ${first.all}), step 6 weak 6 (tiers ${last.all})`,
+    early === '11111' && mid === '11122' && late === '22222' && top === '66666',
+    `tier ladder: step 1 at 18% ${early}, 66% ${mid}, 96% ${late}; step 6 ${top}`,
   );
   // speed: rows come down twice as fast at the boss as at the start
   const fall = async p => {

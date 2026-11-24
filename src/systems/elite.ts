@@ -63,22 +63,22 @@ export function updateElite(dt: number) {
   tone(220, 0.3, 'sawtooth', 0.12, 440);
 }
 
-/** The 정예 적's path: down swaying, a stop in front of the hero, then out the bottom. Returns false when it
- *  touched the hero and the run ended. */
+/** The 정예 적's path: down swaying at one steady speed, a stop in front of the hero, then on down out of the
+ *  bottom at the same speed. Returns false when it touched the hero and the run ended. */
 export function moveElite(e: Enemy, dt: number): boolean {
   const t = (e.timer = (e.timer ?? 0) + dt),
     p = E().path,
-    sway = Math.sin((t / p.swayPeriod) * Math.PI * 2);
+    sway = Math.sin((t / p.swayPeriod) * Math.PI * 2),
+    // one speed for the whole way down: from y −80 to the stop in `down` s
+    speed = (p.stopY + 80) / p.down;
   if (t < p.down) {
-    const k = t / p.down;
-    e.y = -80 + (p.stopY + 80) * (1 - (1 - k) * (1 - k));
+    e.y = -80 + speed * t;
     e.x = clamp(e.baseX! + sway * p.sway, 60, W - 60);
   } else if (t < p.down + p.stop) {
     e.y = p.stopY + Math.sin(t * 5) * 4;
     e.x = clamp(e.baseX! + sway * p.sway * 0.3, 60, W - 60);
   } else {
-    const k = t - p.down - p.stop;
-    e.y = p.stopY + k * k * 260 + k * 120;
+    e.y = p.stopY + speed * (t - p.down - p.stop);
   }
   if (Math.abs(e.x - G.player.x) < e.r + 10 && Math.abs(e.y - G.player.y) < e.r + 12) {
     damagePlayer();

@@ -1743,7 +1743,13 @@ async function scenarioJ(browser, seed) {
     window.__g.player.inv = 1e6;
   });
   await g.seconds(0.3);
-  const out = await g.state(() => window.__g.enemies.find(e => e.elite)?.maxHp);
+  // health 100; the test leaves it 20 to catch (basic shots alone cannot take 100 along its path)
+  const out = await g.eval(() => {
+    const e = window.__g.enemies.find(e => e.elite),
+      max = e?.maxHp;
+    if (e) e.hp = 20;
+    return max;
+  });
   let caught = false;
   for (let i = 0; i < 100 && !caught; i++) {
     await g.eval(() => {
@@ -1754,7 +1760,11 @@ async function scenarioJ(browser, seed) {
     caught = await g.state(() => window.__g.state.elite.caught);
   }
   const box = await g.state(() => window.__g.state.elite.boxes);
-  check(f, out === 50 && caught && box === 1, `정예 적: health 50, caught, one 장비 상자 (${out}, ${caught}, ${box})`);
+  check(
+    f,
+    out === 100 && caught && box === 1,
+    `정예 적: health 100, caught, one 장비 상자 (${out}, ${caught}, ${box})`,
+  );
   await g.eval(() => {
     window.__g.player.inv = 0;
     window.__g.fell();

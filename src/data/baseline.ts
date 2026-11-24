@@ -34,13 +34,15 @@ export const BASELINE = {
   shotSpeed: 1760,
   /** 운석: one comes after a random wait of `every` seconds (30 on average), warned `warn` s ahead, aimed */
   meteor: { every: [15, 45], warn: 2 },
-  /** 정예 적 (docs/equipment-plan.md, 2장, systems/elite.ts): `chance` a run, somewhere in tier steps `steps`; every
-   *  hit takes 1 of `health`. Its path: `down` s coming down to `stopY` swaying ±`sway` px (one sway in
-   *  `swayPeriod` s), `stop` s in front of the hero, then out the bottom (about 1.5 s) */
+  /** 정예 적 (docs/equipment-plan.md, 2장, systems/elite.ts): one every run, in tier step `firstStep` with
+   *  `chances[0]`, else the next with `chances[1]`, … (the last is sure), at a random point of that step but not
+   *  during a 운석 소나기; every hit takes 1 of `health`. Its path, at one steady speed (`stopY` + 80 px in `down` s, about 93 px/s): down to
+   *  `stopY` swaying ±`sway` px (one sway in `swayPeriod` s), `stop` s in front of the hero, then on down out of the
+   *  bottom (about 4.4 s) */
   elite: {
-    chance: 0.5,
-    steps: [2, 5],
-    health: 50,
+    firstStep: 2,
+    chances: [0.5, 0.6, 1],
+    health: 60,
     radius: 46,
     score: 3000,
     path: { down: 6, stop: 1.5, stopY: 480, sway: 120, swayPeriod: 2.5 },

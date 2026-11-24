@@ -530,6 +530,9 @@ async function scenarioC(browser, seed) {
   await setupFrom(g, 1);
   await g.eval(() => {
     window.__g.state.coins = 300;
+    // no 만남 (a 사 point would add to the 엽전 banked)
+    window.__g.state.meetTimer = window.__g.state.meetWait = 1e6;
+    window.__g.state.evil = 0;
     window.__g.player.hp = 1;
     window.__g.player.inv = 0;
   });
@@ -1734,16 +1737,37 @@ async function scenarioJ(browser, seed) {
     run.shot === 13 && run.hp === 2 && run.other === 1,
     `gear in the run: attack 13, health 2 (${JSON.stringify(run)})`,
   );
-  // the 정예 적: out at once, the hero under it, every hit takes one
+  // the 정예 적: one every run, in step 2 (50%), else 3 (60%), else 4; gear raises the chances
+  const steps = await g.eval(() =>
+    [
+      [[0.4, 0.9, 0.5], 0],
+      [[0.6, 0.5, 0.5], 0],
+      [[0.6, 0.7, 0.5], 0],
+      [[0.6, 0.7, 0.5], 0.15],
+    ].map(([r, b]) => window.__g.eliteStep(r, b)),
+  );
+  check(f, steps.join() === '2,3,4,2', `정예 적 step by rolls: 2, 3, 4, and 2 with +15%p (${steps})`);
+  // its distance comes during a 운석 소나기: it waits for the shower to end
   await g.eval(() => {
     const s = window.__g.state;
     s.elite.at = s.distance + 1;
     s.meetTimer = s.meetWait = 1e6;
     s.showerSteps = [1, 2, 3, 4, 5, 6];
+    s.shower = { marked: 5, next: 1e6, left: 1 };
     window.__g.player.inv = 1e6;
   });
-  await g.seconds(0.3);
-  const out = await g.state(() => window.__g.enemies.find(e => e.elite)?.maxHp);
+  await g.seconds(0.5);
+  const waiting = await g.state(() => !window.__g.enemies.some(e => e.elite));
+  await g.seconds(0.8);
+  const after = await g.state(() => !window.__g.state.shower && window.__g.enemies.some(e => e.elite));
+  check(f, waiting && after, `정예 적 waits out a 운석 소나기, then comes (${waiting}, ${after})`);
+  // health 60; the test leaves it 20 to catch quickly
+  const out = await g.eval(() => {
+    const e = window.__g.enemies.find(e => e.elite),
+      max = e?.maxHp;
+    if (e) e.hp = 20;
+    return max;
+  });
   let caught = false;
   for (let i = 0; i < 100 && !caught; i++) {
     await g.eval(() => {
@@ -1754,7 +1778,7 @@ async function scenarioJ(browser, seed) {
     caught = await g.state(() => window.__g.state.elite.caught);
   }
   const box = await g.state(() => window.__g.state.elite.boxes);
-  check(f, out === 50 && caught && box === 1, `정예 적: health 50, caught, one 장비 상자 (${out}, ${caught}, ${box})`);
+  check(f, out === 60 && caught && box === 1, `정예 적: health 60, caught, one 장비 상자 (${out}, ${caught}, ${box})`);
   await g.eval(() => {
     window.__g.player.inv = 0;
     window.__g.fell();

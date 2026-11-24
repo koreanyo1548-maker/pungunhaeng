@@ -4,6 +4,7 @@ import { G } from '../core/context';
 import { hitEnemy, kill } from '../entities/enemies';
 import { NPCS } from '../data/npcs';
 import { loadProfile, profile } from '../core/profile';
+import { eliteStep } from '../systems/elite';
 import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
 import { questEvent, questTarget, raiseBond } from '../systems/quest';
@@ -74,6 +75,8 @@ if (location.hash.includes('debug'))
       return profile;
     },
     loadProfile,
+    /** the tier step a 정예 적 comes in for these rolls (systems/elite.ts) */
+    eliteStep,
     /** run the rest of the stage's distance at once (the boss comes next step) */
     skipFlight() {
       // no 운석 소나기 on the way (the boss comes next step)

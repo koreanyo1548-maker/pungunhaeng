@@ -37,15 +37,15 @@ export const BASELINE = {
   meteor: { every: [15, 45], warn: 2 },
   /** 정예 적 (docs/equipment-plan.md, 2장, systems/elite.ts): one every run, in tier step `firstStep` with
    *  `chances[0]`, else the next with `chances[1]`, … (the last is sure), at a random point of that step but not
-   *  during a 운석 소나기; every hit takes 1 of `health`. Its path, at one steady speed (`stopY` + 80 px in `down` s, about 93 px/s): down to
+   *  during a 운석 소나기; every hit takes 1 of `health`. Its path, at one steady speed (`stopY` + 80 px in `down` s, about 47 px/s): down to
    *  `stopY` swaying ±`sway` px (one sway in `swayPeriod` s), `stop` s in front of the hero, then on down out of the
-   *  bottom (about 4.4 s) */
+   *  bottom (about 8.8 s) */
   elite: {
     firstStep: 2,
     chances: [0.5, 0.6, 1],
     health: 60,
     score: 3000,
-    path: { down: 6, stop: 1.5, stopY: 480, sway: 120, swayPeriod: 2.5 },
+    path: { down: 12, stop: 1.5, stopY: 480, sway: 120, swayPeriod: 2.5 },
   },
   /** 운석 소나기 (systems/shower.ts): at the end of each step from `fromStep` on, no rows and `count` 운석 marked `gap`
    *  s apart (the last `aimed` where the hero is); rows come back when the `resumeWith`-th starts to fall */

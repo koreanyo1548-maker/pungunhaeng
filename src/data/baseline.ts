@@ -44,7 +44,6 @@ export const BASELINE = {
     firstStep: 2,
     chances: [0.5, 0.6, 1],
     health: 60,
-    radius: 46,
     score: 3000,
     path: { down: 6, stop: 1.5, stopY: 480, sway: 120, swayPeriod: 2.5 },
   },

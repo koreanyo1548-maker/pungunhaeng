@@ -19,6 +19,8 @@ import { announce, syncHUD } from '../ui/hud';
 import { factor } from './factors';
 import { stageDistance } from './flow';
 import { showerOn } from './shower';
+import { stepTier } from './ladder';
+import { RANKS } from '../data/enemies';
 import { addScore } from './score';
 
 const E = () => BASELINE.elite;
@@ -58,8 +60,9 @@ export function updateElite(dt: number) {
     type: 5,
     rank: 4,
     tier: 5,
-    size: 136,
-    r: E().radius,
+    // as big as the enemies of the step it comes in (its look stays the red 5등급 art)
+    size: RANKS[stepTier() - 1].size,
+    r: RANKS[stepTier() - 1].r,
     color: '#ff6f5e',
     phase: 0,
     hit: 0,

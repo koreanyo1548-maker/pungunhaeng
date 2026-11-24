@@ -19,22 +19,23 @@ import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
 import { bondArmor } from '../data/skills';
 import { difficulty, enemyHealth, region } from '../systems/flow';
-import { slotTier, strongTier, weakTier } from '../systems/ladder';
+import { rowTiers, stepTier, strongTier } from '../systems/ladder';
 import { BASELINE } from '../data/baseline';
 import { coinsForKill, critical, onComboKill, onNearKill } from '../systems/hero-effects';
 import { catchElite } from '../systems/elite';
 
 const ENRAGE = ramp('#ffa475');
 export function spawnRow() {
-  // the tier ladder (systems/ladder.ts): the weak slot is the step's tier, the others k, k+1 or k+2; now and then a
-  // slot holds a 보물상자 instead (as strong as the step's strong tier, it bursts into 엽전)
+  // the tier ladder (systems/ladder.ts): the step's tier, and in the second half of the step 1 to 5 slots one tier up;
+  // now and then a slot holds a 보물상자 instead (as strong as the step's strong tier, it bursts into 엽전)
   const id = ++G.rowId,
-    weak = Math.floor(rnd(0, 5)),
-    chestSlot = random() < BASELINE.chest.perRow ? (weak + 1 + Math.floor(rnd(0, 4))) % 5 : -1;
+    chestSlot = random() < BASELINE.chest.perRow ? Math.floor(rnd(0, 5)) : -1;
   G.rows.set(id, { remaining: 5, missed: false });
   if (chestSlot >= 0) G.state.drops.chest++;
+  const tiers = rowTiers(),
+    base = stepTier();
   for (let i = 0; i < 5; i++) {
-    const tier = i === weak ? weakTier() : slotTier(),
+    const tier = tiers[i],
       rank = tier - 1,
       r = RANKS[rank],
       hp = enemyHealth(tier),
@@ -65,7 +66,7 @@ export function spawnRow() {
     // 바위 (산길 terrain, not on S1) and 관문 stones: as strong as the step's strong tier
     const terrain = region().terrain,
       rockChance = G.state.stage === 1 ? 0 : terrain === 'rock' ? TUNE.rockChance : terrain === 'gate' ? 0.15 : 0;
-    if (i !== weak && random() < rockChance) {
+    if (random() < rockChance) {
       const rh = enemyHealth(strongTier());
       G.enemies.push({
         x: 48 + i * 96,
@@ -104,7 +105,7 @@ export function spawnRow() {
       phase: rnd(0, 6.28),
       hit: 0,
       row: id,
-      weak: i === weak,
+      weak: tier === base,
       dead: false,
     });
   }

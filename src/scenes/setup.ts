@@ -32,7 +32,7 @@ export function openFormation() {
   G.keys.clear();
   G.pointer = null;
   const root = $('choice');
-  root.classList.remove('reward-screen', 'formation-screen');
+  root.classList.remove('reward-screen', 'formation-screen', 'encounter-screen');
   root.classList.add('party-screen');
   $('choiceEyebrow').textContent = '편대 편성';
   $('choiceTitle').textContent = '편대';

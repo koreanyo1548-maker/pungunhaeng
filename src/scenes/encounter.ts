@@ -2,12 +2,12 @@
 // the run's 정·사 odds (systems/alignment.ts): a passer-by or an 인연 of the side rolled. Both bring an 의뢰.
 import { ambientPictures } from '../core/ambient-art';
 import { G } from '../core/context';
-import { npcPictures } from '../core/assets';
+import { npcPictures, skillImage, coinImage, propArt } from '../core/assets';
 import { random } from '../core/rng';
 import type { Quest } from '../core/state-types';
 import { BR, COND } from '../data/branches';
 import { NPCS, SIDE_NAME } from '../data/npcs';
-import { SKILLS, skillEffect } from '../data/skills';
+import { skillEffect } from '../data/skills';
 import { openChoice } from './choice';
 import { BASELINE } from '../data/baseline';
 import { region } from '../systems/flow';
@@ -48,11 +48,25 @@ export function openEncounter() {
   else openPasser();
 }
 
-/** the line under an 의뢰: its point and its reward */
-const rewardLine = (q: Quest) => {
-  const r = questReward(q);
-  return `${moveText(q.move)}${q.mode === 'follow' ? ' · 호감도 +1' : ''} · 성공: ${rewardName(q)}${r.level ? ' ' + skillEffect(NPCS[q.npc as string].levels[r.level - 1]) : ''}`;
-};
+/** An offer separates the promised reward from the task and immediate alignment change. */
+function act(label: string, o: Quest, say?: string) {
+  const reward = questReward(o);
+  const skill = reward.level ? NPCS[o.npc!].levels[reward.level - 1] : null;
+  const image = skill ? skillImage(skill) : reward.double ? propArt[7].toDataURL() : coinImage();
+  const effect = skill
+    ? skillEffect(skill)
+    : reward.double
+      ? '발동 후 획득 점수가 두 배가 됩니다.'
+      : '이번 판에서 사용할 엽전을 얻습니다.';
+  return {
+    color: BR[COND[o.t].br].color,
+    html: label,
+    detail: `<div class="encounter-reward"><img src="${image}" alt=""><div><small>의뢰 성공 보상</small><h4>${rewardName(o)}</h4><p>${effect}</p></div></div><div class="encounter-task"><small>수행 의뢰</small><b>${COND[o.t].label} ${o.target}</b><span>${BASELINE.meet.quest}초 이내</span></div>${say ? `<p class="encounter-answer">“${say}”</p>` : ''}<p class="encounter-immediate">선택 즉시 · ${moveText(o.move)}${o.mode === 'follow' ? ' · 호감도 +1' : ''}</p>`,
+    onPick: () => acceptQuest(o),
+  };
+}
+
+const rules = (passer = false) => `${oddsText()}. ${rule}${passer ? ' 판 끝에 정 1마다 점수, 사 1마다 엽전 +5%.' : ''}`;
 
 function openBond(id: string) {
   const n = NPCS[id],
@@ -64,15 +78,12 @@ function openBond(id: string) {
     return offerQuest({ npc: id, mode, move: alignMove(id, mode), t: c.t, target: questTarget(c, random() * 2 - 1) });
   });
   G.state.offer = offer;
-  const act = (label: string, o: Quest, say?: string) => ({
-    color: BR[COND[o.t].br].color,
-    html: `<b>${label}</b> · ${COND[o.t].label} ${o.target}${say ? `<small>“${say}”</small>` : ''}<small>${rewardLine(o)}</small>`,
-    onPick: () => acceptQuest(o),
-  });
   openChoice({
     eyebrow: eyebrow(),
-    title: '인연',
-    sub: `${oddsText()}. ${rule}`,
+    title: '강호의 만남',
+    sub: '의뢰를 이루면 약속한 보상을 받습니다.',
+    encounter: true,
+    rules: rules() + (q.defy.say ? `<br>거스른다: “${q.defy.say}”` : ''),
     cards: [
       {
         image: npcPictures[id],
@@ -94,8 +105,10 @@ function openPasser() {
   G.state.offer = offer;
   openChoice({
     eyebrow: eyebrow(),
-    title: '행인',
-    sub: `${oddsText()}. ${rule} 판 끝에 정 1마다 점수, 사 1마다 엽전 +5%.`,
+    title: '강호의 만남',
+    sub: '의뢰를 이루면 약속한 보상을 받습니다.',
+    encounter: true,
+    rules: rules(true),
     cards: [
       {
         image: ambientPictures[who.art + '-neutral'],
@@ -104,11 +117,7 @@ function openPasser() {
         tag: who.title,
         title: who.name,
         quote: who.ask,
-        acts: offer.map(o => ({
-          color: o.move > 0 ? '#ffd77a' : '#a6c8bf',
-          html: `<b>${PASSER_QUESTS[o.mode].label}</b> · ${COND[o.t].label} ${o.target}<small>${rewardLine(o)}</small>`,
-          onPick: () => acceptQuest(o),
-        })),
+        acts: offer.map(o => act(PASSER_QUESTS[o.mode].label, o)),
       },
     ],
   });

@@ -40,6 +40,14 @@
       ],
       "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
     },
+    "gear.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        5
+      ],
+      "reason": "장비 격자 48px와 상세 96px에 사용할 4×5 아이콘 시트"
+    },
     "hero-fly.webp": {
       "scale": 0.75,
       "grid": [

@@ -6,11 +6,11 @@
     "method": 6,
     "exact": true
   },
-  "fileCount": 41,
-  "originalBytes": 72487623,
-  "webpBytes": 47063914,
-  "savedBytes": 25423709,
-  "reductionPercent": 35.07,
+  "fileCount": 42,
+  "originalBytes": 74365632,
+  "webpBytes": 48292504,
+  "savedBytes": 26073128,
+  "reductionPercent": 35.06,
   "files": [
     {
       "source": "art/originals/ambient/inn-collection.png",
@@ -71,6 +71,16 @@
       "webpBytes": 1020932,
       "sourceSha256": "7781b482ad6da980a7bf19e35351036d4ee0766819b880aab4d1b8ca81e5e292",
       "webpSha256": "2c07b65db837362b463c2585c91e5336e9da640fb9e78f67a085ba8a843d381c"
+    },
+    {
+      "source": "art/originals/gear.png",
+      "runtime": "src/assets/images/gear.webp",
+      "width": 1122,
+      "height": 1402,
+      "originalBytes": 1878009,
+      "webpBytes": 1228590,
+      "sourceSha256": "24001140a91dc41e3c3b45e9e08334280f50fb2b5a3e6c5d4fdc80b2f20683a9",
+      "webpSha256": "79d7e71ee9f0e42b46d3b4dafc4c79461955a789d44f551f8ac412bd5ee9bff4"
     },
     {
       "source": "art/originals/hero-fly.png",

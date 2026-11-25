@@ -714,123 +714,6 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-/* 장비 tab of the 영웅 popup (docs/equipment-plan.md, 3장) */
-.gear-sum {
-  margin-bottom: 8px;
-  padding: 8px 10px;
-  border: 1px solid #caa56844;
-  border-radius: 6px;
-  background: #0c2a2699;
-}
-.gear-sum b {
-  font-size: 12px;
-  color: #ffe3a3;
-}
-.gear-sum p {
-  margin: 3px 0 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #d9e6dc;
-}
-.gear-slots {
-  display: grid;
-  gap: 6px;
-}
-.gear-slot,
-.gear-item {
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #caa56855;
-  border-radius: 8px;
-  background: #0b1d1acc;
-  color: #e8efe6;
-  text-align: left;
-}
-.gear-slot.open {
-  border-color: #f0c66e;
-  background: linear-gradient(#2c4a3e, #102825);
-}
-.gear-slot img,
-.gear-item img {
-  width: 48px;
-  height: 48px;
-}
-.gear-slot span,
-.gear-item span {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
-.gear-slot small,
-.gear-item small {
-  font-size: 10px;
-  color: #9fb5aa;
-}
-.gear-slot b,
-.gear-item b {
-  font-size: 14px;
-  color: #ffe3a3;
-}
-.gear-slot em,
-.gear-item em {
-  font-style: normal;
-  font-size: 11px;
-  line-height: 1.4;
-  color: #cfe0d4;
-}
-.gear-slot em i,
-.gear-item em i {
-  font-style: normal;
-  color: #c9b6ff;
-}
-.gear-panel {
-  display: grid;
-  gap: 6px;
-  margin: -2px 0 4px 14px;
-  padding-left: 10px;
-  border-left: 2px solid #f0c66e66;
-}
-.gear-acts {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 6px;
-}
-.gear-acts button {
-  padding: 7px 6px;
-  font-size: 13px;
-}
-.gear-acts button small {
-  display: block;
-  font-size: 10px;
-  font-weight: 400;
-  opacity: 0.85;
-}
-.gear-acts button[data-act='off'] {
-  border: 1px solid #caa56866;
-  border-radius: 6px;
-  background: #0c2a26cc;
-  color: #cfe0d4;
-}
-.gear-acts .armed,
-.gear-item.armed {
-  border-color: #ff9a7a;
-  box-shadow: 0 0 0 1px #ff9a7a66;
-}
-.gear-head {
-  margin-top: 2px;
-  font-size: 11px;
-  color: #9fb5aa;
-}
-.gear-empty {
-  margin: 0;
-  font-size: 12px;
-  color: #9fb5aa;
-}
-
 /* 장비 상자 opened on the result screen (the 정예 적, docs/equipment-plan.md) */
 .result-gear {
   display: grid;
@@ -858,4 +741,352 @@ button:disabled {
   font-style: normal;
   font-size: 12px;
   color: #cfe0d4;
+}
+
+/* Equipment loadout and inventory: portrait-side slots, four-column item grid. */
+.loadout {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+.loadout > div {
+  display: grid;
+  gap: 8px;
+}
+.loadout-slot {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 5px 2px;
+  background: #0a201dcc;
+  border: 1px solid var(--grade);
+  border-radius: 9px;
+  color: #e6d2a5;
+}
+.loadout-slot img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.loadout-slot small {
+  font-size: 10px;
+  color: #a9bcb1;
+}
+.loadout-slot b {
+  font-size: 10px;
+  color: var(--grade);
+}
+.loadout-hero {
+  text-align: center;
+  justify-items: center;
+  min-width: 0;
+}
+.loadout-hero img {
+  width: 100%;
+  max-width: 112px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border-bottom: 2px solid #c7a566;
+}
+.loadout-hero b {
+  font-size: 18px;
+  color: #ffe3a3;
+}
+.loadout-hero small {
+  color: #a8bcad;
+}
+.equipment-summary {
+  padding: 9px;
+  border-block: 1px solid #caa56833;
+  font-size: 12px;
+  color: #c9d6ce;
+}
+.equipment-summary summary {
+  cursor: pointer;
+  color: #d8c393;
+}
+.equipment-summary p {
+  margin: 7px 0 0;
+  line-height: 1.7;
+}
+.equipment-bank {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 16px 0 9px;
+  font-size: 13px;
+  color: #e4d2a7;
+}
+.equipment-bank span {
+  margin-left: auto;
+  font-size: 12px;
+}
+.equipment-filters {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.equipment-filters button {
+  flex: 1;
+  padding: 7px 1px;
+  font-size: 11px;
+  border: 1px solid #a38a5444;
+  background: #102a24;
+  border-radius: 5px;
+  color: #afc0b4;
+}
+.equipment-filters button[aria-pressed='true'] {
+  background: #d2b477;
+  color: #17271f;
+}
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  padding-bottom: 12px;
+}
+.equipment-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 2px 5px;
+  border: 1px solid var(--grade);
+  border-radius: 7px;
+  background: radial-gradient(ellipse at 50% 30%, #42645466, #0b201b 80%);
+  color: #e8dfc8;
+}
+.equipment-tile img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+.equipment-tile b {
+  width: 100%;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
+.equipment-tile small {
+  font-size: 9px;
+  color: #b1e7c7;
+}
+.equipment-stars {
+  font-size: 9px;
+  letter-spacing: -1px;
+  color: var(--grade);
+}
+.equipment-plus {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 11px;
+  background: #10241ee6;
+  border-radius: 3px;
+  color: #ffe3a3;
+  padding: 0 2px;
+}
+.equipment-tile.picked {
+  outline: 2px solid #ffe3a3;
+  outline-offset: 1px;
+  background: #566845;
+}
+.equipment-empty {
+  padding: 16px 0;
+  text-align: center;
+  color: #acbaae;
+  font-size: 12px;
+  line-height: 1.7;
+}
+#gearDetail {
+  z-index: 25;
+  padding: 18px;
+  background: #03120fe0;
+}
+.equipment-dialog {
+  text-align: left;
+  max-width: 420px;
+  width: 100%;
+  padding: 14px;
+  border-color: #d4b77999;
+}
+.equipment-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #becbbd;
+}
+.equipment-dialog header small {
+  font-size: 12px;
+}
+.equipment-dialog header button {
+  font-size: 26px;
+  line-height: 1;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: #dfd1ad;
+}
+.equipment-detail-art {
+  width: 104px;
+  height: 104px;
+  margin: 5px auto 10px;
+  border: 1px solid var(--grade);
+  border-radius: 14px;
+  background: radial-gradient(#67745a66, #10251e);
+}
+.equipment-detail-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.equipment-dialog h3 {
+  text-align: center;
+  color: #ffe3a3;
+  font-size: 18px;
+  margin: 5px 0 13px;
+}
+.equipment-dialog p {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #ccd8ca;
+}
+.equipment-stats {
+  border-block: 1px solid #caa56833;
+  padding: 4px 0;
+}
+.equipment-stats p {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 5px 0;
+}
+.equipment-stats small {
+  color: #92a99d;
+}
+.equipment-compare,
+.equipment-consume {
+  padding: 10px;
+  border: 1px solid #b39a5344;
+  border-radius: 7px;
+  background: #0b211c;
+  margin: 10px 0;
+}
+.equipment-compare b,
+.equipment-consume b {
+  font-size: 12px;
+  color: #e1c992;
+}
+.equipment-compare small {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #9aafa2;
+}
+.equipment-compare p {
+  margin: 3px 0;
+}
+.equipment-dialog .gain {
+  color: #9be1b7;
+}
+.equipment-dialog .loss {
+  color: #f2a29a;
+}
+.equipment-message {
+  color: #ffe3a3 !important;
+}
+.equipment-message:empty {
+  display: none;
+}
+.equipment-equipped {
+  color: #a6e1ba !important;
+}
+.equipment-dialog-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.equipment-dialog-actions button {
+  width: 100%;
+  font-size: 13px;
+  padding: 12px 8px;
+}
+.equipment-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.equipment-material {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.equipment-material button:disabled {
+  opacity: 1;
+}
+.material-grid {
+  margin-top: 12px;
+}
+@media (max-width: 360px) {
+  .loadout {
+    grid-template-columns: 62px minmax(0, 1fr) 62px;
+    gap: 7px;
+  }
+  .equipment-grid {
+    gap: 5px;
+  }
+}
+
+.detail-panel.equipment-view {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.equipment-view #detailBody {
+  overflow-y: auto;
+  min-height: 0;
+}
+.detail-panel.equipment-view #detailBack {
+  position: static;
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+.equipment-dialog {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.equipment-dialog header,
+.equipment-dialog-actions {
+  flex-shrink: 0;
+}
+.equipment-dialog-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 2px;
+}
+.equipment-dialog-actions {
+  padding-top: 10px;
+  margin-top: 8px;
+  border-top: 1px solid #caa56833;
+}
+.equipment-dialog.mode-enchant .equipment-detail-art,
+.equipment-dialog.mode-plus .equipment-detail-art {
+  width: 64px;
+  height: 64px;
+  float: left;
+  margin: 0 12px 8px 0;
+}
+.equipment-dialog.mode-enchant h3,
+.equipment-dialog.mode-plus h3 {
+  text-align: left;
+  margin: 18px 0;
+}
+.equipment-stats {
+  clear: both;
 }

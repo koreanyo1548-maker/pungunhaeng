@@ -5,6 +5,7 @@ import { ctx, reduced } from '../core/dom';
 import type { Enemy } from '../core/state-types';
 import { BOX_FLY } from '../systems/elite';
 import { roundRect } from './util';
+import { gearBoxImage } from './gear-art';
 
 /** under the 정예 적: a pulsing red halo */
 export function drawEliteAura(e: Enemy) {
@@ -47,8 +48,17 @@ export function drawEliteBar(e: Enemy) {
   ctx.restore();
 }
 
-/** a 장비 상자: a small gold-trimmed chest */
+/** a 장비 상자: the box of the gear sheet (art/originals/gear.png), or a small gold-trimmed chest drawn in code
+ *  until the sheet is loaded */
 export function drawBox(x: number, y: number, s: number, alpha = 1) {
+  const art = gearBoxImage();
+  if (art) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(art, x - 28 * s, y - 28 * s, 56 * s, 56 * s);
+    ctx.restore();
+    return;
+  }
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(x, y);

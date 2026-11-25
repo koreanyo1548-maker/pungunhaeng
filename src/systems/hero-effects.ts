@@ -68,13 +68,14 @@ export function applyStartTraits() {
     if (id === 'unhak') {
       s.bombs += HEROES.unhak.trait.value(heroLevel('unhak'));
     }
-    // 최대 체력 from the hero's own gear
+    // 최대 체력 and 필살기 from the hero's own gear (what each of the two brings)
     const more = heroGearFactor(id, 'maxHp');
     if (more) {
       const h = s.heroHealth[id];
       h.maxHp += more;
       h.hp += more;
     }
+    s.bombs += heroGearFactor(id, 'bombs');
   }
 }
 
@@ -122,7 +123,8 @@ export function critical(e, damage: number): number {
     chance = all ? 1 : factor('critChance');
   if (chance <= 0 || (chance < 1 && rnd(0, 1) >= chance)) return damage;
   const L = all ? G.state.effect.level : 0,
-    mult = all && L >= 2 ? 2.5 : 2;
+    // ×2 (홍련화 ★3: ×2.5), + the 치명타 피해 factor (gear)
+    mult = (all && L >= 2 ? 2.5 : 2) + factor('critDamage');
   if (G.time - (G.state.critLabel ?? -1) > 0.12) {
     G.state.critLabel = G.time;
     label('치명', e.x, e.y - 30, '#ff8fb0', 15);

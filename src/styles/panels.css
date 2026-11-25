@@ -1090,3 +1090,9 @@ button:disabled {
 .equipment-stats {
   clear: both;
 }
+.result-section h4 .result-box-icon {
+  width: 22px;
+  height: 22px;
+  margin: -4px 6px -6px 0;
+  vertical-align: middle;
+}

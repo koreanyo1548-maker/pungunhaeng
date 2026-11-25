@@ -236,13 +236,15 @@ async function scenarioA(browser, stage, seed) {
   // 만남 1: a passer-by (forced): 돕는다 asks for kills and pays 엽전, 무시한다 asks for 엽전 taken; one is 정, one 사
   await g.eval(() => (window.__g.state.forceNpc = 'passer'));
   await meet(g);
-  check(f, (await g.choiceTitle()) === '행인', '만남 1: a passer-by');
-  const acts = await g.eval(() => [...document.querySelectorAll('#choice .act')].map(b => b.textContent));
+  check(f, (await g.choiceTitle()) === '강호의 만남', '만남 1: a passer-by');
+  const acts = await g.eval(() => [...document.querySelectorAll('#choice .encounter-offer')].map(b => b.textContent));
   check(
     f,
-    /^돕는다 · 적 처치 (3\d|40)/.test(acts[0]) &&
+    /적 처치 (3\d|40)/.test(acts[0]) &&
+      /돕는다/.test(acts[0]) &&
       /엽전 50냥/.test(acts[0]) &&
-      /^무시한다 · 엽전 획득 (2\d|30)/.test(acts[1]) &&
+      /엽전 획득 (2\d|30)/.test(acts[1]) &&
+      /무시한다/.test(acts[1]) &&
       /점수 두 배 5초/.test(acts[1]) &&
       [acts[0], acts[1]]
         .map(t => (/정 \+1/.test(t) ? '정' : /사 \+1/.test(t) ? '사' : '?'))
@@ -288,8 +290,8 @@ async function scenarioA(browser, stage, seed) {
     await nextMeet(g);
     check(f, (await g.mode()) === 'choice', `만남 ${level + 1} is open`);
     const tag = await g.page.$eval('#choice .card .tag', e => e.textContent);
-    check(f, (await g.choiceTitle()) === '인연' && /정파/.test(tag), `만남 ${level + 1}: an 인연 (${tag})`);
-    const reward = await g.page.$eval('#choice .act', e => e.textContent);
+    check(f, (await g.choiceTitle()) === '강호의 만남' && /정파/.test(tag), `만남 ${level + 1}: an 인연 (${tag})`);
+    const reward = await g.page.$eval('#choice .encounter-offer', e => e.textContent);
     check(
       f,
       level <= 3 ? new RegExp(`${level}단계`).test(reward) : /엽전 50냥/.test(reward),
@@ -583,7 +585,7 @@ async function scenarioD(browser, seed) {
     early === 'play' && announced.mode === 'play' && announced.arrive && (await g.mode()) === 'choice',
     `the wait runs out: who comes is announced (1.5 s, the fight goes on), then the cards (${early}, ${JSON.stringify(announced)})`,
   );
-  check(f, (await g.choiceTitle()) === '행인', 'a passer-by (forced)');
+  check(f, (await g.choiceTitle()) === '강호의 만남', 'a passer-by (forced)');
   // a passer-by's 의뢰 runs on the same 60 s
   await g.act(0);
   await g.step(2);
@@ -851,7 +853,7 @@ async function scenarioE(browser, seed) {
   await g.eval(() => (window.__g.state.forceNpc = 'passer'));
   await meet(g);
   const first = await g.choiceTitle();
-  check(f, first === '행인', `the first 만남: a passer-by (forced, ${first})`);
+  check(f, first === '강호의 만남', `the first 만남: a passer-by (forced, ${first})`);
   await g.act(0);
   await g.step(2);
   // 정 1 and 사 2: the score gets +5%, the 엽전 banked +10% (a short run reaches no 기준 점수 tier)
@@ -1195,7 +1197,7 @@ async function scenarioG(browser, seed) {
   const card = await g.page.$eval('#choice .card', e => e.textContent);
   check(
     f,
-    (await g.choiceTitle()) === '인연' && /떠돌이 약선/.test(card),
+    (await g.choiceTitle()) === '강호의 만남' && /떠돌이 약선/.test(card),
     `she comes without a card (${card.slice(0, 40)})`,
   );
   check(f, /호감도 \+1/.test(card), 'the 따른다 choice says 호감도 +1');

@@ -20,6 +20,7 @@ export function openChoice(o) {
   box.classList.remove('party-cards');
   $('choice').classList.toggle('formation-screen', !!o.confirm);
   $('choice').classList.toggle('reward-screen', !!o.reward);
+  $('choice').classList.toggle('encounter-screen', !!o.encounter);
   box.classList.toggle('hero-grid', !!o.confirm);
   let selected = o.cards[0];
   const preview = document.createElement('div');
@@ -56,10 +57,16 @@ export function openChoice(o) {
     el.style.setProperty('--c', c.color);
     const stars = c.stars ? `<span class="stars">${c.starsFrom ? '★ → ' : ''}${'★'.repeat(c.stars)}</span>` : '';
     el.innerHTML = `${c.image ? artImage(c.image, c.artClass || 'choice-art') : ''}${stars}<span class="tag">${c.tag}</span><h3>${c.title}</h3>${c.quote ? `<span class="q">“${c.quote}”</span>` : ''}${c.desc && !o.confirm ? `<p>${c.desc}</p>` : ''}${c.footer ? `<span class="card-footer">${c.footer}</span>` : ''}`;
+    if (o.encounter) {
+      const person = document.createElement('div');
+      person.className = 'encounter-person';
+      person.innerHTML = el.innerHTML;
+      el.replaceChildren(person);
+    }
     if (c.acts) {
       const row = document.createElement('div');
       row.className = 'acts';
-      for (const a of c.acts) {
+      for (const [i, a] of c.acts.entries()) {
         const b = document.createElement('button');
         b.className = 'act';
         b.style.setProperty('--c', a.color);
@@ -70,9 +77,22 @@ export function openChoice(o) {
           $('choice').classList.add('hidden');
           a.onPick();
         };
-        row.appendChild(b);
+        if (o.encounter) {
+          const offer = document.createElement('section');
+          offer.className = 'encounter-offer';
+          offer.innerHTML = `<div class="encounter-offer-info" id="encounter-offer-${i}">${a.detail}</div>`;
+          b.setAttribute('aria-describedby', `encounter-offer-${i}`);
+          offer.appendChild(b);
+          row.appendChild(offer);
+        } else row.appendChild(b);
       }
       el.appendChild(row);
+      if (o.encounter && o.rules) {
+        const rules = document.createElement('details');
+        rules.className = 'encounter-rules';
+        rules.innerHTML = `<summary>정·사와 만남 규칙 보기</summary><p>${o.rules}</p>`;
+        el.appendChild(rules);
+      }
     } else
       el.onclick = () => {
         if (G.mode !== 'choice') return;

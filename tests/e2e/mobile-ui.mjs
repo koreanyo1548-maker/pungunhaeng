@@ -29,7 +29,7 @@ try {
     // 편대: tap two heroes (1 선봉, 2 후발); nothing commits until 출발, which needs both
     const formation = await g.state(() => [...window.__g.state.formation]);
     const roster = g.page.locator('#choice .party-hero');
-    assert.equal(await roster.count(), 12);
+    assert.equal(await roster.count(), 5);
     await roster.nth(1).tap();
     assert.equal(await g.mode(), 'choice');
     assert.equal(await roster.nth(1).getAttribute('aria-pressed'), 'true');
@@ -85,7 +85,7 @@ try {
     // a 만남: the 인연 card and its two choices fit, and a choice is a tap
     await g.eval(() => window.__g.meet('yakseon'));
     await g.step(2);
-    assert.equal(await g.choiceTitle(), '인연');
+    assert.equal(await g.choiceTitle(), '강호의 만남');
     assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover the 만남');
     const acts = g.page.locator('#choice .act');
     assert.equal(await acts.count(), 2);

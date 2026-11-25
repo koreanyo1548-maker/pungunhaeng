@@ -7,21 +7,21 @@
     "exact": true,
     "resampling": "LANCZOS; lossless encoding relative to the resized image"
   },
-  "fileCount": 41,
-  "originalBytes": 72408323,
-  "webpBytes": 26709180,
-  "savedBytes": 45699143,
-  "reductionPercent": 63.11,
+  "fileCount": 42,
+  "originalBytes": 74286332,
+  "webpBytes": 27052426,
+  "savedBytes": 47233906,
+  "reductionPercent": 63.58,
   "build": {
-    "fileCount": 40,
-    "resizedCount": 36,
-    "originalPngBytes": 70756229,
-    "fullsizeWebpBytes": 46042982,
-    "mobileWebpBytes": 25688248,
-    "savedBytes": 20354734,
-    "reductionPercent": 44.21,
-    "decodedPixelsBefore": 62917165,
-    "decodedPixelsAfter": 32777808
+    "fileCount": 41,
+    "resizedCount": 37,
+    "originalPngBytes": 72634238,
+    "fullsizeWebpBytes": 47271572,
+    "mobileWebpBytes": 26031494,
+    "savedBytes": 21240078,
+    "reductionPercent": 44.93,
+    "decodedPixelsBefore": 64490209,
+    "decodedPixelsAfter": 33169808
   },
   "files": [
     {
@@ -113,6 +113,21 @@
       "fullsizeWebpBytes": 1020932,
       "sourceSha256": "7781b482ad6da980a7bf19e35351036d4ee0766819b880aab4d1b8ca81e5e292",
       "webpSha256": "2c07b65db837362b463c2585c91e5336e9da640fb9e78f67a085ba8a843d381c"
+    },
+    {
+      "source": "art/originals/gear.png",
+      "runtime": "src/assets/images/gear.webp",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "width": 560,
+      "height": 700,
+      "includedInBuild": true,
+      "resized": true,
+      "originalBytes": 1878009,
+      "webpBytes": 343246,
+      "fullsizeWebpBytes": 1228590,
+      "sourceSha256": "24001140a91dc41e3c3b45e9e08334280f50fb2b5a3e6c5d4fdc80b2f20683a9",
+      "webpSha256": "23c412c14b10ab8ad034d417d8af925c1e849f54f28f7029724efe09365ef0a7"
     },
     {
       "source": "art/originals/hero-fly.png",

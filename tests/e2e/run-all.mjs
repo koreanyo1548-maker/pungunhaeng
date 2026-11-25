@@ -1694,14 +1694,17 @@ async function scenarioJ(browser, seed) {
   await g.eval(() => {
     document.querySelector('#collectionGrid .tile[data-id="pungun"]').click();
     [...document.querySelectorAll('.detail-tabs button')].find(b => b.textContent === '장비').click();
-    document.querySelector('.gear-slot[data-slot="weapon"]').click();
-    document.querySelector('.gear-item[data-uid="1"]').click();
+    document.querySelector('[data-filter="weapon"]').click();
+    document.querySelector('[data-gear="1"]').click();
+    document.querySelector('[data-action="equip"]').click();
+    document.querySelector('[data-action="plus"]').click();
   });
   const tab = await g.eval(() => ({
     worn: JSON.stringify(window.__g.profile.equipped.pungun),
-    sum: document.querySelector('.gear-sum p').textContent,
-    plus: document.querySelector('[data-act="plus"]').disabled,
+    sum: document.querySelector('.equipment-summary p').textContent,
+    plus: document.querySelector('[data-action="confirm-plus"]').disabled,
   }));
+  await g.eval(() => document.querySelector('[data-action="close"]').click());
   check(
     f,
     tab.worn === '{"robe":2,"weapon":1}' && /공격력 \+30%/.test(tab.sum) && /최대 체력 \+1/.test(tab.sum) && tab.plus,

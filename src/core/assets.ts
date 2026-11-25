@@ -1,3 +1,4 @@
+import { loadGearArt } from '../render/gear-art';
 import { showLobby } from '../ui/lobby';
 import imageDimensions from '../assets/image-dimensions.json';
 import { atlasCell, makeWhite, loadImage, cropProp, cropArt } from './image';
@@ -249,7 +250,7 @@ export async function load() {
     await loadNewArt();
     await loadCombatArt();
     await loadPortraitProps();
-    await Promise.all([loadSkillArt(), loadAmbientArt()]);
+    await Promise.all([loadSkillArt(), loadAmbientArt(), loadGearArt()]);
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

@@ -47,6 +47,8 @@ export type Detail = {
 };
 export type DetailTab = {
   label: string;
+  /** Self-contained portrait/loadout header for equipment. */
+  compact?: boolean;
   /** a picture with a line beside it (the basic shot) */
   figure?: { image: string; text: string };
   progress?: Detail['progress'];
@@ -110,6 +112,7 @@ const trackHtml = (t: Detail['track']) =>
 function renderDetail() {
   const d = current!.detail(shown!);
   if (d.tabs) return renderTabbed(d);
+  $('detail').querySelector('.panel').classList.remove('equipment-view');
   const p = d.progress,
     t = d.track;
   $('detailBody').innerHTML =
@@ -125,9 +128,12 @@ function renderDetail() {
 function renderTabbed(d: Detail) {
   const tabs = d.tabs!,
     open = tabs[Math.min(tab, tabs.length - 1)];
+  $('detail').querySelector('.panel').classList.toggle('equipment-view', !!open.compact);
   $('detailBody').innerHTML =
-    `<div class="detail-head stacked${d.locked ? ' locked' : ''}" style="--c:${d.color}"><span class="detail-art"><img alt="" src="${d.image}" draggable="false"></span><div>${d.caption ? `<span class="detail-caption">${d.caption}</span>` : ''}<h3>${d.name}</h3>${d.grade ? `<span class="detail-grade">${d.grade}</span>` : ''}</div></div>` +
-    sectionsHtml(d.sections) +
+    (open.compact
+      ? ''
+      : `<div class="detail-head stacked${d.locked ? ' locked' : ''}" style="--c:${d.color}"><span class="detail-art"><img alt="" src="${d.image}" draggable="false"></span><div>${d.caption ? `<span class="detail-caption">${d.caption}</span>` : ''}<h3>${d.name}</h3>${d.grade ? `<span class="detail-grade">${d.grade}</span>` : ''}</div></div>` +
+        sectionsHtml(d.sections)) +
     `<div class="detail-tabs" role="tablist">${tabs.map((t, i) => `<button role="tab" data-tab="${i}" aria-selected="${t === open}">${t.label}</button>`).join('')}</div>` +
     `<div class="detail-tab">${open.figure ? `<div class="detail-figure"><img alt="" src="${open.figure.image}" draggable="false"><p>${open.figure.text}</p></div>` : ''}${progressHtml(open.progress)}${sectionsHtml(open.sections)}${trackHtml(open.track)}${open.html ?? ''}</div>`;
   for (const b of $('detailBody').querySelectorAll('.detail-tabs button') as NodeListOf<HTMLButtonElement>)
@@ -169,6 +175,7 @@ export function openDetail(id: string) {
   renderDetail();
   $('detail').classList.remove('hidden');
   $('detail').querySelector('.panel').scrollTop = 0;
+  $('detailBody').scrollTop = 0;
 }
 /** Redraws the open grid and popup, after something changed the profile. */
 export function refreshCollection() {
@@ -200,6 +207,8 @@ $('detail').addEventListener('click', e => {
 window.addEventListener(
   'keydown',
   e => {
+    if (document.getElementById('gearDetail') && !document.getElementById('gearDetail')!.classList.contains('hidden'))
+      return;
     if (e.key !== 'Escape' || !current) return;
     e.stopImmediatePropagation();
     e.preventDefault();

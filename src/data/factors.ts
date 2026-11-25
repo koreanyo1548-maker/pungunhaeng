@@ -12,8 +12,6 @@ export const FACTOR_IDS = [
   'critChance',
   'critDamage',
   'bombs',
-  'bombPower',
-  'entrySeconds',
   // 생존
   'maxHp',
   'grazePct',
@@ -52,8 +50,6 @@ export const FACTORS: Record<FactorId, FactorInfo> = {
   critChance: { name: '치명타 확률', kind: 'combat', unit: '%' },
   critDamage: { name: '치명타 피해', kind: 'combat', unit: '%' },
   bombs: { name: '필살기', kind: 'combat', unit: '회' },
-  bombPower: { name: '필살기 위력', kind: 'combat', unit: '%' },
-  entrySeconds: { name: '등장 기술 시간', kind: 'combat', unit: '초' },
   maxHp: { name: '최대 체력', kind: 'survival', unit: '목숨' },
   grazePct: { name: '스침 범위', kind: 'survival', unit: '%' },
   hitInvuln: { name: '피격 뒤 무적', kind: 'survival', unit: '초' },

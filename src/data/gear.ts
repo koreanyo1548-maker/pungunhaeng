@@ -30,10 +30,10 @@ export const GEAR_ITEMS = {
   geumjeon: { name: '호골낭', slot: 'charm', factor: 'attackPct', color: '#ffdf87' },
   yeongmul: { name: '영물패', slot: 'charm', factor: 'bombs', color: '#c5f9ff' },
   pyoguk: { name: '표국 영패', slot: 'charm', factor: 'maxHp', color: '#ff8f6e' },
-  ssanghui: { name: '쌍희보', slot: 'manual', factor: 'entrySeconds', color: '#ffd36e' },
+  ssanghui: { name: '쌍희보', slot: 'manual', factor: 'critChance', color: '#ffd36e' },
   cheolli: { name: '속사결', slot: 'manual', factor: 'fireRatePct', color: '#a8e6cf' },
   jeongdo: { name: '금강결', slot: 'manual', factor: 'attackPct', color: '#9fd7ff' },
-  mua: { name: '무아심법', slot: 'manual', factor: 'bombPower', color: '#c5ffff' },
+  mua: { name: '무아심법', slot: 'manual', factor: 'hitInvuln', color: '#c5ffff' },
 } as const satisfies Record<string, GearItem>;
 export type GearItemId = keyof typeof GEAR_ITEMS;
 export const GEAR_ITEM_IDS = Object.keys(GEAR_ITEMS) as GearItemId[];
@@ -50,8 +50,6 @@ export const GRADE_VALUES: Record<FactorId, { grades: [number, number, number]; 
   critChance: { grades: [0.03, 0.06, 0.09] },
   critDamage: { grades: [0.2, 0.4, 0.6] },
   bombs: { grades: [1, 1, 2], flat: true },
-  bombPower: { grades: [0.2, 0.4, 0.6] },
-  entrySeconds: { grades: [1, 2, 3] },
   maxHp: { grades: [1, 1, 2], flat: true },
   grazePct: { grades: [0.1, 0.2, 0.3] },
   hitInvuln: { grades: [0.2, 0.4, 0.6] },

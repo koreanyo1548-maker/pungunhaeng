@@ -172,9 +172,7 @@ export function startEntry(id: HeroId, vanguard: HeroId) {
     scale = level >= 2 ? 1.5 : 1;
     if (level >= 4) s.inheritTrait = vanguard;
   }
-  // + the 등장 기술 시간 factor of the entering hero's gear (for a skill that lasts: not a one-off one)
-  const base = HEROES[hero].entry.seconds(level) * scale,
-    seconds = base > 0 ? base + heroGearFactor(id, 'entrySeconds') : base;
+  const seconds = HEROES[hero].entry.seconds(level) * scale;
   s.effect = { hero, level, left: seconds, total: seconds, timer: 0, angle: 0, via };
   const name = HEROES[hero].entry.name;
   label((via ? '계승 · ' : '') + name, G.player.x, G.player.y - 90, HEROES[hero].color, 22);

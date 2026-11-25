@@ -6,6 +6,8 @@ import type { GearItemId, Slot } from '../data/gear';
 
 export const GRADE_COLORS = ['#9aa7b4', '#6fd6c2', '#ffcf6a'];
 const pictures: string[] = [];
+/** the 장비 상자 cell, kept as a canvas to draw in play (render/elite-art.ts) */
+let boxCanvas: HTMLCanvasElement | null = null;
 export async function loadGearArt() {
   const atlas = await loadImage(atlasUrl);
   for (let i = 0; i < 20; i++) {
@@ -23,6 +25,7 @@ export async function loadGearArt() {
       144,
     );
     pictures[i] = c.toDataURL();
+    if (i === 15) boxCanvas = c;
   }
 }
 export function gearPicture(item: GearItemId | null, _grade: number, slot?: Slot): string {
@@ -30,3 +33,5 @@ export function gearPicture(item: GearItemId | null, _grade: number, slot?: Slot
 }
 export const slotPicture = (slot: Slot) => pictures[16 + ['weapon', 'robe', 'charm', 'manual'].indexOf(slot)];
 export const gearBoxPicture = () => pictures[15];
+/** the 장비 상자 for the canvas (null until the sheet is loaded) */
+export const gearBoxImage = () => boxCanvas;

@@ -1,8 +1,10 @@
-// 장비 (docs/equipment-plan.md, 3장): four slots, each giving one kind of factor. A piece of gear is an item (its
-// slot and base factor), a 등급 (★1 to ★3), a 강화 (+0 to +5) and maybe one 인챈트 factor. Numbers are first
+// 장비 (docs/equipment-plan.md, 3장): four slots. Gear gives only what belongs to the hero who wears it (attack,
+// health, 필살기 …: HERO_FACTORS), each item what fits its name; run-wide effects (items, 엽전, score) are not gear's
+// (2026-11: they would switch off when the other hero of the party takes over). A piece of gear is an item (its slot
+// and base factor), a 등급 (★1 to ★3), a 강화 (+0 to +5) and maybe one 인챈트 factor. Numbers are first
 // proposals; balance is set by play (docs/workflow.md 8장).
 // Imports only data with no imports, so any module can read it.
-import { FACTORS } from './factors';
+import { HERO_FACTORS } from './factors';
 import type { FactorEntry, FactorId, FactorKind } from './factors';
 
 export const SLOTS = ['weapon', 'robe', 'charm', 'manual'] as const;
@@ -17,20 +19,21 @@ export const SLOT_INFO: Record<Slot, { name: string; kind: FactorKind; kindName:
 export type GearItem = { name: string; slot: Slot; factor: FactorId; color: string };
 export const GEAR_ITEMS = {
   cheonggang: { name: '청강검', slot: 'weapon', factor: 'attackPct', color: '#9fd7ff' },
-  ssangbisu: { name: '쌍비수', slot: 'weapon', factor: 'dualSeconds', color: '#ff9a7a' },
+  ssangbisu: { name: '쌍비수', slot: 'weapon', factor: 'critChance', color: '#ff9a7a' },
   gwanil: { name: '관일창', slot: 'weapon', factor: 'pierce', color: '#c9b6ff' },
   yeonno: { name: '연노', slot: 'weapon', factor: 'fireRatePct', color: '#ffd27a' },
   cheolpo: { name: '철포', slot: 'robe', factor: 'maxHp', color: '#b8c4cc' },
   unmu: { name: '운무의', slot: 'robe', factor: 'grazePct', color: '#bfe9ff' },
   hosin: { name: '호신갑', slot: 'robe', factor: 'hitInvuln', color: '#d9c08a' },
-  jaseok: { name: '자석환', slot: 'charm', factor: 'magnetPct', color: '#8fe3b0' },
-  geumjeon: { name: '금전낭', slot: 'charm', factor: 'coinPct', color: '#ffdf87' },
-  yeongmul: { name: '영물패', slot: 'charm', factor: 'dropPct', color: '#c5f9ff' },
-  pyoguk: { name: '표국 영패', slot: 'charm', factor: 'eliteChance', color: '#ff8f6e' },
-  ssanghui: { name: '쌍희보', slot: 'manual', factor: 'doubleSeconds', color: '#ffd36e' },
-  cheolli: { name: '천리보', slot: 'manual', factor: 'distanceScorePct', color: '#a8e6cf' },
-  jeongdo: { name: '정도결', slot: 'manual', factor: 'virtueScorePct', color: '#9fd7ff' },
-  mua: { name: '무아심법', slot: 'manual', factor: 'hyperSeconds', color: '#c5ffff' },
+  // (ids stay as saved; 혈옥환·호골낭·속사결·금강결 were 자석환·금전낭·천리보·정도결)
+  jaseok: { name: '혈옥환', slot: 'charm', factor: 'critDamage', color: '#ff7a7a' },
+  geumjeon: { name: '호골낭', slot: 'charm', factor: 'attackPct', color: '#ffdf87' },
+  yeongmul: { name: '영물패', slot: 'charm', factor: 'bombs', color: '#c5f9ff' },
+  pyoguk: { name: '표국 영패', slot: 'charm', factor: 'maxHp', color: '#ff8f6e' },
+  ssanghui: { name: '쌍희보', slot: 'manual', factor: 'entrySeconds', color: '#ffd36e' },
+  cheolli: { name: '속사결', slot: 'manual', factor: 'fireRatePct', color: '#a8e6cf' },
+  jeongdo: { name: '금강결', slot: 'manual', factor: 'attackPct', color: '#9fd7ff' },
+  mua: { name: '무아심법', slot: 'manual', factor: 'bombPower', color: '#c5ffff' },
 } as const satisfies Record<string, GearItem>;
 export type GearItemId = keyof typeof GEAR_ITEMS;
 export const GEAR_ITEM_IDS = Object.keys(GEAR_ITEMS) as GearItemId[];
@@ -45,6 +48,10 @@ export const GRADE_VALUES: Record<FactorId, { grades: [number, number, number]; 
   pierce: { grades: [1, 1, 2], flat: true },
   fireRatePct: { grades: [0.03, 0.06, 0.09] },
   critChance: { grades: [0.03, 0.06, 0.09] },
+  critDamage: { grades: [0.2, 0.4, 0.6] },
+  bombs: { grades: [1, 1, 2], flat: true },
+  bombPower: { grades: [0.2, 0.4, 0.6] },
+  entrySeconds: { grades: [1, 2, 3] },
   maxHp: { grades: [1, 1, 2], flat: true },
   grazePct: { grades: [0.1, 0.2, 0.3] },
   hitInvuln: { grades: [0.2, 0.4, 0.6] },
@@ -87,9 +94,8 @@ export function gearFactors(g: Gear): FactorEntry[] {
 /** "청강검 ★2 +3" */
 export const gearName = (g: Gear) => `${GEAR_ITEMS[g.item].name} ${'★'.repeat(g.grade)}${g.plus ? ' +' + g.plus : ''}`;
 
-/** the factors an 인챈트 can roll on a slot: those of its kind (치명타 too, on weapons) */
-export const enchantPool = (slot: Slot): FactorId[] =>
-  (Object.keys(FACTORS) as FactorId[]).filter(f => FACTORS[f].kind === SLOT_INFO[slot].kind);
+/** the factors an 인챈트 can roll: any that belongs to a hero, whatever the slot */
+export const enchantPool = (_slot?: Slot): FactorId[] => [...HERO_FACTORS];
 /** an 인챈트's value: the factor's ★1 value */
 export const enchantValue = (f: FactorId) => GRADE_VALUES[f].grades[0];
 

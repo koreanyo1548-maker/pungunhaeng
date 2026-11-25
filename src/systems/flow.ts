@@ -21,7 +21,7 @@ import { factor } from './factors';
 import { openBox } from './gear';
 import { gearFactors, gearName } from '../data/gear';
 import { factorText } from '../data/factors';
-import { gearPicture } from '../render/gear-art';
+import { gearBoxPicture, gearPicture } from '../render/gear-art';
 import { announce, showBank, showBest, syncHUD } from '../ui/hud';
 import { clearPfx } from '../render/pfx';
 import { prepareGlows } from '../render/glows';
@@ -142,6 +142,7 @@ export function end(victory = false) {
   // the 장비 상자 won from the 정예 적 open now (kept even when the run is lost)
   const won = Array.from({ length: G.state.elite?.boxes ?? 0 }, () => openBox('elite'));
   $('gearSection').classList.toggle('hidden', !won.length);
+  ($('gearBoxIcon') as HTMLImageElement).src = gearBoxPicture();
   $('gearRows').innerHTML = won
     .map(
       g =>

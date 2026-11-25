@@ -12,6 +12,7 @@ import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
 import { bondPower } from '../data/skills';
 import { attackBonus, heroAttack } from './hero-effects';
+import { factor } from './factors';
 import { notify, syncHUD } from '../ui/hud';
 
 const BLAST = ramp('#7fe6cf'),
@@ -29,7 +30,8 @@ export function blast() {
   G.hazards = [];
   const before = G.state.kills;
   G.state.blasting = true;
-  for (const e of G.enemies) hitEnemy(e, e.boss ? TUNE.attack * TUNE.blastBoss : e.hp + 1);
+  // the boss takes a fixed blow, raised by the 필살기 위력 factor (gear); the rest fall
+  for (const e of G.enemies) hitEnemy(e, e.boss ? TUNE.attack * TUNE.blastBoss * (1 + factor('bombPower')) : e.hp + 1);
   G.state.blasting = false;
   const killed = G.state.kills - before;
   if (killed > 0) {

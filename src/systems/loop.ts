@@ -230,20 +230,22 @@ function updateHazards(dt: number): boolean {
 function updatePickups(dt: number): void {
   for (const p of G.pickups) {
     p.life -= dt;
-    // no magnet by default (not in 무아지경 either): only 황연청 in the party or the 자석 item pull pickups in; otherwise a
-    // pickup pops up from the kill and falls (entities/pickups.ts) and has to be caught
+    // no magnet by default (not in 무아지경 either): only 황연청 in the party or the 자석 item pull 엽전 in, from
+    // BASELINE.magnet.graze × the 스침 거리; caught, a coin is drawn in from rest, faster and faster, until it is taken
+    // (items are not pulled). Otherwise a pickup pops up from the kill and falls (entities/pickups.ts) and has to be
+    // caught.
     const dx = G.player.x - p.x,
       dy = G.player.y - p.y,
       dist = Math.hypot(dx, dy),
-      reach = magnetReach(),
-      coinLike = isCoinLike(p.kind),
-      attract = reach > 0 && dist < (coinLike ? 150 : 65) * reach;
-    if (attract) {
-      const v = coinLike ? 600 : 260;
-      p.x += (dx / Math.max(1, dist)) * Math.min(v * dt, dist);
-      p.y += (dy / Math.max(1, dist)) * Math.min(v * dt, dist);
+      reach = magnetReach();
+    if (reach > 0 && isCoinLike(p.kind) && (p.pull !== undefined || dist < reach)) {
+      p.pull = (p.pull ?? 0) + BASELINE.magnet.accel * dt;
+      const step = Math.min(p.pull * dt, dist);
+      p.x += (dx / Math.max(1, dist)) * step;
+      p.y += (dy / Math.max(1, dist)) * step;
       p.vy = Math.max(0, p.vy);
     } else {
+      p.pull = undefined;
       // an item hangs at the top of its pop (BASELINE.itemHang) before it falls
       if (p.hang > 0 && p.vy >= 0) {
         p.hang -= dt;
@@ -262,7 +264,7 @@ function updatePickups(dt: number): void {
       }
       p.vx *= Math.exp(-dt * 1.2);
     }
-    const take = coinLike ? PICKUP_REACH.coin : PICKUP_REACH.item;
+    const take = isCoinLike(p.kind) ? PICKUP_REACH.coin : PICKUP_REACH.item;
     if (dist < take || Math.hypot(G.player.x - p.x, G.player.y - p.y) < take) collect(p);
   }
 }

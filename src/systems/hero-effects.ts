@@ -10,6 +10,7 @@ import { rnd } from '../core/math';
 import { visualSkill, withSkill } from '../core/skill-context';
 import { HEROES } from '../data/heroes';
 import { TUNE } from '../data/tune';
+import { BASELINE } from '../data/baseline';
 import type { HeroId } from '../data/roster';
 import { hitEnemy } from '../entities/enemies';
 import { burst, label, ring } from '../render/fx';
@@ -38,12 +39,13 @@ export function traitValue(id: HeroId): number | undefined {
 
 /** graze reach multiplier: 묵영's trait, and the 스침 범위 factor (gear) */
 export const grazeReach = () => (traitValue('mukyoung') ?? 1) * (1 + factor('grazePct'));
-/** reach of the 자석 item (the same scale as 황연청's trait: 엽전 within 150 px × reach, items within 65 px × reach) */
-export const MAGNET_ITEM_REACH = 2;
-/** How far pickups are pulled in: 0 without a magnet. 황연청 in the party is a magnet of her own; the 자석 item is
- *  another (the larger counts). */
+
+/** How far 엽전 are pulled in from: 0 without a magnet. 황연청 in the party and the 자석 item are the same magnet:
+ *  BASELINE.magnet.graze × the 스침 거리, raised by the 자석 범위 factor. */
 export const magnetReach = () =>
-  Math.max(traitValue('yeoncheong') ?? 0, G.state.magnet > 0 ? MAGNET_ITEM_REACH : 0) * (1 + factor('magnetPct'));
+  traitValue('yeoncheong') || G.state.magnet > 0
+    ? TUNE.grazeRadius * BASELINE.magnet.graze * (1 + factor('magnetPct'))
+    : 0;
 /** 한소운: 무아지경 item duration multiplier. */
 export const hyperItemScale = () => 1 + (traitValue('soun') ?? 0);
 /** seconds of a 무아지경 item: the base × 한소운, + the 무아지경 시간 factor (gear) */

@@ -48,7 +48,7 @@ export interface RunState {
   kills: number;
   bombs: number;
   hyper: number;
-  /** seconds left of the 자석 item: 엽전 and items are pulled in */
+  /** seconds left of the 자석 item: 엽전 are pulled in (BASELINE.magnet) */
   magnet: number;
   /** seconds left of the 점수 두 배 item */
   double: number;

@@ -243,7 +243,7 @@ async function scenarioA(browser, stage, seed) {
     /^돕는다 · 적 처치 (3\d|40)/.test(acts[0]) &&
       /엽전 50냥/.test(acts[0]) &&
       /^무시한다 · 엽전 획득 (2\d|30)/.test(acts[1]) &&
-      /점수 두 배 3초/.test(acts[1]) &&
+      /점수 두 배 5초/.test(acts[1]) &&
       [acts[0], acts[1]]
         .map(t => (/정 \+1/.test(t) ? '정' : /사 \+1/.test(t) ? '사' : '?'))
         .sort()
@@ -403,8 +403,8 @@ async function scenarioB(browser, seed) {
   await succeed(g);
   check(
     f,
-    Math.abs((await g.state(() => window.__g.state.double)) - 3) < 0.1,
-    'the 엽전 의뢰 met: 점수 두 배 3 s at once',
+    Math.abs((await g.state(() => window.__g.state.double)) - 5) < 0.1,
+    'the 엽전 의뢰 met: 점수 두 배 5 s at once',
   );
   // 만남 2: 비연 낭자 (사파); defy → 정 +1; success pays 엽전
   await nextMeet(g);
@@ -1289,7 +1289,7 @@ async function scenarioG(browser, seed) {
 }
 
 // Scenario H: 의뢰 targets 5/6 of the full count ±10% each time, the row gap (2 s → 0.8 s with
-// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (3 s, retaken = full time), one
+// distance), pickups pop up and fall with no magnet, the 자석 and 점수 두 배 items (5 s, retaken = full time), one
 // 엽전 a kill, 무아지경 rows by distance (엽전 only), and the 기준 점수 of every stage.
 async function scenarioH(browser, seed) {
   const f = [];
@@ -1378,10 +1378,11 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   let s = await g.state(() => ({ magnet: window.__g.state.magnet, coins: window.__g.state.coins }));
-  check(f, Math.abs(s.magnet - 3) < 0.05, `자석 runs 3 s (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 5) < 0.05, `자석 runs 5 s (${s.magnet})`);
   await g.eval(() => {
     const pl = window.__g.player;
-    window.__g.addPickup('coin', pl.x + 110, pl.y - 200);
+    // inside the pull (6 × the 스침 거리, about 156 px): it is drawn in
+    window.__g.addPickup('coin', pl.x + 80, pl.y - 110);
   });
   await g.step(60);
   const coins = await g.state(() => window.__g.state.coins);
@@ -1393,7 +1394,7 @@ async function scenarioH(browser, seed) {
   });
   await g.step(1);
   s = await g.state(() => ({ magnet: window.__g.state.magnet }));
-  check(f, Math.abs(s.magnet - 3) < 0.05, `retaking 자석 sets it back to 3 s, no stacking (${s.magnet})`);
+  check(f, Math.abs(s.magnet - 5) < 0.05, `retaking 자석 sets it back to 5 s, no stacking (${s.magnet})`);
   // 점수 두 배: a 엽전 is worth 20 while it runs
   await g.eval(() => {
     const pl = window.__g.player;
@@ -1409,8 +1410,8 @@ async function scenarioH(browser, seed) {
   const after = await g.state(() => window.__g.state.score);
   check(
     f,
-    Math.abs(before.double - 3) < 0.05 && after - before.score > 20 && after - before.score < 21,
-    `점수 두 배: 3 s, a 엽전 scores 20 (+${after - before.score})`,
+    Math.abs(before.double - 5) < 0.05 && after - before.score > 20 && after - before.score < 21,
+    `점수 두 배: 5 s, a 엽전 scores 20 (+${after - before.score})`,
   );
   // one 엽전 a kill (an item drops with 3%, so a few kills are checked)
   const drops = await g.eval(() => {

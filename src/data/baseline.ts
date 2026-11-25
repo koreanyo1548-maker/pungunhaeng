@@ -53,6 +53,9 @@ export const BASELINE = {
   /** 무아지경: `seconds` long at `speed` × the running speed, it cuts through everything; at its end the screen
    *  bursts and the enemies left turn into 엽전 */
   hyper: { seconds: 2, speed: 6, descent: 2.5 },
+  /** 자석 (the item, 황연청's trait): 엽전 within `graze` × the 스침 거리 (TUNE.grazeRadius) are pulled in, from rest,
+   *  faster and faster (`accel` px/s²) until caught; items are not pulled (a later item option may) */
+  magnet: { graze: 6, accel: 3000 },
   /** a kill drops an item with `chance`; which one is picked by `weights` (자석 4 : 점수 두 배 4 : 듀얼샷 4 : 무아지경 2);
    *  a 무아지경 kill drops none */
   itemDrop: { chance: 0.03, weights: { magnet: 4, double: 4, dual: 4, hyper: 2 } },

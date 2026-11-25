@@ -29,7 +29,7 @@ export type PickupKind = 'coin' | 'hyper' | 'magnet' | 'double' | 'dual';
 /** the items a kill can drop (picked by BASELINE.itemDrop.weights) */
 export const ITEMS = ['hyper', 'magnet', 'double', 'dual'] as const;
 /** seconds the 자석, 점수 두 배 and 듀얼샷 items last */
-export const ITEM_SECONDS = 3;
+export const ITEM_SECONDS = 5;
 /** seconds of 점수 두 배: ITEM_SECONDS + the 점수 두 배 시간 factor (gear) */
 export const doubleSeconds = () => ITEM_SECONDS + factor('doubleSeconds');
 const secs = (n: number) => +n.toFixed(1);

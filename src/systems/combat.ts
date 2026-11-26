@@ -10,7 +10,6 @@ import { hitEnemy } from '../entities/enemies';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, ramp } from '../render/pfx';
 import { hasSkill } from './skill-state';
-import { bondPower } from '../data/skills';
 import { attackBonus, heroAttack } from './hero-effects';
 import { notify, syncHUD } from '../ui/hud';
 
@@ -20,7 +19,7 @@ const BLAST = ramp('#7fe6cf'),
 /** damage scale of one basic shot: the stage, and 녹림 의적 1단계 */
 /** one basic shot's damage: the fighting hero's attack (a whole number), times %-bonuses (녹림 의적 1단계, 아영) */
 export function shotPower() {
-  return heroAttack() * bondPower() * (1 + attackBonus());
+  return heroAttack() * (1 + attackBonus());
 }
 export function blast() {
   if (G.mode !== 'play' || G.state.bombs <= 0 || ['clear', 'warning'].includes(G.state.phase)) return;
@@ -127,7 +126,6 @@ export function graze(h) {
   const gx = (h.x + G.player.x) / 2,
     gy = (h.y + G.player.y) / 2;
   if (!pfx('hit', gx, gy, { palette: GRAZE })) burst(gx, gy, BR.yu.color, 5, 120);
-  if (hasSkill('biyeon')) skillCue('biyeon', h.x, h.y, 65);
   if (G.time - (G.state.lastGraze || -1) > 0.06) {
     tone(1500, 0.04, 'sine', 0.04, 2100);
     G.state.lastGraze = G.time;
@@ -135,7 +133,6 @@ export function graze(h) {
   emit('graze', { h, x: h.x, y: h.y });
 }
 export function grazeEnemy(e) {
-  if (hasSkill('biyeon')) skillCue('biyeon', G.player.x, G.player.y, 80);
   G.state.grazes++;
   const gx = (e.x + G.player.x) / 2;
   if (!pfx('hit', gx, G.player.y, { palette: GRAZE })) burst(gx, G.player.y, BR.yu.color, 5, 120);

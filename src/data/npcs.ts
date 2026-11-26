@@ -18,7 +18,7 @@ export const NPCS = {
     title: '구름을 따라 떠도는 도사',
     br: 'yu',
     side: 'good' as Side,
-    levels: ['biyeon', 'yusu', 'taeguk'],
+    levels: ['yusu', 'taeguk'],
     quests: [
       {
         say: '바람을 거스르지 말게.',
@@ -38,7 +38,7 @@ export const NPCS = {
     title: '천마신교의 그림자',
     br: 'gi',
     side: 'evil' as Side,
-    levels: ['manryu', 'geomu', 'art_cheonma'],
+    levels: ['geomu', 'art_cheonma'],
     quests: [
       {
         say: '피를 두려워 마라. 한 줄씩 쓸어 버려라.',
@@ -58,7 +58,7 @@ export const NPCS = {
     title: '산문을 지키는 노승',
     br: 'gang',
     side: 'good' as Side,
-    levels: ['swaegap', 'bungsan', 'art_cheolgap'],
+    levels: ['bungsan', 'art_cheolgap'],
     quests: [
       {
         say: '한 걸음도 물러서지 마시게.',
@@ -78,7 +78,7 @@ export const NPCS = {
     title: '암기를 쓰는 여협',
     br: 'yu',
     side: 'evil' as Side,
-    levels: ['muyoung', 'janyoung', 'mancheon'],
+    levels: ['janyoung', 'mancheon'],
     quests: [
       {
         say: '발끝으로 춤춰 봐요. 서 있으면 죽어요.',
@@ -98,7 +98,7 @@ export const NPCS = {
     title: '산을 떠도는 의원',
     br: 'gi',
     side: 'good' as Side,
-    levels: ['cheolgol', 'gitan', 'hoechun'],
+    levels: ['gitan', 'hoechun'],
     quests: [
       {
         say: '독은 피하는 것이 약이네.',
@@ -118,7 +118,7 @@ export const NPCS = {
     title: '채주를 등진 산적',
     br: 'gang',
     side: 'evil' as Side,
-    levels: ['yeonhwan', 'uihyeop', 'art_dobeop'],
+    levels: ['uihyeop', 'art_dobeop'],
     quests: [
       {
         say: '한 놈도 놓치지 마라.',

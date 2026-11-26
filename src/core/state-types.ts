@@ -109,8 +109,8 @@ export interface RunState {
   evil: number;
   /** who comes to a 만남: the weights of a passer-by, a 정파 and a 사파 인연 (systems/alignment.ts) */
   meetOdds: { passer: number; good: number; evil: number };
-  /** the 의뢰 the open 만남 offers (rolled when it opens: the cards show them), by choice */
-  offer?: Quest[];
+  /** the 의뢰 the open 만남 brings (rolled when it opens: the card shows it) */
+  offer?: Quest;
   /** each 인연's level this run, 0 to 3 */
   bond: Record<string, number>;
   /** seconds of flight before the next 만남 when no 의뢰 runs, and the whole wait (systems/encounter.ts) */

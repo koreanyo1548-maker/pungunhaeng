@@ -99,11 +99,12 @@ async function succeed(g) {
 async function waitForDeath(g) {
   for (let i = 0; i < 180 && (await g.mode()) !== 'result'; i++) {
     if ((await g.mode()) === 'choice') {
+      // a 만남: tap its card (one 의뢰); other choice screens: their last enabled button
       await g.eval(() =>
-        [...document.querySelectorAll('#choice .act')]
-          .filter(b => !b.disabled)
-          .at(-1)
-          .click(),
+        (
+          document.querySelector('#choice.encounter-screen .card') ||
+          [...document.querySelectorAll('#choice .act')].filter(b => !b.disabled).at(-1)
+        )?.click(),
       );
       await g.eval(() => {
         window.__g.player.inv = 0;
@@ -233,26 +234,26 @@ async function scenarioA(browser, stage, seed) {
   check(f, e.active === 1 && e.effect === e.second, `the second enters with their entry skill (${JSON.stringify(e)})`);
   await g.eval(() => window.__g.god());
 
-  // 만남 1: a passer-by (forced): 돕는다 asks for kills and pays 엽전, 무시한다 asks for 엽전 taken; one is 정, one 사
+  // 만남 1: a passer-by (forced): one 의뢰, kills for 엽전, its point 정 or 사; a tap on the card takes it
   await g.eval(() => (window.__g.state.forceNpc = 'passer'));
   await meet(g);
   check(f, (await g.choiceTitle()) === '강호의 만남', '만남 1: a passer-by');
-  const acts = await g.eval(() => [...document.querySelectorAll('#choice .encounter-offer')].map(b => b.textContent));
+  const card = await g.eval(() => ({
+    offers: [...document.querySelectorAll('#choice .encounter-offer')].map(b => b.textContent),
+    buttons: document.querySelectorAll('#choice .act').length,
+    tap: document.querySelector('#choice .encounter-tap')?.textContent ?? '',
+  }));
   check(
     f,
-    /적 처치 (3\d|40)/.test(acts[0]) &&
-      /돕는다/.test(acts[0]) &&
-      /엽전 50냥/.test(acts[0]) &&
-      /엽전 획득 (2\d|30)/.test(acts[1]) &&
-      /무시한다/.test(acts[1]) &&
-      /점수 두 배 5초/.test(acts[1]) &&
-      [acts[0], acts[1]]
-        .map(t => (/정 \+1/.test(t) ? '정' : /사 \+1/.test(t) ? '사' : '?'))
-        .sort()
-        .join() === '사,정',
-    `passer-by: help (kills → 엽전) or ignore (엽전 → 점수 두 배), one 정 and one 사 (${acts})`,
+    card.offers.length === 1 &&
+      card.buttons === 0 &&
+      /적 처치 (3\d|40)/.test(card.offers[0]) &&
+      /엽전 50냥/.test(card.offers[0]) &&
+      /[정사] \+1/.test(card.offers[0]) &&
+      /화면을 누르면 시작 10/.test(card.tap),
+    `passer-by: one 의뢰 (kills → 엽전, 정 or 사), no buttons, tap or 10 s (${JSON.stringify(card)})`,
   );
-  const helpMove = await g.eval(() => window.__g.state.offer[0].move);
+  const helpMove = await g.eval(() => window.__g.state.offer.move);
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
@@ -265,7 +266,7 @@ async function scenarioA(browser, stage, seed) {
       s.odds.passer === 5 &&
       s.odds[side] === 3 &&
       s.path.at(-1).result === '진행 중',
-    `돕는다: its point (${side}) moves 10% of the odds from the passer-by (${JSON.stringify(s.odds)})`,
+    `the passer-by's 의뢰: its point (${side}) moves 10% of the odds from the passer-by (${JSON.stringify(s.odds)})`,
   );
   const coins = s.coins;
   // no 엽전 on the field to catch meanwhile
@@ -282,9 +283,9 @@ async function scenarioA(browser, stage, seed) {
     `the kills met: 엽전 +50 (${coins} → ${s.coins})`,
   );
 
-  // 만남 2–5: 떠돌이 약선 (called); following and meeting her 의뢰 raises her a level each time
-  const want = ['cheolgol', 'gitan', 'hoechun'];
-  for (let level = 1; level <= 4; level++) {
+  // 만남 2–4: 떠돌이 약선 (called); meeting her 의뢰 raises her a level each time (two levels, then 엽전)
+  const want = ['gitan', 'hoechun'];
+  for (let level = 1; level <= 3; level++) {
     const before = await g.state(S);
     // the 만남 after a met 의뢰: its reward, 3 s, the announcement, then the cards
     await nextMeet(g);
@@ -294,13 +295,13 @@ async function scenarioA(browser, stage, seed) {
     const reward = await g.page.$eval('#choice .encounter-offer', e => e.textContent);
     check(
       f,
-      level <= 3 ? new RegExp(`${level}단계`).test(reward) : /엽전 50냥/.test(reward),
+      level <= 2 ? new RegExp(`${level}단계`).test(reward) : /엽전 50냥/.test(reward),
       `the 의뢰 says its reward (${reward})`,
     );
     await g.act(0);
     await g.step(2);
     s = await g.state(S);
-    check(f, s.quest?.npc === 'yakseon' && s.good === before.good + 1, `따른다: 정 +1 (정 ${s.good})`);
+    check(f, s.quest?.npc === 'yakseon' && s.good === before.good + 1, `taken: 정 +1 (정 ${s.good})`);
     // the target: 5/6 of the full count, ±10%, however often she comes
     const t = await g.eval(() => {
       const st = window.__g.state,
@@ -313,25 +314,25 @@ async function scenarioA(browser, stage, seed) {
       t.target >= Math.round(((t.n * 5) / 6) * 0.9) && t.target <= Math.round(((t.n * 5) / 6) * 1.1),
       `the 의뢰 asks 5/6 of ${t.n} ±10% (${t.target})`,
     );
-    if (level < 4) await g.eval(() => (window.__g.state.forceNpc = 'yakseon'));
+    if (level < 3) await g.eval(() => (window.__g.state.forceNpc = 'yakseon'));
     await succeed(g);
     s = await g.state(S);
-    if (level <= 3) {
+    const bonds = await g.eval(() => window.__g.profile.bonds.yakseon);
+    if (level <= 2)
       check(
         f,
-        s.bond.yakseon === level && s.skills.at(-1) === want[level - 1],
-        `success: 약선 ${level}단계 · ${want[level - 1]} (${JSON.stringify(s.bond)}, ${s.skills})`,
+        s.bond.yakseon === level && s.skills.at(-1) === want[level - 1] && bonds === level,
+        `success: 약선 ${level}단계 · ${want[level - 1]}, 호감도 ${bonds} (${JSON.stringify(s.bond)}, ${s.skills})`,
       );
-      if (level === 1) check(f, s.maxHp === 100, `약선 1단계: 최대 체력 +1 (${s.maxHp})`);
-    } else
+    else
       check(
         f,
-        s.coins === before.coins + 50 && s.skills.length === 3,
-        `after 3단계: 엽전 +50 instead (${before.coins} → ${s.coins})`,
+        s.coins === before.coins + 50 && s.skills.length === 2 && bonds === 3,
+        `after 2단계: 엽전 +50 instead, 호감도 still +1 (${before.coins} → ${s.coins}, ${bonds})`,
       );
     check(f, s.path.at(-1).result === '성취', 'path records 성취');
   }
-  check(f, s.odds.passer === 1, `five points: the passer-by keeps 10% of the odds (${JSON.stringify(s.odds)})`);
+  check(f, s.odds.passer === 2, `four points: the passer-by keeps 20% of the odds (${JSON.stringify(s.odds)})`);
   // the last met 의뢰 brings 만남 6
   await nextMeet(g);
   check(f, (await g.mode()) === 'choice', 'a met 의뢰 brings the next 만남');
@@ -345,7 +346,7 @@ async function scenarioA(browser, stage, seed) {
   s = await g.state(S);
   const title = await g.page.$eval('#resultTitle', e => e.textContent);
   check(f, s.mode === 'result' && title === '강호행 승리', `beating the boss ends the run (${title})`);
-  const wantScenes = ['formation', 'stage', ...Array(6).fill(['encounter', 'stage']).flat(), 'result'];
+  const wantScenes = ['formation', 'stage', ...Array(5).fill(['encounter', 'stage']).flat(), 'result'];
   const got = await g.eval(() => window.__g.sceneLog);
   check(
     f,
@@ -378,71 +379,65 @@ async function scenarioB(browser, seed) {
   const g = await openGame(file, { browser, seed });
   await setup(g, 0);
   await g.eval(() => window.__g.god());
-  // 만남 1: a passer-by; 무시한다 asks for 엽전 taken and turns 점수 두 배 on
+  // 만남 1: a passer-by; left alone, the card takes its 의뢰 by itself after 10 s
   await g.eval(() => (window.__g.state.forceNpc = 'passer'));
   await meet(g);
-  const ignoreMove = await g.eval(() => window.__g.state.offer[1].move);
-  await g.act(1);
-  await g.step(2);
+  await g.seconds(5);
+  const waiting = await g.eval(() => ({
+    mode: window.__g.mode,
+    tap: document.querySelector('#choice .encounter-tap')?.textContent ?? '',
+  }));
+  await g.seconds(5.2);
   let s = await g.state(S);
-  const side = ignoreMove > 0 ? 'good' : 'evil';
   check(
     f,
-    s.quest?.t === 'coins' && s[side] === 1 && s.good + s.evil === 1,
-    `무시한다: an 엽전 의뢰, ${side} +1 (정 ${s.good} · 사 ${s.evil})`,
+    waiting.mode === 'choice' &&
+      /화면을 누르면 시작 5/.test(waiting.tap) &&
+      s.mode === 'play' &&
+      s.quest?.t === 'kills',
+    `the card counts down and takes the 의뢰 by itself (${JSON.stringify(waiting)}, ${s.mode}, ${s.quest?.t})`,
   );
-  // 엽전 taken count
-  const prog = await g.eval(() => {
-    const G = window.__g;
-    G.pickups.length = 0;
-    G.addPickup('coin', G.player.x, G.player.y);
-    G.addPickup('coin', G.player.x, G.player.y);
-    return null;
-  });
-  await g.step(2);
-  check(f, (await g.state(() => window.__g.state.quest.prog)) === 2, `each 엽전 counts 1 (${prog})`);
   await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
   await succeed(g);
-  check(
-    f,
-    Math.abs((await g.state(() => window.__g.state.double)) - 5) < 0.1,
-    'the 엽전 의뢰 met: 점수 두 배 5 s at once',
-  );
-  // 만남 2: 비연 낭자 (사파); defy → 정 +1; success pays 엽전
+  // 만남 2: 비연 낭자 (사파): taking her 의뢰 is 사 +1; met, she rises to 1단계 and her 호감도 +1
   await nextMeet(g);
   const before = await g.state(S);
-  await g.act(1);
+  const bond0 = await g.eval(() => window.__g.profile.bonds.yeonhyeop);
+  await g.act(0);
   await g.step(2);
   s = await g.state(S);
   check(
     f,
-    s.quest?.npc === 'yeonhyeop' && s.quest.mode === 'defy' && s.good === before.good + 1 && s.evil === before.evil,
-    `거스른다: 정 +1 (정 ${s.good} · 사 ${s.evil})`,
+    s.quest?.npc === 'yeonhyeop' && s.evil === before.evil + 1 && s.good === before.good,
+    `an 인연's 의뢰 taken: 사 +1 for a 사파 (정 ${s.good} · 사 ${s.evil})`,
   );
-  const coins = s.coins;
+  check(f, (await g.eval(() => window.__g.profile.bonds.yeonhyeop)) === bond0, '호감도 does not rise when it is taken');
   await g.eval(() => (window.__g.state.forceNpc = 'yeonhyeop'));
   await succeed(g);
   s = await g.state(S);
+  const bond1 = await g.eval(() => window.__g.profile.bonds.yeonhyeop);
   check(
     f,
-    s.coins === coins + 50 && !s.bond.yeonhyeop && !s.skills.length,
-    `defied and met: 엽전 +50, no level (${coins} → ${s.coins})`,
+    s.bond.yeonhyeop === 1 && s.skills.at(-1) === 'janyoung' && bond1 === bond0 + 1,
+    `met: 비연 낭자 1단계 (잔영), 호감도 +1 (${JSON.stringify(s.bond)}, ${s.skills}, ${bond0} → ${bond1})`,
   );
-  // 만남 3: 비연 낭자 again; follow, and let its time run out → the 의뢰 fails, the point stays
+  // 만남 3: 비연 낭자 again; let its time run out → the 의뢰 fails, the point stays, no 호감도
   await nextMeet(g);
   check(f, (await g.mode()) === 'choice', 'the met 의뢰 brought 만남 3');
   await g.act(0);
   await g.step(2);
   s = await g.state(S);
-  check(f, s.evil === before.evil + 1, `따른다: 사 +1 (정 ${s.good} · 사 ${s.evil})`);
+  check(f, s.evil === before.evil + 2, `taken: 사 +1 (정 ${s.good} · 사 ${s.evil})`);
   check(f, (await g.state(() => window.__g.state.quest.left)) > 59, 'an 의뢰 has 60 s');
   await g.eval(() => (window.__g.state.quest.left = 0.05));
   await g.seconds(0.3);
   s = await g.state(S);
   check(
     f,
-    s.path.at(-1).result === '미달' && s.evil === before.evil + 1,
-    `its time runs out: the 의뢰 fails (${JSON.stringify(s.path.at(-1))})`,
+    s.path.at(-1).result === '미달' &&
+      s.evil === before.evil + 2 &&
+      (await g.eval(() => window.__g.profile.bonds.yeonhyeop)) === bond1,
+    `its time runs out: the 의뢰 fails, no 호감도 (${JSON.stringify(s.path.at(-1))})`,
   );
   await nextMeet(g);
   check(f, (await g.mode()) === 'choice', 'and a new 만남 comes');
@@ -804,22 +799,24 @@ async function scenarioD(browser, seed) {
   s = await g.state(S);
   check(
     f,
-    s.bond.milsa === 1 && s.bombs === bombs + 1,
-    `met in the boss fight: 혈마 밀사 1단계, 필살기 +1 (${bombs} → ${s.bombs})`,
+    s.bond.milsa === 1 && s.skills.at(-1) === 'geomu',
+    `met in the boss fight: 혈마 밀사 1단계 (검우) (${JSON.stringify(s.bond)}, ${s.skills})`,
   );
   const skillCount = await g.eval(() => {
     const G = window.__g;
     G.raiseBond('milsa');
+    const at2 = G.state.skills.length;
     G.raiseBond('milsa');
-    const at3 = G.state.skills.length;
-    G.raiseBond('milsa');
-    return [G.state.bond.milsa, at3, G.state.skills.length];
+    return [G.state.bond.milsa, at2, G.state.skills.length];
   });
   check(
     f,
-    skillCount[0] === 3 && skillCount[1] === skillCount[2],
-    `raising an 인연 past 3단계 adds nothing (${skillCount})`,
+    skillCount[0] === 2 && skillCount[1] === skillCount[2],
+    `raising an 인연 past 2단계 adds nothing (${skillCount})`,
   );
+  // (혈마 밀사 no longer gives a 필살기: one is given here)
+  await g.eval(() => (window.__g.state.bombs = 1));
+  await g.step(10);
   const ring = await g.eval(() => document.getElementById('blast').style.getPropertyValue('--p'));
   check(f, ring === '100', `the 필살기 ring is full while one is left (${ring})`);
   check(f, g.errors.length === 0, 'no page errors: ' + g.errors.join(' | '));
@@ -1200,22 +1197,20 @@ async function scenarioG(browser, seed) {
     (await g.choiceTitle()) === '강호의 만남' && /떠돌이 약선/.test(card),
     `she comes without a card (${card.slice(0, 40)})`,
   );
-  check(f, /호감도 \+1/.test(card), 'the 따른다 choice says 호감도 +1');
-  // following raises her 호감도 at once; the run keeps the level it started with
+  check(f, /성공하면 호감도 \+1/.test(card), 'the 의뢰 card says 호감도 +1 on success');
+  // taking her 의뢰 does not raise 호감도; meeting it does at once (saved); the run keeps the level it started with
   await g.act(0);
   await g.step(2);
   let p = await P();
+  check(f, p.bonds.yakseon === 0, `taken: 호감도 unchanged (${p.bonds.yakseon})`);
+  await succeed(g);
+  p = await P();
   const kept = await g.state(() => window.__g.state.meta.cards.yakseon);
   check(
     f,
     p.bonds.yakseon === 1 && kept === 0,
-    `따른다: 호감도 1 saved, this run keeps level 0 (${p.bonds.yakseon}, ${kept})`,
+    `met: 호감도 1 saved, this run keeps level 0 (${p.bonds.yakseon}, ${kept})`,
   );
-  // defying does not raise 호감도
-  await g.eval(() => window.__g.meet('yakseon'));
-  await g.act(1);
-  await g.step(2);
-  check(f, (await P()).bonds.yakseon === 1, '거스른다: 호감도 unchanged');
 
   // the screen and the next run read 호감도
   await g.eval(() => window.__g.loadProfile({ bonds: { dosa: 6, yeonhyeop: 10, monk: 15, milsa: 99, uijeok: 1 } }));
@@ -1245,10 +1240,18 @@ async function scenarioG(browser, seed) {
   );
   check(
     f,
-    /정파 · 정이 오를수록 자주 온다/.test(dosa.body) && /1단계 「운류보」/.test(dosa.body) && /따른다/.test(dosa.body),
+    /정파 · 정이 오를수록 자주 온다/.test(dosa.body) &&
+      /1단계 「유수파」/.test(dosa.body) &&
+      /2단계 「/.test(dosa.body) &&
+      !/3단계 「/.test(dosa.body) &&
+      /의뢰를 이룰 때마다/.test(dosa.body),
     `the popup lists side, unlock mark, levels and how to earn 호감도 (${dosa.body.slice(0, 120)})`,
   );
-  check(f, /비연수/.test(yeon.body) && /\+18%/.test(yeon.body), `비연 낭자 level 4: +18% (${yeon.body.slice(0, 120)})`);
+  check(
+    f,
+    /잔영/.test(yeon.body) && /위력 \d+%/.test(yeon.body),
+    `비연 낭자 level 4: her skills at its numbers (${yeon.body.slice(0, 160)})`,
+  );
   await g.eval(() => document.querySelectorAll('#collectionGrid .tile')[0].click());
   await g.key('Escape');
   const afterOne = await g.eval(() => [

@@ -1,10 +1,8 @@
-// 의뢰 (docs/ability-redesign-plan.md, 4.4 and 4.5). Every 만남 brings one: an 인연's or a passer-by's.
-//   - 인연: following adds a point to the 인연's side (정 or 사), defying it a point to the other side; the point comes
-//     when the choice is made. The target is about 5/6 of the condition's full count, ±10% (QUEST_SHARE,
-//     QUEST_SPREAD), the same however often the 인연 comes. Met, a followed 의뢰 raises the 인연 one level (its next
-//     skill), and pays 엽전 once the 인연 is at level 3; a defied one pays 엽전.
-//   - Passer-by: 돕는다 asks for kills and pays 엽전, 무시한다 asks for 엽전 taken and turns 점수 두 배 on; which of the
-//     two is 정 and which 사 is rolled for each passer-by (systems/virtue.ts).
+// 의뢰 (docs/ability-redesign-plan.md, 4.4 and 4.5). Every 만남 brings one 의뢰, taken without a choice (2026-11):
+//   - 인연: a point goes to the 인연's side (정 or 사) when it is taken. The target is about 5/6 of the condition's
+//     full count, ±10% (QUEST_SHARE, QUEST_SPREAD). Met, it raises the 인연 one level (its next skill, BOND_MAX
+//     levels) and their 호감도 by one; once the 인연 is at the last level it pays 엽전.
+//   - Passer-by: kills for 엽전; the point it gives (정 or 사) is rolled for each passer-by (systems/virtue.ts).
 // It has BASELINE.meet.quest s of flight: met, the next 만남 opens at once; run out (or at the end of the run) it
 // fails, and the next 만남 opens (systems/encounter.ts). Failing costs only the reward. 정요란 (her trait, while she
 // fights) cuts every target. Nothing counts during 무아지경.
@@ -30,7 +28,8 @@ import { BASELINE } from '../data/baseline';
 import { traitValue } from './hero-effects';
 import { doubleSeconds } from '../entities/pickups';
 
-export const BOND_MAX = 3;
+/** an 인연's levels in a run: 1단계 a projectile skill, 2단계 their signature skill (data/npcs.ts `levels`) */
+export const BOND_MAX = 2;
 
 /** an 인연's 의뢰 asks this share of its condition's full count, give or take QUEST_SPREAD */
 export const QUEST_SHARE = 5 / 6;
@@ -42,19 +41,15 @@ export const questTarget = (c: { n: number }, roll = 0) =>
   Math.max(1, Math.round(c.n * QUEST_SHARE * (1 + QUEST_SPREAD * roll) * cut()));
 /** a passer-by's target from a whole count (rolled in its range), cut by 정요란 */
 export const passerTarget = (n: number) => Math.max(1, Math.round(n * cut()));
-/** the point this 인연's 의뢰 gives when followed (+1 정 for 정파 / −1 = 사 +1 for 사파) or defied (the other side) */
-export const alignMove = (id: string, mode: string) =>
-  (NPCS[id].side === 'good' ? 1 : -1) * (mode === 'follow' ? 1 : -1);
+/** the point this 인연's 의뢰 gives when taken: +1 정 for a 정파 인연, −1 (사 +1) for a 사파 one */
+export const alignMove = (id: string) => (NPCS[id].side === 'good' ? 1 : -1);
 
 export type Reward = { level: number; coins: number; double: boolean };
-/** What meeting an 의뢰 gives: the 인연's next level, 엽전, or 점수 두 배 (a passer-by's 무시한다). */
+/** What meeting an 의뢰 gives: the 인연's next level, or 엽전 (a passer-by, or an 인연 at the last level). */
 export function questReward(q: Pick<Quest, 'npc' | 'mode'>): Reward {
-  if (!q.npc)
-    return q.mode === 'ignore' ? { level: 0, coins: 0, double: true } : { level: 0, coins: QUEST_COINS, double: false };
+  if (!q.npc) return { level: 0, coins: QUEST_COINS, double: false };
   const next = bondLevel(q.npc) + 1;
-  return q.mode === 'follow' && next <= BOND_MAX
-    ? { level: next, coins: 0, double: false }
-    : { level: 0, coins: QUEST_COINS, double: false };
+  return next <= BOND_MAX ? { level: next, coins: 0, double: false } : { level: 0, coins: QUEST_COINS, double: false };
 }
 /** "1단계 「철골」", "엽전 50냥", "점수 두 배 3초" */
 export function rewardName(q: Pick<Quest, 'npc' | 'mode'>) {
@@ -124,16 +119,14 @@ export function completeQuest() {
     G.state.double = doubleSeconds();
     actionCallout('double');
   } else G.state.coins += reward.coins;
+  // met: the 인연's 호감도 rises (kept between runs; it takes effect from the next run)
+  if (q.npc) addBond(q.npc as NpcId);
   if (G.state.questPath) G.state.questPath.result = '성취';
   const name = q.npc ? NPCS[q.npc].name : (q.who?.name ?? '행인');
   announce(
     '의뢰 성공',
     q.npc && reward.level ? `${NPCS[q.npc].name} ${title}` : title,
-    q.npc
-      ? q.mode === 'follow'
-        ? name + '의 뜻을 이루었다'
-        : name + '의 뜻을 거슬러 제 길을 증명했다'
-      : name + '와의 일을 마쳤다',
+    q.npc ? name + '의 뜻을 이루었다' : name + '와의 일을 마쳤다',
     BR[q.br].color,
     BASELINE.meet.reward,
   );
@@ -153,11 +146,8 @@ export function closeQuest() {
 /** Takes an 의뢰 offered at the 만남: its point comes now. */
 export function acceptQuest(offer: Quest) {
   const s = G.state;
-  if (offer.npc) {
-    s.met[offer.npc] = (s.met[offer.npc] || 0) + 1;
-    // following raises the 인연's 호감도 at once (kept between runs; it takes effect from the next run)
-    if (offer.mode === 'follow') addBond(offer.npc as NpcId);
-  } else s.passers++;
+  if (offer.npc) s.met[offer.npc] = (s.met[offer.npc] || 0) + 1;
+  else s.passers++;
   moveAlign(offer.move);
   s.quest = { ...offer, from: offer.t === 'combo' ? s.combo : undefined };
   s.offer = undefined;
@@ -171,8 +161,7 @@ export function acceptQuest(offer: Quest) {
   });
   s.questPath = s.path[s.path.length - 1];
   done('encounter');
-  const act = { follow: '따른다', defy: '거스른다', help: '돕는다', ignore: '무시한다' }[offer.mode];
-  label(`${act} · ${moveText(offer.move)}`, 240, 430, BR[s.quest.br].color, 20);
+  label(`의뢰 · ${moveText(offer.move)}`, 240, 430, BR[s.quest.br].color, 20);
   // a grateful face for helping a passer-by
   if (offer.mode === 'help' && offer.who)
     notify(`${offer.who.name} · ${moveText(offer.move)}`, 1.6, ambientPictures[offer.who.art + '-grateful']);

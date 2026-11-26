@@ -17,7 +17,6 @@ import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx, pfxOn, ramp } from '../render/pfx';
 import { enemyFrameIndex } from '../render/util';
 import { hasSkill } from '../systems/skill-state';
-import { bondArmor } from '../data/skills';
 import { difficulty, enemyHealth, region } from '../systems/flow';
 import { rowTiers, stepTier, strongTier } from '../systems/ladder';
 import { BASELINE } from '../data/baseline';
@@ -259,11 +258,6 @@ export function hitEnemy(e, damage, skill?: string) {
     }
     if (e.hp <= 0) kill(e);
     return;
-  }
-  const armor = bondArmor();
-  if (armor > 1 && (e.rank >= 2 || e.boss || e.rock)) {
-    damage *= armor;
-    skillCue('swaegap', e.x, e.y, 65, true);
   }
   damage = critical(e, damage);
   e.hp -= damage * (e.boss && e.action === 'recover' ? 1.6 : 1);

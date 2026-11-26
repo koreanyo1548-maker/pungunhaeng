@@ -36,7 +36,7 @@ export function damagePlayer() {
     return;
   }
   if (G.state.negate) {
-    // 회춘단 (떠돌이 약선 3단계): one block, armed again on its timer (data/skills.ts)
+    // 회춘단 (떠돌이 약선 2단계): one block, armed again on its timer (data/skills.ts)
     G.state.negate = false;
     paintFX(7, G.player.x, G.player.y, 100, 0.5);
     G.player.inv = hoechunSeconds();

@@ -8,9 +8,10 @@ import { D, aoe, column, fan, fireShot } from '../systems/combat';
 import { cardRank } from '../systems/relationship';
 import { hasSkill } from '../systems/skill-state';
 
-// 인연 단계 skills (docs/ability-redesign-plan.md, 4.6). Each 인연 has three, one per level (data/npcs.ts
-// `levels`): 1단계 a number, 2단계 a projectile skill, 3단계 their signature skill (the three boss skills moved
-// here). They are learned in a run when an 의뢰 is followed and met, and last for that run.
+// 인연 단계 skills (docs/ability-redesign-plan.md, 4.6). Each 인연 has two, one per level (data/npcs.ts `levels`):
+// 1단계 a projectile skill, 2단계 their signature skill (the three boss skills moved here). They are learned in a
+// run when the 인연's 의뢰 is met, and last for that run. (2026-11: the old 1단계 number skills were removed; the old
+// 2단계 and 3단계 are now 1단계 and 2단계.)
 // An 인연 card raises the numbers: every card level above 1 adds a step (`r - 1`, 0 to 4), read from the
 // run's snapshot. All numbers are provisional (balance pass).
 // D() is the damage of one basic shot; a skill's projectile hits at least twice as hard (see docs/terms.md).
@@ -19,22 +20,6 @@ import { hasSkill } from '../systems/skill-state';
 export const cardBoost = (npc: string, r = cardRank(npc)) => 1 + 0.1 * Math.max(0, r - 1);
 const pct = (n: number) => Math.round(n * 100) + '%';
 const plusPct = (n: number) => '+' + Math.round((n - 1) * 100) + '%';
-
-// ---- 1단계 numbers (each read where the game uses it)
-const healthOf = (r: number) => (r >= 5 ? 2 : 1);
-const grazeOf = (r: number) => 1.25 + 0.05 * Math.max(0, r - 1);
-const armorOf = (r: number) => 1.4 + 0.05 * Math.max(0, r - 1);
-const rateOf = (r: number) => 1.12 + 0.02 * Math.max(0, r - 1);
-const powerOf = (r: number) => 1.15 + 0.03 * Math.max(0, r - 1);
-const bombsOf = (r: number) => (r >= 5 ? 2 : 1);
-/** 청운 도인 1단계: graze reach multiplier */
-export const bondGraze = () => (hasSkill('biyeon') ? grazeOf(cardRank('dosa')) : 1);
-/** 철벽 노승 1단계: damage multiplier on armoured enemies, rocks and bosses */
-export const bondArmor = () => (hasSkill('swaegap') ? armorOf(cardRank('monk')) : 1);
-/** 비연 낭자 1단계: basic attack speed multiplier */
-export const bondFireRate = () => (hasSkill('muyoung') ? rateOf(cardRank('yeonhyeop')) : 1);
-/** 녹림 의적 1단계: attack power multiplier */
-export const bondPower = () => (hasSkill('yeonhwan') ? powerOf(cardRank('uijeok')) : 1);
 
 // ---- timers that a card shortens or lengthens
 /** 회춘단: seconds between blocks */
@@ -47,7 +32,7 @@ export const rainSeconds = (r = cardRank('milsa')) => 1.5 + 0.25 * Math.max(0, r
 
 export interface SkillDef {
   npc: string;
-  /** 1, 2 or 3: the 인연 단계 that gives it */
+  /** 1 or 2: the 인연 단계 that gives it */
   level: number;
   br: string;
   name: string;
@@ -62,18 +47,9 @@ export interface SkillDef {
 
 export const SKILLS: Record<string, SkillDef> = {
   // 떠돌이 약선 (정파)
-  cheolgol: {
-    npc: 'yakseon',
-    level: 1,
-    br: 'gi',
-    name: '약선의 보약',
-    effect: r => `편대 최대 체력 +${healthOf(r)}, 즉시 회복`,
-    trig: 'passive',
-    gain: () => changePartyMaxHealth(G.state, healthOf(cardRank('yakseon'))),
-  },
   gitan: {
     npc: 'yakseon',
-    level: 2,
+    level: 1,
     br: 'gi',
     name: '기탄',
     effect: r => `추적 기탄 발사 · 위력 ${pct(2.4 * cardBoost('yakseon', r))}`,
@@ -89,7 +65,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   hoechun: {
     npc: 'yakseon',
-    level: 3,
+    level: 2,
     br: 'gi',
     name: '회춘단',
     effect: r => `${hoechunCooldown(r)}초마다 피격 1회 무효`,
@@ -101,17 +77,9 @@ export const SKILLS: Record<string, SkillDef> = {
     },
   },
   // 청운 도인 (정파)
-  biyeon: {
-    npc: 'dosa',
-    level: 1,
-    br: 'yu',
-    name: '운류보',
-    effect: r => `스침 범위 ${plusPct(grazeOf(r))}`,
-    trig: 'passive',
-  },
   yusu: {
     npc: 'dosa',
-    level: 2,
+    level: 1,
     br: 'yu',
     name: '유수파',
     effect: r => `스칠 때 그 자리에 청기 파동 · 위력 ${pct(3.5 * cardBoost('dosa', r))}`,
@@ -121,7 +89,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   taeguk: {
     npc: 'dosa',
-    level: 3,
+    level: 2,
     br: 'yu',
     name: '태극운검',
     effect: r => `스친 탄을 추적탄으로 되돌려 보냄 · 위력 ${pct(3 * cardBoost('dosa', r))}`,
@@ -132,17 +100,9 @@ export const SKILLS: Record<string, SkillDef> = {
     },
   },
   // 철벽 노승 (정파)
-  swaegap: {
-    npc: 'monk',
-    level: 1,
-    br: 'gang',
-    name: '금강체',
-    effect: r => `바위·장갑 적·보스에게 주는 피해 ${plusPct(armorOf(r))}`,
-    trig: 'passive',
-  },
   bungsan: {
     npc: 'monk',
-    level: 2,
+    level: 1,
     br: 'gang',
     name: '붕산권',
     effect: r => `근접 처치한 자리에 충격파 · 위력 ${pct(5 * cardBoost('monk', r))}`,
@@ -152,7 +112,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   art_cheolgap: {
     npc: 'monk',
-    level: 3,
+    level: 2,
     br: 'art',
     name: '철갑공',
     effect: r => `${cheolgapCooldown(r)}초마다 피격 1회를 막는 보호막 (최대 1개)`,
@@ -166,17 +126,9 @@ export const SKILLS: Record<string, SkillDef> = {
     },
   },
   // 비연 낭자 (사파)
-  muyoung: {
-    npc: 'yeonhyeop',
-    level: 1,
-    br: 'yu',
-    name: '비연수',
-    effect: r => `기본 공격 속도 ${plusPct(rateOf(r))}`,
-    trig: 'passive',
-  },
   janyoung: {
     npc: 'yeonhyeop',
-    level: 2,
+    level: 1,
     br: 'yu',
     name: '잔영검',
     effect: r => `좌우 전환할 때 잔상이 검기 2발 발사 · 위력 ${pct(2.2 * cardBoost('yeonhyeop', r))}`,
@@ -189,7 +141,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   mancheon: {
     npc: 'yeonhyeop',
-    level: 3,
+    level: 2,
     br: 'yu',
     name: '만천화우',
     effect: r => `좌우 전환할 때 비도 3자루를 부채꼴로 투척 · 위력 ${pct(3 * cardBoost('yeonhyeop', r))}`,
@@ -198,17 +150,9 @@ export const SKILLS: Record<string, SkillDef> = {
     fx: () => fan(3, 0.32, D() * 3 * cardBoost('yeonhyeop'), '#bdf7ea', 'knife', 'mancheon'),
   },
   // 녹림 의적 (사파)
-  yeonhwan: {
-    npc: 'uijeok',
-    level: 1,
-    br: 'gang',
-    name: '녹림의 기세',
-    effect: r => `공격력 ${plusPct(powerOf(r))}`,
-    trig: 'passive',
-  },
   uihyeop: {
     npc: 'uijeok',
-    level: 2,
+    level: 1,
     br: 'gang',
     name: '의협난도',
     effect: r => `한 줄 전멸 때 5방향 관통 도기 · 위력 ${pct(5 * cardBoost('uijeok', r))}`,
@@ -226,7 +170,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   art_dobeop: {
     npc: 'uijeok',
-    level: 3,
+    level: 2,
     br: 'art',
     name: '녹림도법',
     effect: r => `1.4초마다 7방향 도기 · 위력 ${pct(2.5 * cardBoost('uijeok', r))}`,
@@ -235,20 +179,9 @@ export const SKILLS: Record<string, SkillDef> = {
     fx: () => fan(7, 0.2, D() * 2.5 * cardBoost('uijeok'), '#ffc179', 'knife', 'dobeop'),
   },
   // 혈마 밀사 (사파)
-  manryu: {
-    npc: 'milsa',
-    level: 1,
-    br: 'gi',
-    name: '혈마 비전',
-    effect: r => `필살기 +${bombsOf(r)}`,
-    trig: 'passive',
-    gain: () => {
-      G.state.bombs += bombsOf(cardRank('milsa'));
-    },
-  },
   geomu: {
     npc: 'milsa',
-    level: 2,
+    level: 1,
     br: 'gi',
     name: '검우',
     effect: r => `필살기를 쓰면 ${rainSeconds(r)}초간 검의 비`,
@@ -260,7 +193,7 @@ export const SKILLS: Record<string, SkillDef> = {
   },
   art_cheonma: {
     npc: 'milsa',
-    level: 3,
+    level: 2,
     br: 'art',
     name: '천마군림',
     effect: r => `3초마다 가장 강한 적에게 천마 검강 · 위력 ${pct(9 * cardBoost('milsa', r))}`,

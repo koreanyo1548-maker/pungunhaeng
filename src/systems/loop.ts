@@ -21,7 +21,6 @@ import { moveElite, updateElite } from './elite';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
-import { bondFireRate, bondGraze } from '../data/skills';
 import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
 import { syncHUD } from '../ui/hud';
 
@@ -92,7 +91,7 @@ function updatePlayer(dt: number): number {
   G.player.fire -= dt;
   if (G.player.fire <= 0 && ['flight', 'boss'].includes(G.state.phase)) {
     shoot();
-    G.player.fire += (BASELINE.fireInterval * (1 - factor('fireRatePct'))) / bondFireRate();
+    G.player.fire += BASELINE.fireInterval * (1 - factor('fireRatePct'));
   } else if (G.player.fire < 0) G.player.fire = 0;
   updateMartialMotion(dt, old);
 
@@ -179,7 +178,7 @@ function updateEnemies(dt: number): boolean {
       G.player.hp > 0 &&
       Math.abs(e.y - G.player.y) < e.r + 12 &&
       Math.abs(e.x - G.player.x) >= e.r + 10 &&
-      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * bondGraze() * grazeReach() * 1.15
+      Math.abs(e.x - G.player.x) < e.r + 10 + TUNE.grazeRadius * grazeReach() * 1.15
     ) {
       e.grazed = true;
       grazeEnemy(e);
@@ -199,7 +198,7 @@ function updateEnemies(dt: number): boolean {
 }
 
 function updateHazards(dt: number): boolean {
-  const grazeR = TUNE.grazeRadius * bondGraze() * grazeReach();
+  const grazeR = TUNE.grazeRadius * grazeReach();
   for (const h of G.hazards) {
     if (h.warn > 0) {
       h.warn -= dt;

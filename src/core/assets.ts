@@ -1,3 +1,4 @@
+import { loadBattleItemArt } from './battle-item-art';
 import { loadGearArt } from '../render/gear-art';
 import { showLobby } from '../ui/lobby';
 import imageDimensions from '../assets/image-dimensions.json';
@@ -250,7 +251,7 @@ export async function load() {
     await loadNewArt();
     await loadCombatArt();
     await loadPortraitProps();
-    await Promise.all([loadSkillArt(), loadAmbientArt(), loadGearArt()]);
+    await Promise.all([loadSkillArt(), loadAmbientArt(), loadGearArt(), loadBattleItemArt()]);
     G.loaded = true;
     G.mode = 'title';
     $('start').disabled = false;

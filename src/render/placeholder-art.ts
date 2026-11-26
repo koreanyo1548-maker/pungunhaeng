@@ -1,5 +1,5 @@
 // Stand-in art until Codex delivers the real pictures (docs/codex-art-handoff.md): tinted copies of tier 4 for tiers
-// 5 and 6, a drawn 보물상자 and a drawn 듀얼샷 item. Made once, cached; cosmetic only.
+// 5 and 6. Chest and dual-shot now use core/battle-item-art. Made once, cached; cosmetic only.
 type Canvas = HTMLCanvasElement;
 const tintCache = new Map<CanvasImageSource, Map<string, Canvas>>();
 
@@ -22,68 +22,4 @@ export function tinted(image: CanvasImageSource & { width: number; height: numbe
     byColor.set(key, c);
   }
   return c;
-}
-
-let chest: Canvas | null = null,
-  chestWhite: Canvas | null = null;
-/** a wooden 보물상자 with gold bands and a lock (96×84), and its white hit silhouette */
-export function chestArt() {
-  if (!chest) {
-    chest = document.createElement('canvas');
-    chest.width = 96;
-    chest.height = 84;
-    const g = chest.getContext('2d') as CanvasRenderingContext2D;
-    g.lineJoin = 'round';
-    // lid and body
-    g.fillStyle = '#7a3f1d';
-    g.strokeStyle = '#2b1408';
-    g.lineWidth = 4;
-    g.beginPath();
-    g.moveTo(10, 34);
-    g.quadraticCurveTo(48, 6, 86, 34);
-    g.lineTo(86, 76);
-    g.lineTo(10, 76);
-    g.closePath();
-    g.fill();
-    g.stroke();
-    g.fillStyle = '#9a5528';
-    g.fillRect(14, 40, 68, 32);
-    // gold bands, the lid's edge and the lock
-    g.fillStyle = '#f2c14e';
-    g.fillRect(10, 34, 76, 7);
-    g.fillRect(22, 18, 8, 58);
-    g.fillRect(66, 18, 8, 58);
-    g.strokeStyle = '#6b4a10';
-    g.lineWidth = 2;
-    g.strokeRect(10, 34, 76, 7);
-    g.fillStyle = '#ffe08a';
-    g.fillRect(40, 38, 16, 18);
-    g.strokeRect(40, 38, 16, 18);
-    g.fillStyle = '#3a2508';
-    g.fillRect(46, 45, 4, 7);
-    chestWhite = tinted(chest, '#ffffff', 1);
-  }
-  return { image: chest, white: chestWhite as Canvas };
-}
-
-/** draws the 듀얼샷 item (two qi bolts side by side, about 44 px) at the origin */
-export function drawDualIcon(ctx: CanvasRenderingContext2D) {
-  for (const x of [-9, 9]) {
-    const g = ctx.createLinearGradient(0, 20, 0, -22);
-    g.addColorStop(0, '#ff9a7a00');
-    g.addColorStop(0.55, '#ffb59a');
-    g.addColorStop(1, '#ffffff');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(x, -22);
-    ctx.quadraticCurveTo(x + 6, -8, x + 3, 20);
-    ctx.lineTo(x - 3, 20);
-    ctx.quadraticCurveTo(x - 6, -8, x, -22);
-    ctx.fill();
-  }
-  ctx.fillStyle = '#ffffff';
-  ctx.font = "900 11px 'Noto Serif KR', 'Batang', serif";
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('雙', 0, 4);
 }

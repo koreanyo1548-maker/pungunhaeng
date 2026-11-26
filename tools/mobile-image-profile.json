@@ -24,6 +24,14 @@
       ],
       "reason": "작은 표시 크기에 비해 충분한 원본 해상도"
     },
+    "battle-items.webp": {
+      "scale": 0.5,
+      "grid": [
+        4,
+        2
+      ],
+      "reason": "전투 상자 96px와 듀얼샷 56px, 공통 4×2 시트"
+    },
     "bosses.webp": {
       "scale": 0.75,
       "grid": [

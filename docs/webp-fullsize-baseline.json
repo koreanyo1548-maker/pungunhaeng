@@ -6,11 +6,11 @@
     "method": 6,
     "exact": true
   },
-  "fileCount": 42,
-  "originalBytes": 74365632,
-  "webpBytes": 48292504,
-  "savedBytes": 26073128,
-  "reductionPercent": 35.06,
+  "fileCount": 43,
+  "originalBytes": 75842783,
+  "webpBytes": 49318882,
+  "savedBytes": 26523901,
+  "reductionPercent": 34.97,
   "files": [
     {
       "source": "art/originals/ambient/inn-collection.png",
@@ -41,6 +41,16 @@
       "webpBytes": 1663912,
       "sourceSha256": "2cffb5c0ec2fb724e667965011d1af578da90727b8125484655c6909ab52d7c4",
       "webpSha256": "678f41b142f8693c39b956097b211d90ab65acf3d14460678f273cfd3281c199"
+    },
+    {
+      "source": "art/originals/battle-items.png",
+      "runtime": "src/assets/images/battle-items.webp",
+      "width": 1774,
+      "height": 887,
+      "originalBytes": 1477151,
+      "webpBytes": 1026378,
+      "sourceSha256": "63b6310446d3c9ba9d3b86c07aee715f01d7989704615b01f9b4fe0cec562ce8",
+      "webpSha256": "e3000e1700a111bcb2c3000271e6319b73a69466b71f0cfd4905e6fbf69ba389"
     },
     {
       "source": "art/originals/bosses.png",

@@ -4,7 +4,7 @@ import { projectileArt, propArt, combatProjectileArt } from '../core/assets';
 import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
 import { drawGlow } from './glows';
-import { drawDualIcon } from './placeholder-art';
+import { dualShotArt } from '../core/battle-item-art';
 
 const shotPictures = new Map<string, string>();
 /** A picture of a hero's basic shot (the 영웅 popup): their own frame, or the shared 검기; cached */
@@ -141,9 +141,9 @@ export function drawPickup(p) {
     ctx.scale(Math.max(0.2, Math.abs(Math.cos(G.time * (p.vy < 0 ? 16 : 8) + p.phase))), 1);
     drawVfxSprite(propArt[3], 0, 0, 30, 30);
   } else if (p.kind === 'dual') {
-    // 듀얼샷 (a stand-in until its art comes, docs/codex-art-handoff.md)
+    // Dedicated coral dual-shot talisman, sized like the other item icons.
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
-    drawDualIcon(ctx);
+    drawVfxSprite(dualShotArt(), 0, 0, 56, 56);
   } else if (tint) {
     ctx.rotate(lean + Math.sin(G.time * 3 + p.phase) * 0.08);
     drawVfxSprite(propArt[(tint as (typeof ITEM_TINT)['magnet']).art], 0, 0, 56, 56);

@@ -176,6 +176,7 @@ export function kill(e, byHyper = false) {
   const art = enemyArt(e);
   G.wrecks.push({
     image: art.image,
+    chest: !!e.chest,
     artSize: art.size,
     x: e.x,
     y: e.y,

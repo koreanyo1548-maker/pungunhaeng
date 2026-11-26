@@ -4,11 +4,12 @@ import { reduced } from '../core/dom';
 import { enemyFrameIndex } from './util';
 import { skyStage } from '../systems/flow';
 import { RANKS } from '../data/enemies';
-import { chestArt, tinted } from './placeholder-art';
+import { battleChestArt } from '../core/battle-item-art';
+import { tinted } from './placeholder-art';
 
 /** Share the exact art between alive, hit and defeated enemies. */
 export function enemyArt(e) {
-  if (e.chest) return { ...chestArt(), size: e.size };
+  if (e.chest) return { ...battleChestArt(), size: e.size };
   if (e.rock) {
     const index = e.baseX < 240 ? 0 : 1;
     return { image: propArt[index], white: rockHitArt[index], size: (e.r + 6) * 2 };

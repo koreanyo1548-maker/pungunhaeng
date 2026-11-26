@@ -13,7 +13,7 @@ import type { Collection, Detail, Tile } from '../ui/collection';
 
 /** What reaching this level adds (1 to 5). */
 export function bondGain(level: number): string {
-  return level === 1 ? '인연 1단계 · 기본 위력' : '1·2·3단계 기술 수치 강화 (위력 +10%)';
+  return level === 1 ? '인연 1단계 · 기본 위력' : '1·2단계 기술 수치 강화 (위력 +10%)';
 }
 
 /** [호감도 toward the next level, 호감도 that level needs] (the last level counts as full) */
@@ -59,7 +59,7 @@ function detail(id: NpcId): Detail {
     sections: [
       {
         title: `${SIDE_NAME[n.side]} · ${n.side === 'good' ? '정' : '사'}이 오를수록 자주 온다`,
-        body: `만남마다 행인 · 정파 · 사파 중 누가 올지 확률로 정한다(판 시작 6 : 2 : 2). 판에서 쌓은 ${n.side === 'good' ? '정' : '사'} 1마다 행인 몫 10%가 ${SIDE_NAME[n.side]}로 옮겨 온다. 그 판에서 의뢰를 따라 이루면 한 단계씩 오른다(3단계 뒤에는 엽전). 의뢰 목표는 늘 전체의 약 5/6(±10%)이다.`,
+        body: `만남마다 행인 · 정파 · 사파 중 누가 올지 확률로 정한다(판 시작 6 : 2 : 2). 판에서 쌓은 ${n.side === 'good' ? '정' : '사'} 1마다 행인 몫 10%가 ${SIDE_NAME[n.side]}로 옮겨 온다. 그 판에서 이 인연의 의뢰를 이루면 한 단계씩 오른다(2단계 뒤에는 엽전). 의뢰 목표는 늘 전체의 약 5/6(±10%)이다.`,
       },
       ...n.levels.map((skill, i) => ({
         title: `${i + 1}단계 「${SKILLS[skill].name}」`,
@@ -67,7 +67,7 @@ function detail(id: NpcId): Detail {
       })),
       {
         title: '호감도 얻는 법',
-        body: '판에서 이 인연의 의뢰를 "따른다"로 고를 때마다 1씩 오른다. 오른 단계는 다음 판부터 적용된다.',
+        body: '판에서 이 인연의 의뢰를 이룰 때마다 1씩 오른다. 오른 단계는 다음 판부터 적용된다.',
       },
     ],
     track: {

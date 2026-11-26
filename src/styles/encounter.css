@@ -210,3 +210,15 @@
     gap: 6px;
   }
 }
+/* one 의뢰 (2026-11): it takes the whole row, the reward beside the task */
+.encounter-offer.only {
+  grid-column: 1 / -1;
+}
+.encounter-offer.only .encounter-reward {
+  flex-direction: row;
+  text-align: left;
+  gap: 12px;
+}
+.encounter-offer.only .encounter-reward > div {
+  flex: 1;
+}

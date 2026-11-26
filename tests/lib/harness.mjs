@@ -106,9 +106,14 @@ export async function openGame(
         el.click();
         return true;
       }, title),
-    /** click the i-th 화두 action on the crossroads card (0 = 따른다, 1 = 거스른다) */
+    /** take the 만남's 의뢰: a tap on its card (2026-11: one 의뢰, no choice). Older builds: the i-th action button */
     act: i =>
       page.evaluate(i => {
+        const card = document.querySelector('#choice.encounter-screen .card');
+        if (card && !document.querySelector('#choice .act')) {
+          card.click();
+          return;
+        }
         const el = document.querySelectorAll('#choice .act')[i];
         if (!el) throw new Error('no act ' + i);
         const confirm = document.getElementById('formationConfirm');

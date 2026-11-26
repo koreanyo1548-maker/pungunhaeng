@@ -1096,3 +1096,29 @@ button:disabled {
   margin: -4px 6px -6px 0;
   vertical-align: middle;
 }
+
+/* 만남 with one 의뢰: a tap anywhere takes it, or the countdown (scenes/choice.ts tapToGo) */
+.encounter-tap {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #ffe3a3;
+  animation: encounter-tap 1.2s ease-in-out infinite;
+}
+.encounter-tap b {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-left: 4px;
+  font-size: 18px;
+}
+@keyframes encounter-tap {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .encounter-tap {
+    animation: none;
+  }
+}

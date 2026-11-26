@@ -21,6 +21,8 @@ export function openChoice(o) {
   $('choice').classList.toggle('formation-screen', !!o.confirm);
   $('choice').classList.toggle('reward-screen', !!o.reward);
   $('choice').classList.toggle('encounter-screen', !!o.encounter);
+  $('choice').onclick = null;
+  $('choice').querySelector('.encounter-tap')?.remove();
   box.classList.toggle('hero-grid', !!o.confirm);
   let selected = o.cards[0];
   const preview = document.createElement('div');
@@ -67,6 +69,14 @@ export function openChoice(o) {
       const row = document.createElement('div');
       row.className = 'acts';
       for (const [i, a] of c.acts.entries()) {
+        // a 만남 with one 의뢰 (o.tap): its details, no button; a tap anywhere (or the countdown) takes it
+        if (o.tap) {
+          const offer = document.createElement('section');
+          offer.className = 'encounter-offer only';
+          offer.innerHTML = `<div class="encounter-offer-info">${a.detail}</div>`;
+          row.appendChild(offer);
+          continue;
+        }
         const b = document.createElement('button');
         b.className = 'act';
         b.style.setProperty('--c', a.color);
@@ -114,9 +124,41 @@ export function openChoice(o) {
     box.after(preview);
     preview.after(confirm);
   }
+  if (o.tap) tapToGo(o.tap.seconds, o.cards[0].acts[0].onPick);
   $('choice').classList.remove('hidden');
   $('choice').querySelector('.panel').scrollTop = 0;
   syncHUD();
+}
+
+/** A tap anywhere on the screen (but the rules) takes the 의뢰; after `seconds` it is taken by itself. The countdown
+ *  runs on the frame clock, so the test clock drives it too. */
+function tapToGo(seconds: number, go: () => void) {
+  const root = $('choice'),
+    line = document.createElement('p');
+  line.className = 'encounter-tap';
+  root.querySelector('.panel').appendChild(line);
+  const start = performance.now();
+  let done = false;
+  const finish = () => {
+    if (done || G.mode !== 'choice') return;
+    done = true;
+    root.onclick = null;
+    line.remove();
+    root.classList.add('hidden');
+    go();
+  };
+  root.onclick = e => {
+    if ((e.target as HTMLElement).closest('details')) return;
+    finish();
+  };
+  const tick = () => {
+    if (done) return;
+    const left = Math.max(0, Math.ceil(seconds - (performance.now() - start) / 1000));
+    line.innerHTML = `화면을 누르면 시작 <b>${left}</b>`;
+    if (left <= 0) finish();
+    else requestAnimationFrame(tick);
+  };
+  tick();
 }
 export function resumePlay() {
   $('choice').classList.add('hidden');

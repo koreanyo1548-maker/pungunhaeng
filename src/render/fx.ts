@@ -1,3 +1,4 @@
+import { battleChestFrame, CHEST_ORIGIN_Y } from '../core/battle-item-art';
 import { updateSkillAnimations, drawSkillFrame, drawSwordRain } from '../render/skill-animation';
 import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
@@ -98,8 +99,12 @@ export function drawExtraFX() {
   for (const w of G.wrecks) {
     const t = w.life / w.total;
     ctx.save();
-    ctx.globalAlpha = t * 0.65;
-    if (w.image) {
+    ctx.globalAlpha = w.chest ? Math.min(1, t * 4) : t * 0.65;
+    if (w.chest) {
+      const index = reduced ? 5 : Math.min(5, 1 + Math.floor((1 - t) * 5));
+      const image = battleChestFrame(index);
+      if (image) ctx.drawImage(image, w.x - w.artSize / 2, w.y - w.artSize * CHEST_ORIGIN_Y, w.artSize, w.artSize);
+    } else if (w.image) {
       const scale = 0.92 + t * 0.08;
       drawVfxSprite(w.image, w.x, w.y, w.artSize * scale, w.artSize * scale, w.angle);
     } else drawActor(w.type, w.x, w.y, w.size * (0.65 + t * 0.35), w.pose || 0, w.angle, 0);

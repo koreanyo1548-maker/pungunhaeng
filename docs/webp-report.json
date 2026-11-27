@@ -7,21 +7,21 @@
     "exact": true,
     "resampling": "LANCZOS; lossless encoding relative to the resized image"
   },
-  "fileCount": 42,
-  "originalBytes": 74286332,
-  "webpBytes": 27052426,
-  "savedBytes": 47233906,
-  "reductionPercent": 63.58,
+  "fileCount": 43,
+  "originalBytes": 75763483,
+  "webpBytes": 27332264,
+  "savedBytes": 48431219,
+  "reductionPercent": 63.92,
   "build": {
-    "fileCount": 41,
-    "resizedCount": 37,
-    "originalPngBytes": 72634238,
-    "fullsizeWebpBytes": 47271572,
-    "mobileWebpBytes": 26031494,
-    "savedBytes": 21240078,
-    "reductionPercent": 44.93,
-    "decodedPixelsBefore": 64490209,
-    "decodedPixelsAfter": 33169808
+    "fileCount": 42,
+    "resizedCount": 38,
+    "originalPngBytes": 74111389,
+    "fullsizeWebpBytes": 48297950,
+    "mobileWebpBytes": 26311332,
+    "savedBytes": 21986618,
+    "reductionPercent": 45.52,
+    "decodedPixelsBefore": 66063747,
+    "decodedPixelsAfter": 33564080
   },
   "files": [
     {
@@ -68,6 +68,21 @@
       "fullsizeWebpBytes": 1663912,
       "sourceSha256": "2cffb5c0ec2fb724e667965011d1af578da90727b8125484655c6909ab52d7c4",
       "webpSha256": "a2cd7b60aab0aba379b54fc8af4194e44480bc936a56c648deb2bccb1ffe0f1b"
+    },
+    {
+      "source": "art/originals/battle-items.png",
+      "runtime": "src/assets/images/battle-items.webp",
+      "sourceWidth": 1774,
+      "sourceHeight": 887,
+      "width": 888,
+      "height": 444,
+      "includedInBuild": true,
+      "resized": true,
+      "originalBytes": 1477151,
+      "webpBytes": 279838,
+      "fullsizeWebpBytes": 1026378,
+      "sourceSha256": "63b6310446d3c9ba9d3b86c07aee715f01d7989704615b01f9b4fe0cec562ce8",
+      "webpSha256": "ebaaa7abc92e83207163fa1bcbcccfc31d22ad43f3471529e57487345f69abc6"
     },
     {
       "source": "art/originals/bosses.png",

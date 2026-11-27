@@ -1,3 +1,4 @@
+import { CHEST_ORIGIN_Y } from '../core/battle-item-art';
 import { drawSwapPose } from './skill-animation';
 import { enemyArt } from './enemy-art';
 import { G } from '../core/context';
@@ -251,12 +252,12 @@ export function drawEnemyAura(e) {
   }
   ctx.restore();
 }
-/** A 보물상자 in a row: its own picture (render/placeholder-art.ts chestArt; there is no enemy sprite for it), a
+/** A 보물상자 in a row: its own picture (core/battle-item-art.ts; there is no enemy sprite for it), a
  *  little bob, and the white flash when hit. */
 function drawChest(e) {
   const art = enemyArt(e),
     w = e.size,
-    h = (e.size * 84) / 96,
+    h = e.size,
     recoil = (e.recoil || 0) / 0.12,
     bob = reduced ? 0 : Math.abs(Math.sin(G.time * 6 + (e.phase || 0))) * 2;
   if (!art.image) return;
@@ -264,10 +265,10 @@ function drawChest(e) {
   ctx.translate(e.x, e.y - bob - recoil * 4);
   ctx.shadowColor = '#081c27';
   ctx.shadowBlur = 4;
-  ctx.drawImage(art.image, -w / 2, -h / 2, w, h);
+  ctx.drawImage(art.image, -w / 2, -h * CHEST_ORIGIN_Y, w, h);
   if (e.hit > 0 && art.white) {
     ctx.globalAlpha = Math.min(0.65, (e.hit / 0.055) ** 2 * 0.65);
-    ctx.drawImage(art.white, -w / 2, -h / 2, w, h);
+    ctx.drawImage(art.white, -w / 2, -h * CHEST_ORIGIN_Y, w, h);
   }
   ctx.restore();
 }

@@ -11,7 +11,7 @@ import { DRAW_COST, DRAW_TEN_COST, PIECE_STEPS, starText } from '../data/meta';
 import { draw, drawable } from '../systems/gacha';
 import type { Drawn } from '../systems/gacha';
 import { showBank, showBest } from '../ui/hud';
-import { BOX_ODDS, GEAR_BOX_COST, gearFactors, gearName } from '../data/gear';
+import { GEAR_BOX_COST, gearFactors, gearName } from '../data/gear';
 import type { Gear } from '../data/gear';
 import { factorText } from '../data/factors';
 import { gearPicture, GRADE_COLORS } from '../render/gear-art';
@@ -68,12 +68,8 @@ export function openGacha() {
   $('saveMsg').textContent = '';
   $('gachaResults').innerHTML = '';
   $('gachaResults').classList.add('hidden');
-  $('gachaRates').textContent =
-    '영웅 조각 · 최고 성급(★5)인 영웅은 나오지 않음 · 인연은 판에서 의뢰를 따르면 호감도가 오른다';
   $('drawOne').innerHTML = `1회 뽑기<small>${fmt(DRAW_COST)}냥</small>`;
   $('drawTen').innerHTML = `10회 뽑기<small>${fmt(DRAW_TEN_COST)}냥</small>`;
-  const odds = BOX_ODDS.shop.map((p, i) => `★${i + 1} ${Math.round(p * 100)}%`).join(' · ');
-  $('boxRates').textContent = `장비 상자 · 무기·의복·장신구·비급 중 하나 · ${odds} · 정예 적 상자는 더 좋다`;
   $('boxOne').innerHTML = `장비 상자 1개<small>${fmt(GEAR_BOX_COST)}냥</small>`;
   $('boxTen').innerHTML = `장비 상자 10개<small>${fmt(GEAR_BOX_COST * 10)}냥</small>`;
   render();

@@ -14,7 +14,6 @@ import type { HeroId } from '../data/meta';
 import { openCollection, refreshCollection } from '../ui/collection';
 import { gearTab } from './gear-screen';
 import type { Collection, Detail, Tile } from '../ui/collection';
-import { LOCKED_HOW } from './setup';
 
 const attackAt = (level: number) => TUNE.attack + level - 1;
 
@@ -45,7 +44,7 @@ function detail(id: HeroId): Detail {
   const h = HEROES[id],
     stars = heroStars(id),
     L = Math.max(0, stars - 1),
-    caption = `${h.projectile} · ${h.trait.scope === 'party' ? '지원형 (특성이 편대 전체에)' : '특성은 싸우는 동안'}`;
+    caption = `${h.projectile}${h.trait.scope === 'party' ? ' · 지원형' : ''}`;
   const seconds = h.entry.seconds(L);
   const level = profile.levels[id],
     cap = heroLevelCap(id);
@@ -59,12 +58,12 @@ function detail(id: HeroId): Detail {
       body: h.trait.desc(L) + (h.trait.pending ? ` (${h.trait.pending})` : ''),
     },
     {
-      title: `등장 기술 「${h.entry.name}」 · 후발로 나설 때`,
+      title: `등장 기술 「${h.entry.name}」`,
       body: (seconds ? seconds + '초 · ' : '') + h.entry.desc(L),
     },
   ];
   const track = {
-    title: '성급마다 · ★3·★5에서 등장 기술 모양이 바뀐다',
+    title: '',
     steps: PIECE_STEPS.map((need, i) => ({
       label: `★${i + 1}`,
       text:
@@ -92,11 +91,11 @@ function detail(id: HeroId): Detail {
         label: '레벨',
         figure: {
           image: shotPicture(id),
-          text: `<b>공격력 ${attackAt(level)}</b> · ${h.projectile} 한 번에 1발<br>레벨 ${level} / ${cap} · 레벨마다 공격력 +1, 성급마다 최대 레벨 +${LEVELS_PER_STAR}`,
+          text: `<b>공격력 ${attackAt(level)}</b> · ${h.projectile} 한 번에 1발<br>레벨 ${level} / ${cap}`,
         },
         actions: [levelAction(id)],
       }
-    : { label: '레벨', sections: [{ title: '합류', body: LOCKED_HOW }] };
+    : { label: '레벨' };
   return {
     name: h.name,
     image: heroPictures[id],
@@ -113,8 +112,7 @@ function detail(id: HeroId): Detail {
 function levelAction(id: HeroId) {
   const cost = levelUpCost(id),
     level = profile.levels[id];
-  if (cost === null)
-    return { label: '최대 레벨', note: heroStars(id) < LEVEL_MAX ? '성급을 올리면 열린다' : '', disabled: true };
+  if (cost === null) return { label: '최대 레벨', disabled: true };
   return {
     label: `레벨업 · ${fmt(cost)}냥`,
     note: `Lv ${level} → ${level + 1} · 공격력 ${attackAt(level)} → ${attackAt(level + 1)} · 지닌 엽전 ${fmt(profile.coins)}냥`,
@@ -126,7 +124,7 @@ function levelAction(id: HeroId) {
 }
 
 const ROSTER: Collection = {
-  eyebrow: '함께 강호를 걷는 이들',
+  eyebrow: '',
   title: '영웅',
   summary: () =>
     `합류한 영웅 <b>${PLAYABLE_HEROES.filter(heroOwned).length} / ${PLAYABLE_HEROES.length}</b> · 눌러서 자세히 보기`,

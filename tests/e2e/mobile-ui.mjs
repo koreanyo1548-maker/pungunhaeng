@@ -82,22 +82,23 @@ try {
     await g.page.waitForTimeout(400); // allow synthesized touch click: must not spend a second charge
     await g.step(2);
     assert.equal(await g.state(() => window.__g.state.bombs), before.bombs - 1);
-    // a 만남: the 인연 card and its two choices fit, and a choice is a tap
+    // A single 의뢰: no choice buttons, the countdown fits, and a screen tap accepts it.
     await g.eval(() => window.__g.meet('yakseon'));
     await g.step(2);
     assert.equal(await g.choiceTitle(), '강호의 만남');
     assert.equal(await g.page.locator('#toast.show').count(), 0, 'combat toast cannot cover the 만남');
-    const acts = g.page.locator('#choice .act');
-    assert.equal(await acts.count(), 2);
+    assert.equal(await g.page.locator('#choice .encounter-offer').count(), 1);
+    assert.equal(await g.page.locator('#choice .act').count(), 0);
     assert.ok(
-      await acts.nth(1).evaluate(el => {
-        const r = el.getBoundingClientRect();
-        return r.height >= 44 && r.bottom <= innerHeight;
+      await g.page.locator('.encounter-tap').evaluate(el => {
+        const r = el.getBoundingClientRect(),
+          panel = el.closest('.panel').getBoundingClientRect();
+        return r.bottom <= panel.bottom && r.bottom <= innerHeight;
       }),
-      'both choices reachable, at least 44px',
+      'the start countdown is visible',
     );
     await shot('encounter');
-    await acts.first().tap();
+    await g.page.locator('#choice .npc-choice-art').tap();
     await g.step(2);
     assert.equal(await g.mode(), 'play');
     const count = await g.state(() => window.__g.state.skills.length);

@@ -12,7 +12,7 @@ import { skillEffect } from '../data/skills';
 import { openChoice } from './choice';
 import { BASELINE } from '../data/baseline';
 import { region } from '../systems/flow';
-import { alignText, meetChances, moveText, rollMeet } from '../systems/alignment';
+import { alignText, meetChances, rollMeet } from '../systems/alignment';
 import {
   BOND_MAX,
   acceptQuest,
@@ -32,7 +32,6 @@ const oddsText = () => {
   const [p, g, e] = meetChances();
   return `<b>${alignText()}</b> · 행인 ${p}% · 정파 ${g}% · 사파 ${e}%`;
 };
-const rule = `의뢰는 ${BASELINE.meet.quest}초 안에 이뤄야 한다. 이루면 곧 다음 만남이 온다. 정·사는 받을 때 오르고, 실패하면 보상은 없다.`;
 
 export function openEncounter() {
   const s = G.state;
@@ -54,16 +53,15 @@ function act(o: Quest) {
   const reward = questReward(o);
   const skill = reward.level ? NPCS[o.npc!].levels[reward.level - 1] : null;
   const image = skill ? skillImage(skill) : coinImage();
-  const effect = skill ? skillEffect(skill) : '이번 판에서 사용할 엽전을 얻습니다.';
+  const effect = skill ? skillEffect(skill) : '';
   return {
     color: BR[COND[o.t].br].color,
     html: '',
-    detail: `<div class="encounter-reward"><img src="${image}" alt=""><div><small>의뢰 성공 보상</small><h4>${rewardName(o)}</h4><p>${effect}</p></div></div><div class="encounter-task"><small>수행 의뢰</small><b>${COND[o.t].label} ${o.target}</b><span>${BASELINE.meet.quest}초 이내</span></div><p class="encounter-immediate">받으면 바로 · ${moveText(o.move)}${o.npc ? ' · 성공하면 호감도 +1' : ''}</p>`,
+    detail: `<div class="encounter-reward"><img src="${image}" alt=""><div><small>의뢰 성공 보상</small><h4>${rewardName(o)}</h4>${effect ? `<p>${effect}</p>` : ''}</div></div><div class="encounter-task"><small>수행 의뢰</small><b>${COND[o.t].label} ${o.target}</b><span>${BASELINE.meet.quest}초 이내</span></div>`,
     onPick: () => acceptQuest(o),
   };
 }
 
-const rules = (passer = false) => `${oddsText()}. ${rule}${passer ? ' 판 끝에 정 1마다 점수, 사 1마다 엽전 +5%.' : ''}`;
 /** seconds the 의뢰 card waits before it is taken by itself (a tap takes it at once) */
 const TAP_SECONDS = 10;
 
@@ -84,10 +82,9 @@ function openBond(id: string) {
   openChoice({
     eyebrow: eyebrow(),
     title: '강호의 만남',
-    sub: '의뢰를 이루면 약속한 보상을 받습니다.',
     encounter: true,
     tap: { seconds: TAP_SECONDS },
-    rules: rules(),
+    rules: oddsText(),
     cards: [
       {
         image: npcPictures[id],
@@ -110,10 +107,9 @@ function openPasser() {
   openChoice({
     eyebrow: eyebrow(),
     title: '강호의 만남',
-    sub: '의뢰를 이루면 약속한 보상을 받습니다.',
     encounter: true,
     tap: { seconds: TAP_SECONDS },
-    rules: rules(true),
+    rules: oddsText(),
     cards: [
       {
         image: ambientPictures[who.art + '-neutral'],

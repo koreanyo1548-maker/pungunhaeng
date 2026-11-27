@@ -106,7 +106,7 @@ const sectionsHtml = (sections: Detail['sections']) =>
   (sections ?? []).map(s => `<div class="detail-section"><b>${s.title}</b><p>${s.body}</p></div>`).join('');
 const trackHtml = (t: Detail['track']) =>
   t
-    ? `<div class="detail-track"><b>${t.title}</b><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
+    ? `<div class="detail-track">${t.title ? `<b>${t.title}</b>` : ''}<ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
     : '';
 
 function renderDetail() {
@@ -120,7 +120,7 @@ function renderDetail() {
     (p ? `<div class="detail-progress"><span><b>${p.label}</b>${p.text}</span>${bar(p.now, p.goal)}</div>` : '') +
     (d.sections ?? []).map(s => `<div class="detail-section"><b>${s.title}</b><p>${s.body}</p></div>`).join('') +
     (t
-      ? `<div class="detail-track"><b>${t.title}</b><ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
+      ? `<div class="detail-track">${t.title ? `<b>${t.title}</b>` : ''}<ol>${t.steps.map(s => `<li class="${s.state}"><span>${s.label}</span><p>${s.text}</p></li>`).join('')}</ol></div>`
       : '');
   renderActions(d.actions);
 }
@@ -164,6 +164,7 @@ function renderActions(actions: Action[] | undefined) {
 export function openCollection(c: Collection) {
   current = c;
   $('collectionEyebrow').textContent = c.eyebrow;
+  $('collectionEyebrow').classList.toggle('hidden', !c.eyebrow);
   $('collectionTitle').textContent = c.title;
   renderGrid();
   $('collection').classList.remove('hidden');

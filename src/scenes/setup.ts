@@ -7,7 +7,6 @@ import { HEROES } from '../data/heroes';
 import { PLAYABLE_HEROES, pieceLevel, starText } from '../data/meta';
 import type { HeroId } from '../data/meta';
 
-export const LOCKED_HOW = '뽑기에서 이 영웅의 조각을 얻으면 합류한다';
 /** "특성 「질풍」 근접 처치 시 …" with its scope; a trait that waits for a later step says so. */
 export function traitText(id: HeroId, L: number) {
   const t = HEROES[id].trait;
@@ -19,7 +18,6 @@ export function entryText(id: HeroId, L: number) {
     s = e.seconds(L);
   return `<b>등장 기술 「${e.name}」</b> ${s ? s + '초 · ' : ''}${e.desc(L)}`;
 }
-const scopeLabel = (id: HeroId) => (HEROES[id].trait.scope === 'party' ? '지원 · 편대 전체' : '싸우는 동안');
 /** 편대 편성 (one screen, docs/terms.md): an info window (the hero last touched: portrait, 성급 stars, level, trait,
  *  entry skill), the party's two slots (선봉, 후발) and the roster grid. Tapping a hero puts it in the next free slot
  *  (two at most); tapping a chosen one takes it out, and the 후발 moves up to 선봉. 출발 starts once both are set.
@@ -59,7 +57,7 @@ export function openFormation() {
       const h = HEROES[shown],
         L = G.state.meta.heroes[shown];
       info.innerHTML = `<div class="party-pic">${artImage(heroPictures[shown], 'party-portrait')}<span class="stars">${starText(pieceLevel(profile.heroes[shown]))}</span></div>
-        <div class="party-text"><h3>${h.name}<span class="party-level">Lv ${profile.levels[shown]}</span></h3><span class="tag">${h.projectile} · 특성 ${scopeLabel(shown)}</span><p>${traitText(shown, L)}<br>${entryText(shown, L)}</p></div>`;
+        <div class="party-text"><h3>${h.name}<span class="party-level">Lv ${profile.levels[shown]}</span></h3><span class="tag">${h.projectile}${h.trait.scope === 'party' ? ' · 지원형' : ''}</span><p>${traitText(shown, L)}<br>${entryText(shown, L)}</p></div>`;
     } else
       info.innerHTML =
         '<p class="party-empty">함께 갈 고수 둘을 고른다. 1번은 선봉, 2번은 선봉이 쓰러지면 나서는 후발이다.</p>';

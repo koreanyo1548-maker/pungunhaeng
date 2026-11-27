@@ -6,7 +6,7 @@ import { profile } from '../core/profile';
 import { BR } from '../data/branches';
 import { LEVEL_MAX, NPC_IDS, PIECE_STEPS, pieceLevel, pipText } from '../data/meta';
 import type { NpcId } from '../data/meta';
-import { NPCS, SIDE_NAME } from '../data/npcs';
+import { NPCS } from '../data/npcs';
 import { SKILLS, skillEffect } from '../data/skills';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
@@ -56,20 +56,10 @@ function detail(id: NpcId): Detail {
       now,
       goal,
     },
-    sections: [
-      {
-        title: `${SIDE_NAME[n.side]} · ${n.side === 'good' ? '정' : '사'}이 오를수록 자주 온다`,
-        body: `만남마다 행인 · 정파 · 사파 중 누가 올지 확률로 정한다(판 시작 6 : 2 : 2). 판에서 쌓은 ${n.side === 'good' ? '정' : '사'} 1마다 행인 몫 10%가 ${SIDE_NAME[n.side]}로 옮겨 온다. 그 판에서 이 인연의 의뢰를 이루면 한 단계씩 오른다(2단계 뒤에는 엽전). 의뢰 목표는 늘 전체의 약 5/6(±10%)이다.`,
-      },
-      ...n.levels.map((skill, i) => ({
-        title: `${i + 1}단계 「${SKILLS[skill].name}」`,
-        body: skillEffect(skill, shown),
-      })),
-      {
-        title: '호감도 얻는 법',
-        body: '판에서 이 인연의 의뢰를 이룰 때마다 1씩 오른다. 오른 단계는 다음 판부터 적용된다.',
-      },
-    ],
+    sections: n.levels.map((skill, i) => ({
+      title: `${i + 1}단계 「${SKILLS[skill].name}」`,
+      body: skillEffect(skill, shown),
+    })),
     track: {
       title: '인연 단계 · 호감도로 오른다',
       steps: PIECE_STEPS.map((need, i) => ({
@@ -82,10 +72,9 @@ function detail(id: NpcId): Detail {
 }
 
 const BONDS: Collection = {
-  eyebrow: '강호에서 맺은 인연',
+  eyebrow: '',
   title: '인연',
-  summary: () =>
-    `호감도 합계 <b>${NPC_IDS.reduce((a, id) => a + profile.bonds[id], 0)}</b> · 판에서 의뢰를 따르면 오른다 · 눌러서 자세히 보기`,
+  summary: () => `호감도 합계 <b>${NPC_IDS.reduce((a, id) => a + profile.bonds[id], 0)}</b> · 눌러서 자세히 보기`,
   tiles: () => NPC_IDS.map(tile),
   detail: id => detail(id as NpcId),
 };

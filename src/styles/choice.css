@@ -209,3 +209,8 @@ button.card:hover {
 .hero-detail p {
   margin: 6px 0;
 }
+
+/* Removed copy should not leave an empty description row. */
+#choiceSub:empty {
+  display: none;
+}

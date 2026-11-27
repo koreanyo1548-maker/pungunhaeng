@@ -42,7 +42,7 @@ try {
       })();
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
-    // passers-by (forced) in portrait order; helping one takes its 의뢰 and adds 정 or 사 (rolled per passer-by)
+    // Passers-by in portrait order: one kill quest for coins, accepted by a screen tap.
     for (let n = 0; n < 4; n++) {
       await p.evaluate(n => {
         M.G.state.passers = n;
@@ -57,7 +57,10 @@ try {
       });
       await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
       const before = await p.evaluate(() => ({ points: M.G.state.good + M.G.state.evil }));
-      await p.locator('#choice .act').first().click();
+      assert.equal(await p.locator('#choice .encounter-offer').count(), 1);
+      assert.equal(await p.locator('#choice .act').count(), 0);
+      assert.match(await p.locator('.encounter-reward').innerText(), /엽전 50냥/);
+      await p.locator('#choice .npc-choice-art').click();
       const after = await p.evaluate(() => ({
         points: M.G.state.good + M.G.state.evil,
         quest: M.G.state.quest?.t,
@@ -86,7 +89,7 @@ try {
     );
     await p.screenshot({ path: `${out}/${width}-hero-piece.png` });
     assert.deepEqual(errors, []);
-    console.log(`PASS ${width}: four passer portraits + thanks, help (적 처치 의뢰, 정·사), hero piece icon`);
+    console.log(`PASS ${width}: four passer portraits + thanks, tap acceptance (처치 → 엽전, 정·사), hero piece icon`);
     await p.close();
   }
 } finally {

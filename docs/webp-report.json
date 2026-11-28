@@ -8,18 +8,18 @@
     "resampling": "LANCZOS; lossless encoding relative to the resized image"
   },
   "fileCount": 47,
-  "originalBytes": 80157670,
-  "webpBytes": 29206294,
-  "savedBytes": 50951376,
-  "reductionPercent": 63.56,
+  "originalBytes": 80178224,
+  "webpBytes": 29221516,
+  "savedBytes": 50956708,
+  "reductionPercent": 63.55,
   "build": {
     "fileCount": 46,
     "resizedCount": 39,
-    "originalPngBytes": 78505576,
+    "originalPngBytes": 78526130,
     "fullsizeWebpBytes": 51421140,
-    "mobileWebpBytes": 28185362,
-    "savedBytes": 23235778,
-    "reductionPercent": 45.19,
+    "mobileWebpBytes": 28200584,
+    "savedBytes": 23220556,
+    "reductionPercent": 45.16,
     "decodedPixelsBefore": 69570132,
     "decodedPixelsAfter": 35892076
   },
@@ -633,11 +633,11 @@
       "height": 272,
       "includedInBuild": true,
       "resized": false,
-      "originalBytes": 330156,
-      "webpBytes": 253712,
+      "originalBytes": 350710,
+      "webpBytes": 268934,
       "fullsizeWebpBytes": 253712,
-      "sourceSha256": "d02d4d3fa23e311d3612fddeedf1a7e006f5ff3babe15e0759e81255cbd48368",
-      "webpSha256": "6cf63df1017fb04beb6c3441a98419360bd5e15e4f8e76817aad3eddcd421f7d"
+      "sourceSha256": "2cfb42995868588cc7dac4389cf3b989c952410ae7630f6ed78e253a15512f0b",
+      "webpSha256": "50e45a12d46c2318dfd232c104d5321c3ba1471ad237889ef06eed16d5a76a5a"
     },
     {
       "source": "art/originals/slime-battle/shot.png",

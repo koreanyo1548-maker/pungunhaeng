@@ -34,16 +34,16 @@
   "min_component_area": 1,
   "edge_touch_margin": 0,
   "provenance": {
-    "input_sha256": "7c82b5832082da859b618de3f6a7702749b1800cb906a294492d2055c4dabe5f",
+    "input_sha256": "7f22de1479e9b28ef6e555b3ed91c1ef23f81900ffb5a3531f281dfe209fc648",
     "source_mode": "RGBA",
     "bit_depth": 8,
     "conversion": "none",
     "raw_copy": "raw-sheet.png",
-    "bytes": 1607276,
+    "bytes": 1006139,
     "format": "PNG",
     "size": [
-      1268,
-      1241
+      1774,
+      887
     ]
   },
   "intentional_low_frame_count": false,
@@ -74,10 +74,10 @@
     "solid_min": 32,
     "attach_radius": 2,
     "connectivity": 8,
-    "floor_px": 109010,
-    "detached_px": 20,
-    "detached_components": 14,
-    "max_removed_alpha": 6
+    "floor_px": 53155,
+    "detached_px": 11,
+    "detached_components": 7,
+    "max_removed_alpha": 5
   },
   "frame_labels": [
     "hero-1",
@@ -94,50 +94,50 @@
       "source_box": [
         0,
         0,
-        634,
-        621
+        887,
+        444
       ],
       "trim_offset": [
         0,
         0
       ],
       "source_rect": [
-        129,
-        28,
-        511,
-        571
+        351,
+        9,
+        637,
+        414
       ],
       "component_mode": "all",
-      "component_count": 2,
+      "component_count": 3,
       "selected_component_area": null,
       "selected_component_bbox": null,
       "crop_bbox": [
-        129,
-        28,
-        511,
-        571
+        351,
+        9,
+        637,
+        414
       ],
       "subject_bbox": [
-        129,
-        28,
-        511,
-        571
+        351,
+        9,
+        637,
+        414
       ],
       "source_frame_size": [
-        634,
-        621
+        887,
+        444
       ],
       "is_empty": false,
-      "subject_area": 144492,
-      "body_core_area": 136923,
-      "body_area_fraction": 0.34777274874655206,
+      "subject_area": 87648,
+      "body_core_area": 89758,
+      "body_area_fraction": 0.22791167717886995,
       "anchor_source": [
-        320.0,
-        299.5
+        494.0,
+        211.5
       ],
       "anchor_cell": [
-        320.0,
-        299.5
+        494.0,
+        211.5
       ],
       "source_edge_touch": false,
       "output_edge_touch": false,
@@ -145,26 +145,26 @@
       "paste_clamped": false,
       "scale_strategy": "fit",
       "output_size": [
-        168,
-        239
+        167,
+        237
       ],
       "paste_position": [
         52,
-        16
+        17
       ],
-      "source_to_output_scale": 0.4410810810810811,
+      "source_to_output_scale": 0.5856459330143541,
       "output_anchor": [
-        136.0,
+        135.5,
         135.5
       ],
       "aligned_bbox": [
         52,
-        16,
-        220,
-        255
+        17,
+        219,
+        254
       ],
-      "output_subject_height_px": 239.0,
-      "body_scale": 0.8786764705882353
+      "output_subject_height_px": 237.0,
+      "body_scale": 0.8713235294117647
     },
     {
       "grid": [
@@ -172,52 +172,52 @@
         1
       ],
       "source_box": [
-        634,
+        887,
         0,
-        1268,
-        621
+        1774,
+        444
       ],
       "trim_offset": [
         0,
         0
       ],
       "source_rect": [
-        749,
-        17,
-        1126,
-        572
+        1122,
+        4,
+        1414,
+        422
       ],
       "component_mode": "all",
-      "component_count": 2,
+      "component_count": 1,
       "selected_component_area": null,
       "selected_component_bbox": null,
       "crop_bbox": [
-        115,
-        17,
-        492,
-        572
+        235,
+        4,
+        527,
+        422
       ],
       "subject_bbox": [
-        115,
-        17,
-        492,
-        572
+        235,
+        4,
+        527,
+        422
       ],
       "source_frame_size": [
-        634,
-        621
+        887,
+        444
       ],
       "is_empty": false,
-      "subject_area": 144306,
-      "body_core_area": 139625,
-      "body_area_fraction": 0.3546355984293167,
+      "subject_area": 89243,
+      "body_core_area": 91409,
+      "body_area_fraction": 0.23210386259991672,
       "anchor_source": [
-        303.5,
-        294.5
+        381.0,
+        213.0
       ],
       "anchor_cell": [
-        303.5,
-        294.5
+        381.0,
+        213.0
       ],
       "source_edge_touch": false,
       "output_edge_touch": false,
@@ -225,22 +225,22 @@
       "paste_clamped": false,
       "scale_strategy": "fit",
       "output_size": [
-        166,
+        171,
         244
       ],
       "paste_position": [
-        53,
+        50,
         14
       ],
-      "source_to_output_scale": 0.4410810810810811,
+      "source_to_output_scale": 0.5856459330143541,
       "output_anchor": [
-        136.0,
+        135.5,
         136.0
       ],
       "aligned_bbox": [
-        53,
+        50,
         14,
-        219,
+        221,
         258
       ],
       "output_subject_height_px": 244.0,
@@ -253,51 +253,51 @@
       ],
       "source_box": [
         0,
-        621,
-        634,
-        1241
+        444,
+        887,
+        887
       ],
       "trim_offset": [
         0,
         0
       ],
       "source_rect": [
-        135,
-        645,
-        511,
-        1182
+        352,
+        452,
+        637,
+        856
       ],
       "component_mode": "all",
-      "component_count": 3,
+      "component_count": 2,
       "selected_component_area": null,
       "selected_component_bbox": null,
       "crop_bbox": [
-        135,
-        24,
-        511,
-        561
+        352,
+        8,
+        637,
+        412
       ],
       "subject_bbox": [
-        135,
-        24,
-        511,
-        561
+        352,
+        8,
+        637,
+        412
       ],
       "source_frame_size": [
-        634,
-        620
+        887,
+        443
       ],
       "is_empty": false,
-      "subject_area": 140867,
-      "body_core_area": 134431,
-      "body_area_fraction": 0.34199399613310266,
+      "subject_area": 86158,
+      "body_core_area": 88365,
+      "body_area_fraction": 0.22488108901845316,
       "anchor_source": [
-        323.0,
-        292.5
+        494.5,
+        210.0
       ],
       "anchor_cell": [
-        323.0,
-        292.5
+        494.5,
+        210.0
       ],
       "source_edge_touch": false,
       "output_edge_touch": false,
@@ -305,20 +305,20 @@
       "paste_clamped": false,
       "scale_strategy": "fit",
       "output_size": [
-        165,
+        166,
         236
       ],
       "paste_position": [
         53,
         18
       ],
-      "source_to_output_scale": 0.4410810810810811,
+      "source_to_output_scale": 0.5856459330143541,
       "output_anchor": [
-        135.5,
+        136.0,
         136.0
       ],
       "aligned_bbox": [
-        53,
+        52,
         18,
         219,
         254
@@ -332,52 +332,52 @@
         1
       ],
       "source_box": [
-        634,
-        621,
-        1268,
-        1241
+        887,
+        444,
+        1774,
+        887
       ],
       "trim_offset": [
         0,
         0
       ],
       "source_rect": [
-        745,
-        659,
-        1140,
-        1177
+        1129,
+        457,
+        1418,
+        853
       ],
       "component_mode": "all",
       "component_count": 1,
       "selected_component_area": null,
       "selected_component_bbox": null,
       "crop_bbox": [
-        111,
-        38,
-        506,
-        556
+        242,
+        13,
+        531,
+        409
       ],
       "subject_bbox": [
-        111,
-        38,
-        506,
-        556
+        242,
+        13,
+        531,
+        409
       ],
       "source_frame_size": [
-        634,
-        620
+        887,
+        443
       ],
       "is_empty": false,
-      "subject_area": 141341,
-      "body_core_area": 129688,
-      "body_area_fraction": 0.32992775007632036,
+      "subject_area": 87768,
+      "body_core_area": 89844,
+      "body_area_fraction": 0.22864501286452674,
       "anchor_source": [
-        308.5,
-        297.0
+        386.5,
+        211.0
       ],
       "anchor_cell": [
-        308.5,
-        297.0
+        386.5,
+        211.0
       ],
       "source_edge_touch": false,
       "output_edge_touch": false,
@@ -385,26 +385,26 @@
       "paste_clamped": false,
       "scale_strategy": "fit",
       "output_size": [
-        174,
-        228
+        169,
+        231
       ],
       "paste_position": [
-        49,
-        22
+        51,
+        20
       ],
-      "source_to_output_scale": 0.4410810810810811,
+      "source_to_output_scale": 0.5856459330143541,
       "output_anchor": [
-        136.0,
-        136.0
+        135.5,
+        135.5
       ],
       "aligned_bbox": [
-        49,
-        22,
-        223,
-        250
+        50,
+        19,
+        220,
+        251
       ],
-      "output_subject_height_px": 228.0,
-      "body_scale": 0.8382352941176471
+      "output_subject_height_px": 232.0,
+      "body_scale": 0.8529411764705882
     }
   ],
   "edge_touch_frames": [],
@@ -418,13 +418,13 @@
     "empty_count": 0,
     "edge_touch_count": 0,
     "paste_clamped_count": 0,
-    "body_scale_mean": 0.870404411764706,
-    "body_scale_cv": 0.02451570594771679,
-    "legacy_body_scale_mean": 0.5861078483204816,
-    "legacy_body_scale_cv": 0.013228433265091677,
-    "output_subject_height_mean": 236.75,
-    "output_subject_height_median": 237.5,
-    "scale_reference_height_px": 237.5,
+    "body_scale_mean": 0.8722426470588236,
+    "body_scale_cv": 0.01822088141811444,
+    "legacy_body_scale_mean": 0.47788930782358396,
+    "legacy_body_scale_cv": 0.005622607611825548,
+    "output_subject_height_mean": 237.25,
+    "output_subject_height_median": 236.5,
+    "scale_reference_height_px": 236.5,
     "scale_reference_frames": [
       [
         0,
@@ -443,9 +443,9 @@
         1
       ]
     ],
-    "anchor_x_std": 0.012649065404057925,
-    "anchor_y_std": 0.004090215278475652,
-    "anchor_y_mean": 0.47683204768583454,
+    "anchor_x_std": 0.062327498868387364,
+    "anchor_y_std": 0.0020309188106675882,
+    "anchor_y_mean": 0.4766049203831371,
     "pixel_grid_off_edges": null
   },
   "qc_config": {
@@ -501,48 +501,48 @@
       {
         "id": "body_scale_cv",
         "status": "skipped",
-        "value": 0.02451570594771679,
+        "value": 0.01822088141811444,
         "threshold": null
       },
       {
         "id": "anchor_y_std",
         "status": "skipped",
-        "value": 0.004090215278475652,
+        "value": 0.0020309188106675882,
         "threshold": null
       }
     ],
     "inputs": [
       {
         "path": "raw-sheet.png",
-        "sha256": "7c82b5832082da859b618de3f6a7702749b1800cb906a294492d2055c4dabe5f",
-        "bytes": 1607276
+        "sha256": "7f22de1479e9b28ef6e555b3ed91c1ef23f81900ffb5a3531f281dfe209fc648",
+        "bytes": 1006139
       }
     ],
     "outputs": [
       {
         "path": "hero-1.png",
-        "sha256": "96251c25ba097e6fc07ce5ad0efb50dc7fe522b37a1d39c5e20f666d3b7961a6",
-        "bytes": 84674
+        "sha256": "d56bb7bacf93a051ebe668e0e6487e40945dcc8cdfbac3eb2f5299f281b63d14",
+        "bytes": 89049
       },
       {
         "path": "hero-2.png",
-        "sha256": "50f941c46e83d1ad27f46b2265eb4d091a438fb65e4fccbc25c957b340ae327b",
-        "bytes": 84829
+        "sha256": "f6cc66015a82a7d67d1ec4ccaa44ee6a63bd4d8b1dd8c43ea18458a6dfa87526",
+        "bytes": 89381
       },
       {
         "path": "hero-3.png",
-        "sha256": "af85a371b32baa5425ab999d7343bec0c088d64457ee24b99e9a0bdfbfaa490e",
-        "bytes": 82219
+        "sha256": "5ae17f78dde7bf2bb12d37f5744e39354979837b023ba6dbb2d137f12eae9716",
+        "bytes": 87696
       },
       {
         "path": "hero-4.png",
-        "sha256": "64f9cd542d7b47f05e01bfd0104febcb4e4071131b58eb468538036b5416d6e1",
-        "bytes": 82117
+        "sha256": "5575a499f065e9d6714d460be074fc7132e891618c15e16a767080cc152a5bb8",
+        "bytes": 89503
       },
       {
         "path": "sheet-transparent.png",
-        "sha256": "e599dc2ad41bb86cc06401b1f550116d375ec4a717ed29e4968784ed96e80ea2",
-        "bytes": 331548
+        "sha256": "43a7574b31951d698df4ebe3bfbcc39144c8f5838a57851c21156ddef53d1cba",
+        "bytes": 352476
       }
     ],
     "tool": {

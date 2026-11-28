@@ -5,6 +5,7 @@ import { ctx, reduced } from '../core/dom';
 import { region } from '../systems/flow';
 import { drawGlow } from './glows';
 import { dualShotArt } from '../core/battle-item-art';
+import { slimeShot, SLIME_SHOT_SIZE } from '../core/slime-battle-art';
 
 const shotPictures = new Map<string, string>();
 /** A picture of a hero's basic shot (the 영웅 popup): their own frame, or the shared 검기; cached */
@@ -14,7 +15,7 @@ export function shotPicture(id: string): string {
     const c = document.createElement('canvas');
     c.width = c.height = 96;
     const g = c.getContext('2d') as CanvasRenderingContext2D;
-    g.drawImage(heroShotFrame(id) ?? projectileArt[0], 0, 0, 96, 96);
+    g.drawImage((id === 'pungun' ? slimeShot : heroShotFrame(id)) ?? projectileArt[0], 0, 0, 96, 96);
     url = c.toDataURL();
     shotPictures.set(id, url);
   }
@@ -25,6 +26,10 @@ export function blade(x, y, angle, length, color) {
 }
 export function drawMartialShots() {
   for (const s of G.shots) {
+    if (s.basic && s.art === 'slime') {
+      drawVfxSprite(slimeShot, s.x, s.y, SLIME_SHOT_SIZE, SLIME_SHOT_SIZE, Math.atan2(s.vx, s.vy ?? 900));
+      continue;
+    }
     if (drawSkillShot(s)) continue;
     // Positive vx rotates upward-facing art clockwise.
     const rot = Math.atan2(s.vx, s.vy ?? 900),

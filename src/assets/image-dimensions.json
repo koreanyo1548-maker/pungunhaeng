@@ -389,6 +389,46 @@
       362
     ]
   },
+  "slime-battle/bat-wings.webp": {
+    "source": [
+      1024,
+      1536
+    ],
+    "runtime": [
+      1024,
+      1536
+    ]
+  },
+  "slime-battle/hero-hover.webp": {
+    "source": [
+      1088,
+      272
+    ],
+    "runtime": [
+      1088,
+      272
+    ]
+  },
+  "slime-battle/shot.webp": {
+    "source": [
+      256,
+      256
+    ],
+    "runtime": [
+      256,
+      256
+    ]
+  },
+  "slime-battle/world.webp": {
+    "source": [
+      971,
+      1619
+    ],
+    "runtime": [
+      486,
+      810
+    ]
+  },
   "title-art.webp": {
     "source": [
       1254,

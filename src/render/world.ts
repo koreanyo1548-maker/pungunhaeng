@@ -1,36 +1,28 @@
 import { G } from '../core/context';
 import { H, W, ctx } from '../core/dom';
 import { movementTier } from '../systems/flow';
+import { gothicWorld, WORLD_OVERLAP } from '../core/slime-battle-art';
 
 export function drawWorld(tier, alpha = 1) {
-  const im = G.worlds[tier];
+  const im = gothicWorld;
   if (!im) return;
   const h = (W * im.height) / im.width,
-    offset = G.scroll * 0.86,
-    base = Math.floor(offset / h),
-    y = offset % h;
+    stride = h * (1 - WORLD_OVERLAP),
+    y = (G.scroll * 0.86) % stride;
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.filter = 'saturate(0.55) contrast(0.75) brightness(0.72)';
-  // Alternating mirrored tiles meet at the same edge, avoiding a hard scrolling seam.
+  // All movement tiers use the approved gothic plate, with a soft upright overlap.
   for (let i = -1; i <= 1; i++) {
-    ctx.save();
-    ctx.translate(0, y + i * h);
-    if (Math.abs(base - i) % 2) {
-      ctx.translate(0, h);
-      ctx.scale(1, -1);
-    }
-    ctx.drawImage(im, 0, 0, W, h);
-    ctx.restore();
+    ctx.drawImage(im, 0, y + i * stride, W, h);
   }
   ctx.restore();
 }
 export function background() {
   const tier = G.state && G.mode !== 'title' ? movementTier() : 0;
-  ctx.fillStyle = '#49645b';
+  ctx.fillStyle = '#292735';
   ctx.fillRect(0, 0, W, H);
   drawWorld(tier);
-  ctx.fillStyle = tier === 0 ? '#162c2333' : tier === 1 ? '#063d3e3d' : '#102e514f';
+  ctx.fillStyle = tier === 0 ? '#1915230a' : tier === 1 ? '#23203912' : '#221b3e18';
   ctx.fillRect(0, 0, W, H);
   const edge = ctx.createLinearGradient(0, 0, W, 0);
   edge.addColorStop(0, '#082e3a44');

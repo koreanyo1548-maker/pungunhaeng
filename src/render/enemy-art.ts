@@ -6,6 +6,7 @@ import { skyStage } from '../systems/flow';
 import { RANKS } from '../data/enemies';
 import { battleChestArt } from '../core/battle-item-art';
 import { tinted } from './placeholder-art';
+import { batFrames, batWhites, BAT_DRAW_SIZE, BAT_WING_FPS } from '../core/slime-battle-art';
 
 /** Share the exact art between alive, hit and defeated enemies. */
 export function enemyArt(e) {
@@ -13,6 +14,10 @@ export function enemyArt(e) {
   if (e.rock) {
     const index = e.baseX < 240 ? 0 : 1;
     return { image: propArt[index], white: rockHitArt[index], size: (e.r + 6) * 2 };
+  }
+  if (!e.boss && !e.elite && batFrames[e.rank]) {
+    const pose = reduced ? 0 : Math.floor(G.time * BAT_WING_FPS + (e.phase || 0)) % 4;
+    return { image: batFrames[e.rank][pose], white: batWhites[e.rank][pose], size: BAT_DRAW_SIZE };
   }
   if (skyStage() && !e.boss) {
     const rank = Math.min(2, e.rank);

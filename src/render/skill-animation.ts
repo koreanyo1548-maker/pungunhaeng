@@ -18,6 +18,10 @@ export const skillArtIds = groups.flat();
 const rows: Record<string, [number, number]> = {};
 groups.forEach((group, sheet) => group.forEach((id, row) => (rows[id] = [sheet, row])));
 const aliases = {
+  // 공명 기술 that were entry skills show their old art (eogeom: 어검진, hongryeonhwa: 홍련화, grimja: 그림자 분신)
+  eogeom: 'geomu',
+  hongryeonhwa: 'mancheon',
+  grimja: 'muyoung',
   pungun: 'yeonhwan',
   cheolhyeol: 'bungsan',
   mukyoung: 'muyoung',
@@ -28,6 +32,9 @@ const aliases = {
 };
 for (const [id, source] of Object.entries(aliases)) rows[id] = rows[source];
 for (const [id, sheet] of Object.entries(heroineSkillSheets)) rows[id] = [sheet, 0];
+/** 공명 기술 drawn from a heroine's own sheet (gwanchang: 관창, 목청완's) */
+const heroineArt: Record<string, string> = { gwanchang: 'cheongwan' };
+for (const [id, hero] of Object.entries(heroineArt)) rows[id] = rows[hero];
 const flightRows: Record<string, number> = {
   mancheon: 0,
   janyoung: 1,
@@ -52,6 +59,7 @@ export function drawSkillFrame(
   projectile = false,
   effectRow = 0,
 ) {
+  id = heroineArt[id] ?? id;
   const entry = rows[id];
   if (!entry) return false;
   const [sheet, row] =
@@ -81,7 +89,6 @@ type Cue = {
   impact: boolean;
   effectRow?: number;
   follow: boolean;
-  owner: number;
   stage: number;
 };
 const cues: Cue[] = [];
@@ -105,7 +112,6 @@ export function skillBurst(id: string, x: number, y: number, size: number, durat
     duration,
     impact: false,
     follow: false,
-    owner: G.state.active,
     stage: G.state.stage,
   });
   screenWash(x, y, color, duration * 0.8, 0.34);
@@ -117,9 +123,7 @@ export function screenWash(x: number, y: number, color: string, duration: number
 export function queueSkillLearn(id: string) {
   learned.push(id);
 }
-const auras = new Map<string, { end: number; size: number; owner: number }>();
-let shield = false,
-  negate = false;
+const auras = new Map<string, { end: number; size: number }>();
 let swapPose: { id: string; start: number } | null = null;
 export function startSwapPose(id: string) {
   swapPose = { id, start: G.time };
@@ -144,7 +148,6 @@ export function clearSkillAnimations() {
   learned.length = 0;
   swapPose = null;
   auras.clear();
-  shield = negate = false;
 }
 /**
  * `area` marks the one cue that shows a whole attack (an area blast). It is never throttled away by the small
@@ -182,13 +185,12 @@ export function skillCue(
     effectRow,
     impact,
     follow,
-    owner: G.state.active,
     stage: G.state.stage,
   });
   return true;
 }
 export function skillAura(id: string, duration: number, size = 120) {
-  auras.set(id, { end: G.time + duration, size, owner: G.state.active });
+  auras.set(id, { end: G.time + duration, size });
 }
 export function updateSkillAnimations(dt: number) {
   for (const c of cues) c.age += dt;
@@ -196,34 +198,23 @@ export function updateSkillAnimations(dt: number) {
   for (let i = washes.length - 1; i >= 0; i--) if (washes[i].age >= washes[i].duration) washes.splice(i, 1);
   for (let i = cues.length - 1; i >= 0; i--) {
     const c = cues[i];
-    if (c.age >= c.duration || c.stage !== G.state?.stage || (c.follow && c.owner !== G.state?.active))
-      cues.splice(i, 1);
+    if (c.age >= c.duration || c.stage !== G.state?.stage) cues.splice(i, 1);
   }
   if (!G.player || !G.state || G.player.hp <= 0 || ['title', 'result', 'choice'].includes(G.mode)) {
     cues.length = 0;
     washes.length = 0;
     auras.clear();
-    shield = negate = false;
     return;
   }
   if (G.mode === 'play' && ['flight', 'boss'].includes(G.state.phase)) {
-    for (const id of learned.splice(0)) if (SKILLS[id]?.trig === 'passive') skillCue(id, G.player.x, G.player.y, 110);
+    // a 공명 기술 just learned or raised shows itself once at the hero
+    for (const id of learned.splice(0)) skillCue(id, G.player.x, G.player.y, 110);
   }
   for (const [id, a] of auras)
-    if (G.time >= a.end || a.owner !== G.state.active || !['flight', 'boss'].includes(G.state.phase)) {
-      if (a.owner === G.state.active) skillCue(id, G.player.x, G.player.y, a.size, true);
+    if (G.time >= a.end || !['flight', 'boss'].includes(G.state.phase)) {
+      skillCue(id, G.player.x, G.player.y, a.size, true);
       auras.delete(id);
     }
-  const nextShield = G.player.shield > 0,
-    nextNegate = !!G.state.negate;
-  if (nextShield !== shield && !nextShield)
-    for (let i = cues.length - 1; i >= 0; i--) if (cues[i].id === 'art_cheolgap' && !cues[i].impact) cues.splice(i, 1);
-  if (nextNegate !== negate && !nextNegate)
-    for (let i = cues.length - 1; i >= 0; i--) if (cues[i].id === 'hoechun' && !cues[i].impact) cues.splice(i, 1);
-  if (nextShield !== shield) skillCue('art_cheolgap', G.player.x, G.player.y, 125, !nextShield, nextShield);
-  if (nextNegate !== negate) skillCue('hoechun', G.player.x, G.player.y + 28, 64, !nextNegate, nextNegate);
-  shield = nextShield;
-  negate = nextNegate;
 }
 export function drawSkillAnimations() {
   drawWashes();
@@ -257,8 +248,6 @@ export function drawSkillAnimations() {
   }
   if (G.player?.hp <= 0 || !G.state || !['flight', 'boss'].includes(G.state.phase)) return;
   const f = reduced ? 2 : [1, 2, 3, 2][Math.floor(G.time * 6) % 4];
-  if (shield) drawSkillFrame('art_cheolgap', f, G.player.x, G.player.y, 125, 0.38);
-  if (negate) drawSkillFrame('hoechun', f, G.player.x, G.player.y + 32, 48, 0.55);
   for (const [id, a] of auras) drawSkillFrame(id, f, G.player.x, G.player.y, a.size, 0.38);
 }
 /** heroes' basic shots are drawn this many times their old size (data/tune.ts `basicShot`) */
@@ -268,7 +257,8 @@ export const BASIC_SHOT_ART = TUNE.basicShot.art;
  * behind, so it reads as the reward for meeting the skill's condition. Hitboxes are unchanged.
  */
 export function drawSkillShot(s: any) {
-  if (flightRows[s.skill] === undefined && heroineSkillSheets[s.skill] === undefined) return false;
+  const art = heroineArt[s.skill] ?? s.skill;
+  if (flightRows[art] === undefined && heroineSkillSheets[art] === undefined) return false;
   // a hero's basic shot is drawn at BASIC_SHOT_ART × its old 40 px (render only; the hit radius stays `r`)
   const size = s.basic
       ? 40 * BASIC_SHOT_ART
@@ -295,7 +285,7 @@ export function heroShotFrame(id: string): CanvasImageSource | null {
 }
 /** Runtime inspection for the visual regression harness, never used to drive gameplay. */
 export function skillAnimationSnapshot() {
-  return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: frames.length, shield, negate };
+  return { cues: cues.map(c => ({ ...c })), auras: [...auras.keys()], loaded: frames.length };
 }
 function drawWashes() {
   for (const w of washes) {
@@ -314,31 +304,4 @@ function drawWashes() {
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
   }
-}
-/**
- * 검우: while the rain lasts, swords fall across the whole screen, not only where they hit. Positions come from
- * G.time alone, so this draws the same at any frame rate and uses no random numbers.
- */
-export function drawSwordRain(remaining: number, total: number) {
-  const im = combatProjectileArt[6];
-  if (!im || remaining <= 0) return;
-  const elapsed = total - remaining,
-    fade = Math.min(1, elapsed / 0.15, remaining / 0.35),
-    lanes = reduced ? 7 : 15,
-    fall = reduced ? 500 : 1150;
-  ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-  for (let i = 0; i < lanes; i++) {
-    const x = ((i + 0.5) * W) / lanes + Math.sin(i * 2.7) * 11,
-      span = H + 260,
-      y = ((G.time * fall * (0.85 + (i % 3) * 0.12) + i * 157) % span) - 130,
-      size = 0.8 + (i % 4) * 0.12;
-    ctx.globalAlpha = fade * (0.55 + (i % 3) * 0.15);
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(Math.PI + 0.12);
-    ctx.drawImage(im, -24 * size, -60 * size, 48 * size, 120 * size);
-    ctx.restore();
-  }
-  ctx.restore();
 }

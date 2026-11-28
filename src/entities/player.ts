@@ -7,44 +7,18 @@ import { reduced } from '../core/dom';
 import { fxRnd } from '../core/math';
 import { BR } from '../data/branches';
 import { HEROES } from '../data/heroes';
-import { hoechunSeconds } from '../data/skills';
 import { burst, impact, label, paintFX, ring } from '../render/fx';
 import { pfx } from '../render/pfx';
 import { clearBullets, shotPower } from '../systems/combat';
 import { movementTier, skyStage } from '../systems/flow';
 import { go } from '../systems/scene-flow';
-import { activeHeroId, replaceFallenHero } from '../systems/formation';
-import { basicShotOptions, cloneOffsets, unbowedHit } from '../systems/hero-effects';
+import { activeHeroId } from '../systems/formation';
+import { basicShotOptions, cloneOffsets } from '../systems/hero-effects';
 import { factor } from '../systems/factors';
 
 export function damagePlayer() {
   if (G.mode !== 'play' || G.player.hp <= 0 || G.player.inv > 0 || G.state.hyper > 0 || G.state.phase === 'clear')
     return;
-  // 불굴 (철혈's entry skill): the hit costs no health while it lasts
-  if (unbowedHit()) return;
-  if (G.player.shield > 0) {
-    G.player.shield = 0;
-    paintFX(6, G.player.x, G.player.y, 112, 0.32);
-    G.player.inv = 1;
-    if (!pfx('block', G.player.x, G.player.y)) {
-      ring(G.player.x, G.player.y, BR.art.color, 10, 110, 0.45);
-      burst(G.player.x, G.player.y, BR.art.color, 18, 200);
-    }
-    label('철갑공', G.player.x, G.player.y - 55, BR.art.color, 20);
-    tone(300, 0.18, 'square', 0.12, 120);
-    clearBullets(G.player.x, G.player.y, 120);
-    return;
-  }
-  if (G.state.negate) {
-    // 회춘단 (떠돌이 약선 2단계): one block, armed again on its timer (data/skills.ts)
-    G.state.negate = false;
-    paintFX(7, G.player.x, G.player.y, 100, 0.5);
-    G.player.inv = hoechunSeconds();
-    if (!pfx('heal', G.player.x, G.player.y)) ring(G.player.x, G.player.y, BR.gi.color, 10, 110, 0.45);
-    label('회춘단', G.player.x, G.player.y - 55, BR.gi.color, 20);
-    chime();
-    return;
-  }
   G.player.hp--;
   G.state.combo = 0;
   G.state.lastHurt = G.time;
@@ -64,7 +38,7 @@ export function damagePlayer() {
     const fallen = activeHeroId();
     G.state.heroHealth[fallen].fallen = true;
     label(HEROES[fallen].name + ' 전투불능', G.player.x, G.player.y - 65, '#ffac96', 20);
-    if (!replaceFallenHero()) go('result', false);
+    go('result', false);
   } else label('피격', G.player.x, G.player.y - 55, '#ffac96', 21);
 }
 export function shoot() {
@@ -74,7 +48,7 @@ export function shoot() {
   if (activeHeroId() !== 'pungun' && G.player.swingCount % 3 === 0)
     paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
   // Every hero shoots the same: one shot a volley at every level (the level raises its power), two lines side by side
-  // while the 듀얼샷 item lasts; traits and entry skills add aim, piercing, erasing or clones.
+  // while the 듀얼샷 item lasts; traits and gear add piercing, 그림자 분신 (a 공명 기술) clones.
   const extra = basicShotOptions(),
     lines = G.state.dual > 0 ? [-9, 9] : [0];
   for (const from of [0, ...cloneOffsets()])

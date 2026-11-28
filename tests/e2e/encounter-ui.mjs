@@ -1,4 +1,5 @@
-// Visual/interaction regression for the accepted encounter layout; no balance simulation.
+// Visual/interaction regression for the encounter layout, now the 공명의 조짐 card (2026-11: one card, a tap takes
+// it; no 인연, passer-by or choice of two); no balance simulation.
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -43,89 +44,57 @@ try {
     await page.waitForFunction(() => !document.getElementById('start').disabled, null, { timeout: 120000 });
     await page.click('#start');
     await page.evaluate(() => {
-      const h = [...document.querySelectorAll('.party-hero')];
-      for (const el of [...document.querySelectorAll('.party-hero.sel')].reverse()) el.click();
-      h[0].click();
-      h[1].click();
+      document.querySelectorAll('.party-hero')[0].click();
       document.getElementById('formationConfirm').click();
+      window.__step(2);
+      // the first 조짐 opens with the stage: take it, then fly a while
+      document.querySelector('#choice .card').click();
       window.__step(180);
     });
-    const ids = await page.evaluate(async () => Object.keys((await import('/src/data/npcs.ts')).NPCS));
-    for (const id of [...ids, 'passer'])
-      for (const level of id === 'passer' ? [0] : [0, 1, 2, 3]) {
-        const expected = await page.evaluate(
-          async ({ id, level }) => {
-            const { G } = await import('/src/core/context.ts');
-            const { openEncounter } = await import('/src/scenes/encounter.ts');
-            const { rewardName } = await import('/src/systems/quest.ts');
-            G.state.quest = null;
-            G.state.meetArrive = undefined;
-            G.state.forceNpc = id;
-            G.state.bond[id] = level;
-            G.state.met[id] = level % 2;
-            openEncounter();
-            return G.state.offer.map(q => ({ mode: q.mode, target: q.target, npc: q.npc, reward: rewardName(q) }));
-          },
-          { id, level },
-        );
-        const offers = page.locator('.encounter-offer');
-        assert.equal(await offers.count(), 2);
-        const boxes = await offers.evaluateAll(nodes =>
-          nodes.map(el => {
-            const r = el.getBoundingClientRect();
-            return { x: r.x, y: r.y, w: r.width, b: r.bottom };
-          }),
-        );
-        assert.ok(boxes[0].x < boxes[1].x && Math.abs(boxes[0].y - boxes[1].y) < 1, `${id}: left/right`);
-        for (let i = 0; i < 2; i++) {
-          assert.ok(
-            (await offers.nth(i).innerText()).includes(expected[i].reward),
-            `${id} level ${level}: live reward`,
-          );
-          assert.ok((await offers.nth(i).locator('.encounter-task').innerText()).includes(String(expected[i].target)));
-          assert.ok(
-            await offers
-              .nth(i)
-              .locator('img')
-              .evaluate(img => img.complete && img.naturalWidth > 0),
-            `${id}: reward image loaded`,
-          );
-        }
-        const geometry = await page.locator('#choice .panel').evaluate(el => ({
-          overflow: el.scrollWidth > el.clientWidth,
-          buttons: [...el.querySelectorAll('.act')].map(b => {
-            const r = b.getBoundingClientRect();
-            return { h: r.height, b: r.bottom };
-          }),
-          bottom: el.getBoundingClientRect().bottom,
-        }));
-        assert.equal(geometry.overflow, false);
-        assert.ok(
-          geometry.buttons.every(r => r.h >= 44 && r.b <= geometry.bottom + 1),
-          `${id} ${level}: buttons visible ${JSON.stringify(geometry)}`,
-        );
-        if ((id === 'monk' && level === 0) || id === 'passer')
-          await page.screenshot({ path: `${output}/${id}-${viewport.width}.png` });
+    for (const t of ['graze', 'step', 'nearKill', 'rowClear', 'combo']) {
+      const expected = await page.evaluate(async t => {
+        const { G } = await import('/src/core/context.ts');
+        const { openEncounter } = await import('/src/scenes/encounter.ts');
+        G.state.quest = null;
+        G.state.meetArrive = undefined;
+        G.state.forceSign = t;
+        openEncounter();
+        return { title: document.getElementById('choiceTitle').textContent };
+      }, t);
+      assert.equal(expected.title, '공명의 조짐');
+      const offers = page.locator('.encounter-offer');
+      assert.equal(await offers.count(), 1, `${t}: one 조짐`);
+      assert.equal(await page.locator('#choice .act').count(), 0, `${t}: no buttons`);
+      assert.ok((await offers.first().innerText()).includes('공명'), `${t}: what meeting it brings`);
+      assert.ok(
         await page
-          .locator('.act')
-          .nth(level % 2)
-          .click();
-        assert.deepEqual(
-          await page.evaluate(async () => {
-            const q = (await import('/src/core/context.ts')).G.state.quest;
-            return { mode: q.mode, target: q.target, npc: q.npc };
-          }),
-          { mode: expected[level % 2].mode, target: expected[level % 2].target, npc: expected[level % 2].npc },
-        );
-      }
-    // The encounter skin must not leak into formation / other choices.
+          .locator('#choice .card img')
+          .first()
+          .evaluate(img => img.complete && img.naturalWidth > 0),
+        `${t}: card image loaded`,
+      );
+      const geometry = await page.locator('#choice .panel').evaluate(el => ({
+        overflow: el.scrollWidth > el.clientWidth,
+        tap: !!el.querySelector('.encounter-tap'),
+      }));
+      assert.deepEqual(geometry, { overflow: false, tap: true }, `${t}: fits, with its countdown`);
+      if (t === 'graze') await page.screenshot({ path: `${output}/sign-${viewport.width}.png` });
+      await page.locator('#choice').click();
+      const q = await page.evaluate(async () => {
+        const { G } = await import('/src/core/context.ts');
+        return { t: G.state.quest.t, target: G.state.quest.target, mode: G.mode };
+      });
+      assert.equal(q.t, t);
+      assert.equal(q.mode, 'play');
+    }
+    // The encounter skin must not leak into the hero screen / other choices.
     await page.evaluate(async () => {
       (await import('/src/systems/flow.ts')).start();
     });
     assert.equal(await page.locator('#choice.encounter-screen').count(), 0);
     assert.deepEqual(errors, []);
     await page.close();
-    console.log(`PASS ${viewport.width}: all NPC tiers, passer rewards, choices and geometry`);
+    console.log(`PASS ${viewport.width}: the 조짐 card for every condition, a tap takes it, geometry`);
   }
 } finally {
   await browser.close();

@@ -34,11 +34,13 @@ export type Profile = {
   heroes: Record<HeroId, number>;
   /** each hero's level: 1 to 10 × 성급, raised with 엽전 (levelUp) */
   levels: Record<HeroId, number>;
-  /** 호감도 of each 인연: +1 every time their 의뢰 is followed; it sets the 인연's level (1·3·6·10·15) */
+  /** 호감도 of each 인연 (it set the 인연's level, 1·3·6·10·15). 2026-11: kept in the save but nothing raises or reads it
+   *  while 인연 are not used (공명 replaced them in play; addBond and metaSnapshot's `cards` are disconnected). */
   bonds: Record<NpcId, number>;
   /** stages opened, 1 to 6: beating a stage's boss opens the next */
   stages: number;
-  /** the last run's party (선봉, 후발), filled in on the formation screen; empty before the first run */
+  /** the last run's hero, filled in on the hero screen; empty before the first run (one hero since 2026-11; an older
+   *  save's party keeps its first, the old 선봉) */
   formation: HeroId[];
   /** 장비 held (docs/equipment-plan.md) */
   gear: Gear[];
@@ -77,9 +79,9 @@ export function sanitize(raw: any): Profile {
   for (const id of HERO_IDS) p.levels[id] = Math.max(1, whole(raw.levels?.[id], levelCap(pieceLevel(p.heroes[id]))));
   for (const id of NPC_IDS) p.bonds[id] = whole(raw.bonds?.[id]);
   p.stages = Math.max(p.stages, whole(raw.stages, STAGE_COUNT));
-  // two different heroes in play the player has, or none
+  // a hero in play the player has, or none
   const party = Array.isArray(raw.formation) ? raw.formation.filter(playable) : [];
-  if (party.length === 2 && party[0] !== party[1] && party.every(id => p.heroes[id] > 0)) p.formation = party;
+  if (party.length && p.heroes[party[0]] > 0) p.formation = [party[0]];
   // gear: known items within their 등급 and 강화, each uid once
   const uids = new Set<number>();
   for (const g of Array.isArray(raw.gear) ? raw.gear : []) {
@@ -152,7 +154,8 @@ export function levelUp(id: HeroId): boolean {
   saveProfile();
   return true;
 }
-/** Following an 인연's 의뢰 raises their 호감도 at once (saved); the run keeps the level it started with. */
+/** Following an 인연's 의뢰 raised their 호감도 at once (saved). 2026-11: nothing calls it while 인연 are not used
+ *  (공명 replaced the 의뢰); kept for the 인연 rework. */
 export function addBond(id: NpcId) {
   profile.bonds[id]++;
   saveProfile();
@@ -169,6 +172,7 @@ export function metaSnapshot(): Meta {
   const m = emptyMeta();
   for (const id of HERO_IDS) m.heroes[id] = Math.max(0, heroStars(id) - 1);
   for (const id of HERO_IDS) m.levels[id] = profile.levels[id];
+  // 인연 levels: still copied, but nothing in a run reads them since 공명 (2026-11; they raised 인연 skills)
   for (const id of NPC_IDS) m.cards[id] = bondOf(id);
   for (const id of HERO_IDS) m.gear[id] = equippedGear(id).flatMap(gearFactors);
   return m;

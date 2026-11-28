@@ -1,4 +1,4 @@
-// 초식 이름: a name struck in brush style above the player when something goes off: every 인연 skill (the same
+// 초식 이름: a name struck in brush style above the player when something goes off: every 공명 기술 (the same
 // skill at most once a GAP), and 필살기, 무아지경, 자석 and 점수 두 배 (these take a line even when both are busy).
 // Cosmetic only: nothing here touches game state, timers or the gameplay RNG.
 import { G } from '../core/context';
@@ -24,7 +24,7 @@ function freeSlot(force: boolean) {
   return oldest.slot;
 }
 
-/** An 인연 skill went off: every time, the same skill at most once a GAP. `s` is its instance in G.state.skills. */
+/** A 공명 기술 went off: every time, the same skill at most once a GAP. `s` is its instance in G.state.skills. */
 export function skillCallout(s: { id: string }) {
   if (G.time - (lastAt.get(s) ?? -99) < GAP) return;
   const slot = freeSlot(false);

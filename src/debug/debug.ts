@@ -2,13 +2,12 @@ import { syncHUD } from '../ui/hud';
 import { runSeed } from '../core/rng';
 import { G } from '../core/context';
 import { hitEnemy, kill } from '../entities/enemies';
-import { NPCS } from '../data/npcs';
 import { loadProfile, profile } from '../core/profile';
 import { eliteStep } from '../systems/elite';
 import { learn, trig } from '../systems/abilities';
 import { damagePlayer } from '../entities/player';
-import { questEvent, questTarget, raiseBond } from '../systems/quest';
-import { moveAlign, rollMeet } from '../systems/alignment';
+import { questEvent, questTarget } from '../systems/quest';
+import { candidates, rollChoices } from '../systems/resonance';
 import { referenceScore, rowGap } from '../systems/score';
 import { addPickup, pickItem } from '../entities/pickups';
 import { go } from '../systems/scene-flow';
@@ -57,14 +56,18 @@ if (location.hash.includes('debug'))
     pickItem,
     /** kill an enemy as a hit would (score, drops) */
     kill,
-    /** the 인연 data (data/npcs.ts) */
-    npcs: NPCS,
+    /** hit an enemy for this damage, as a shot would (critical hits apply) */
+    hitEnemy,
     /** the row gap (seconds) at a distance into a stage of a length (systems/score.ts) */
     rowGap,
     questEvent,
-    /** an 의뢰 condition's target for the met-th 의뢰 of its 인연 (정요란 cuts it) */
+    /** a 조짐 condition's target (정요란 cuts it) */
     questTarget,
+    /** 공명: learn a 공명 기술, or raise one held a level (systems/abilities.ts) */
     learn,
+    /** what a 공명 could give now, and the offers of one (gameplay random) */
+    candidates,
+    rollChoices,
     /** fire the skills bound to a trigger, as combat would (tests count what they shoot) */
     trig,
     get shots() {
@@ -84,14 +87,18 @@ if (location.hash.includes('debug'))
       G.state.shower = undefined;
       G.state.distance = Math.max(G.state.distance, stageDistance());
     },
-    /** make a 만남 due: it opens at the end of the next step (as its time would) */
+    /** make a 조짐 due: its card opens at the end of the next step (as its time would) */
     readyMeet() {
       G.state.meetReady = true;
     },
-    /** open a 만남 now; with an id, that 인연 comes (whatever the scale) */
-    meet(id?: string) {
-      if (id) G.state.forceNpc = id;
+    /** open a 조짐 card now; with a condition (graze, step, nearKill, rowClear, combo), it asks for that */
+    meet(t?: string) {
+      if (t) G.state.forceSign = t;
       go('encounter');
+    },
+    /** open a 공명 choice now (as a met 조짐 would) */
+    resonate() {
+      go('resonance');
     },
     /** metres to the boss on this stage */
     get stageDistance() {
@@ -101,14 +108,8 @@ if (location.hash.includes('debug'))
     get stats() {
       return { attack: shotPower(), tiers: [1, 2, 3, 4, 5, 6].map(enemyHealth), boss: bossHealth() };
     },
-    /** add 정 (positive) or 사 (negative) points (moves the 만남 odds as play would) */
-    moveAlign,
-    /** who the next 만남 brings by the run's odds (an 인연's id, or null for a passer-by; uses gameplay random) */
-    rollMeet,
     /** a stage's 기준 점수 (systems/score.ts) */
     referenceScore,
-    /** raise an 인연 one level (teaches the skill), as a met 의뢰 would */
-    raiseBond,
     killBoss() {
       const b = G.enemies.find(e => e.boss && !e.dead);
       if (b) {
@@ -122,17 +123,10 @@ if (location.hash.includes('debug'))
         health.maxHp = health.hp = 99;
       }
     },
-    /** the running entry skill (systems/hero-effects.ts), for tests */
-    get effect() {
-      return G.state?.effect ?? null;
-    },
-    /** fell the hero who is fighting, as a lethal hit would (the second hero enters) */
+    /** fell the hero, as a lethal hit would (the run ends) */
     fell() {
       G.player.inv = 0;
       G.state.hyper = 0;
-      G.state.effect = null;
-      G.player.shield = 0;
-      G.state.negate = false;
       G.player.hp = 1;
       damagePlayer();
     },

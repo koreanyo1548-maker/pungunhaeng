@@ -1,15 +1,12 @@
 import type { Cell, NpcId } from './roster';
 
-// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). Each 인연 belongs to a side (정파 good, 사파 evil); who comes to a
-// 만남 is rolled by the run's 정·사 odds (systems/alignment.ts). An 의뢰's `n` is its full target: it asks about 5/6
-// of it, ±10% (systems/quest.ts `questTarget`). Meeting them brings an 의뢰; following it
-// and succeeding raises the 인연 one level (1단계 a number, 2단계 a projectile skill, 3단계 their signature skill).
-// `levels` are the skill ids of those levels (data/skills.ts). `br` only colours their screens.
+// 인연 (docs/ability-redesign-plan.md, 4.3–4.6). 2026-11 (공명, docs/resonance-plan.md): not used in play any more —
+// no 만남, no 의뢰, no 인연 levels, no 정·사 (the side and MEET_ODDS rolled who came). The data stays for the 인연 rework
+// and for their portraits (core/assets.ts). `levels` are the ids of the 인연 skills they taught (removed, except
+// gitan, taeguk, bungsan, janyoung, art_dobeop and art_cheonma, which are 공명 기술 now); `quests` were their 의뢰
+// (`n` its full target). `br` only colours their screens.
 export type Side = 'good' | 'evil';
 export const SIDE_NAME: Record<Side, string> = { good: '정파', evil: '사파' };
-/** who comes to a 만남 at the start of a run (weights: passer-by 6 : 정파 2 : 사파 2), and what a 정 or 사 point moves
- *  from the passer-by to its side (systems/alignment.ts) */
-export const MEET_ODDS = { passer: 6, good: 2, evil: 2, shift: 1 };
 
 export const NPCS = {
   dosa: {

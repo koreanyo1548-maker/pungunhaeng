@@ -1,38 +1,35 @@
 import type { Meta, HeroId } from '../data/meta';
-import type { HeroEffect } from '../systems/hero-effects';
+import type { SkillId } from '../data/skills';
+/** a 공명 기술 held in a run (data/skills.ts) */
 export interface SkillInstance {
-  id: string;
+  id: SkillId;
+  /** 1 to SKILL_LEVEL_MAX */
+  level: number;
   ready?: number;
   flash?: number;
+  /** window skills: seconds fought since it was learned (systems/skill-state.ts) */
+  clock?: number;
+  /** 어검진: the swords' angle */
+  angle?: number;
 }
+/** 공명의 조짐 (systems/quest.ts): a condition to meet in BASELINE.meet.quest s of flight */
 export interface Quest {
-  /** the 인연's id, or null for a passer-by's 의뢰 */
-  npc: string | null;
-  /** a passer-by's portrait (ambient art key) and name */
-  who?: { art: string; name: string };
-  /** follow / defy (인연), help / ignore (passer-by) */
-  mode: string;
-  /** the side the choice adds a point to (+1 정, −1 사) */
-  move: number;
   t: string;
   target: number;
   prog: number;
   br: string;
   done: boolean;
   failed: boolean;
-  /** seconds of flight left to meet it (BASELINE.meet.quest); the next 만남 opens when it runs out */
+  /** seconds of flight left to meet it (BASELINE.meet.quest); the next 조짐 comes when it runs out */
   left: number;
   tick?: number;
-  /** combo 의뢰: the combo already running when it was accepted (only the chain after it counts) */
+  /** combo: the combo already running when it began (only the chain after it counts) */
   from?: number;
 }
 export interface PathEntry {
-  /** which 만남 of the run (1 = first) */
+  /** which 조짐 of the run (1 = first) */
   stage: number;
-  npc: string | null;
-  who?: string;
-  t?: string;
-  mode: string;
+  t: string;
   result: string;
 }
 export interface HeroHealth {
@@ -79,54 +76,38 @@ export interface RunState {
   runPhase: number;
   jumpPhase: number;
   grazes: number;
-  rain: number;
-  rainTimer: number;
-  negate: boolean;
   blasting: boolean;
   spearTimer: number;
   victory: boolean;
-  active: number;
-  /** the running entry skill (systems/hero-effects.ts) */
-  effect: HeroEffect | null;
-  /** 풍운객 ★5: the fallen vanguard whose trait he carries */
-  inheritTrait?: HeroId;
   /** 매설영: the fraction of a coin carried between kills */
   coinFrac?: number;
   critLabel?: number;
   lastHurt: number;
   spent: number;
+  /** the 공명 기술 held (data/skills.ts) */
   skills: SkillInstance[];
-  met: Record<string, number>;
+  /** the running 공명의 조짐 */
   quest: Quest | null;
+  /** debug: the condition the next 조짐 asks for */
+  forceSign?: string;
   path: PathEntry[];
-  formation: HeroId[];
+  /** the one hero of the run (2026-11: no more party of two, 편대 비행 was removed) */
+  hero: HeroId;
   meta: Meta;
-  /** debug: the 인연 the next 만남 brings */
-  forceNpc: string | null;
-  /** 정 points this run (systems/alignment.ts): only grow; each adds 5% to the final score */
-  good: number;
-  /** 사 points this run: only grow; each adds 5% to the 엽전 banked */
-  evil: number;
-  /** who comes to a 만남: the weights of a passer-by, a 정파 and a 사파 인연 (systems/alignment.ts) */
-  meetOdds: { passer: number; good: number; evil: number };
-  /** the 의뢰 the open 만남 brings (rolled when it opens: the card shows it) */
-  offer?: Quest;
-  /** each 인연's level this run, 0 to 3 */
-  bond: Record<string, number>;
-  /** seconds of flight before the next 만남 when no 의뢰 runs, and the whole wait (systems/encounter.ts) */
+  /** seconds of flight before the next 조짐 when none runs, and the whole wait (systems/encounter.ts) */
   meetTimer: number;
   meetWait: number;
   baseScore: number;
-  /** who the next 만남 brings (an 인연's id, or null for a passer-by), announced for `left` more seconds */
-  meetArrive?: { id: string | null; left: number };
-  /** a 만남 is due: it opens at the next safe step */
+  /** the next 조짐 is announced for `left` more seconds */
+  meetArrive?: { left: number };
+  /** a 조짐 is due: its card opens at the next safe step */
   meetReady: boolean;
-  /** 만남 so far this run */
+  /** a 조짐 was met: the 공명 choice opens at the next safe step */
+  pickReady: boolean;
+  /** 조짐 so far this run */
   encounters: number;
-  /** passers-by met this run (their portrait goes in order) */
-  passers: number;
-  /** a hero entered during this step, so a 만남 waits one step (cleared when the next step starts) */
-  enteredStep?: boolean;
+  /** 공명 so far this run (조짐 met) */
+  resonances: number;
   questPath?: PathEntry;
   stats?: Record<string, number>;
   lastStepDir?: number;
@@ -140,7 +121,6 @@ export interface Player {
   targetY: number;
   hp: number;
   maxHp: number;
-  shield: number;
   inv: number;
   fire: number;
   tilt: number;

@@ -1,4 +1,4 @@
-// Synchronous event bus (Observer). Combat code only reports what happened; 의뢰 (quest), 인연 skills (abilities)
+// Synchronous event bus (Observer). Combat code only reports what happened; 공명의 조짐 (quest), 공명 기술 (abilities)
 // and anything added later (meta progression, endless mode, analytics) subscribe without touching combat code.
 // Listeners run in registration order, so quest listeners are registered before ability listeners (see main.ts).
 

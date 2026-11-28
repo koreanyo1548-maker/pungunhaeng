@@ -1,215 +1,225 @@
-import { changePartyMaxHealth } from '../core/hero-health';
 import { G } from '../core/context';
-import { rnd } from '../core/math';
 import { BR } from './branches';
-import { strongestEnemy } from '../entities/enemies';
-import { ring } from '../render/fx';
+import { strongestEnemy, hitEnemy } from '../entities/enemies';
 import { D, aoe, column, fan, fireShot } from '../systems/combat';
-import { cardRank } from '../systems/relationship';
-import { hasSkill } from '../systems/skill-state';
+import { WINDOWS } from '../systems/skill-state';
+import { visualSkill } from '../core/skill-context';
 
-// 인연 단계 skills (docs/ability-redesign-plan.md, 4.6). Each 인연 has two, one per level (data/npcs.ts `levels`):
-// 1단계 a projectile skill, 2단계 their signature skill (the three boss skills moved here). They are learned in a
-// run when the 인연's 의뢰 is met, and last for that run. (2026-11: the old 1단계 number skills were removed; the old
-// 2단계 and 3단계 are now 1단계 and 2단계.)
-// An 인연 card raises the numbers: every card level above 1 adds a step (`r - 1`, 0 to 4), read from the
-// run's snapshot. All numbers are provisional (balance pass).
-// D() is the damage of one basic shot; a skill's projectile hits at least twice as hard (see docs/terms.md).
+// 공명 기술 (2026-11, docs/resonance-plan.md): what the protagonist's 공명 gives in a run. A met 공명의 조짐 offers
+// three of these (a new one, or the next level of one held); a run holds SKILL_SLOTS of them, each up to
+// SKILL_LEVEL_MAX. Each grows along one way (`axis`): projectiles, power, reach, cooldown or time on.
+// They came from the 인연 skills (기탄, 태극운검, 녹림도법, 잔영검, 붕산권, 천마군림) and the old entry skills of 비천,
+// 홍련, 묵영 and 목청완 (어검진, 홍련화, 그림자 분신, 관창), which went with the party (편대).
+// All numbers are provisional (docs/workflow.md 8장: balance is set by play). D() is one basic shot's damage.
+// (The 인연 skills not kept — 회춘단, 유수파, 철갑공, 만천화우, 의협난도, 검우 — were removed with the 인연 levels.)
 
-/** damage multiplier an 인연 card gives that 인연's skills: +10% per card level above 1 */
-export const cardBoost = (npc: string, r = cardRank(npc)) => 1 + 0.1 * Math.max(0, r - 1);
-const pct = (n: number) => Math.round(n * 100) + '%';
-const plusPct = (n: number) => '+' + Math.round((n - 1) * 100) + '%';
+export const SKILL_IDS = [
+  'gitan',
+  'taeguk',
+  'art_dobeop',
+  'janyoung',
+  'bungsan',
+  'art_cheonma',
+  'eogeom',
+  'hongryeonhwa',
+  'grimja',
+  'gwanchang',
+] as const;
+export type SkillId = (typeof SKILL_IDS)[number];
+/** skills a run can hold, and the highest level of one */
+export const SKILL_SLOTS = 3;
+export const SKILL_LEVEL_MAX = 3;
 
-// ---- timers that a card shortens or lengthens
-/** 회춘단: seconds between blocks */
-export const hoechunCooldown = (r = cardRank('yakseon')) => 30 - 2 * Math.max(0, r - 1);
-/** how long the player is safe after 회춘단 blocks a hit */
-export const hoechunSeconds = () => 1.3;
-const cheolgapCooldown = (r = cardRank('monk')) => 10 - 0.5 * Math.max(0, r - 1);
-/** How long 검우's rain of swords lasts, in seconds. */
-export const rainSeconds = (r = cardRank('milsa')) => 1.5 + 0.25 * Math.max(0, r - 1);
-
+export type SkillAxis = '발사체' | '공격력' | '범위' | '쿨타임' | '지속 시간';
 export interface SkillDef {
-  npc: string;
-  /** 1 or 2: the 인연 단계 that gives it */
-  level: number;
-  br: string;
   name: string;
-  /** what it does, worded for an 인연 card level */
-  effect: (r: number) => string;
-  trig: 'passive' | 'tick' | 'step' | 'graze' | 'nearKill' | 'rowClear' | 'blast';
-  /** seconds between two uses (a tick skill's period) */
-  cd?: number | (() => number);
-  fx?: (d: any, s: any) => void;
-  gain?: () => void;
+  /** only colours the skill (chip, callout) */
+  br: string;
+  axis: SkillAxis;
+  /** tick: every `cd`; graze, step, nearKill: on that event, at most once a `cd`; aura: every frame;
+   *  window: on for part of a cycle (systems/skill-state.ts WINDOWS), read where the game uses it */
+  trig: 'tick' | 'graze' | 'step' | 'nearKill' | 'aura' | 'window';
+  /** seconds between two uses at a level */
+  cd?: (L: number) => number;
+  fx?: (d: any, L: number, s: { angle?: number }) => void;
+  /** what it does at a level (1 to SKILL_LEVEL_MAX) */
+  effect: (L: number) => string;
 }
 
-export const SKILLS: Record<string, SkillDef> = {
-  // 떠돌이 약선 (정파)
+/** a level's value (L is 1 to SKILL_LEVEL_MAX) */
+const at = <T>(list: readonly T[], L: number) => list[Math.max(1, Math.min(list.length, L)) - 1];
+const pct = (n: number) => Math.round(n * 100) + '%';
+
+// ---- per-level numbers (provisional)
+const GITAN = { shots: [2, 3, 4], power: 2, every: 1 };
+const TAEGUK = { power: [4, 6, 8], gap: 0.6 };
+const DOBEOP = { blades: [5, 7, 9], power: 1.7, every: 1.2, spread: 0.12 };
+const JANYOUNG = { shots: [2, 3, 4], power: 2, gap: 0.6 };
+const BUNGSAN = { radius: [80, 100, 120], power: 5 };
+const CHEONMA = { every: [3, 2, 1.5], power: 9 };
+const EOGEOM = { swords: [3, 4, 5], power: 1.4, radius: 62, again: 0.22 };
+const GWANCHANG = { every: [1.2, 0.8, 0.6], power: 4.8 };
+
+/** 어검진: where the swords circling the hero are now (`angle` turns with time) */
+export function swordPositions(L: number, angle: number) {
+  const n = at(EOGEOM.swords, L);
+  return Array.from({ length: n }, (_, i) => {
+    const a = angle + (i * Math.PI * 2) / n;
+    return {
+      x: G.player.x + Math.cos(a) * EOGEOM.radius,
+      y: G.player.y - 10 + Math.sin(a) * EOGEOM.radius,
+      a,
+    };
+  });
+}
+
+export const SKILLS: Record<SkillId, SkillDef> = {
   gitan: {
-    npc: 'yakseon',
-    level: 1,
-    br: 'gi',
     name: '기탄',
-    effect: r => `추적 기탄 발사 · 위력 ${pct(2.4 * cardBoost('yakseon', r))}`,
-    trig: 'tick',
-    cd: 0.85,
-    fx: () =>
-      fireShot(G.player.x, G.player.y - 30, rnd(-200, 200), D() * 2.4 * cardBoost('yakseon'), {
-        kind: 'orb',
-        color: BR.gi.color,
-        homing: true,
-        vy: 650,
-      }),
-  },
-  hoechun: {
-    npc: 'yakseon',
-    level: 2,
     br: 'gi',
-    name: '회춘단',
-    effect: r => `${hoechunCooldown(r)}초마다 피격 1회 무효`,
+    axis: '발사체',
     trig: 'tick',
-    cd: () => hoechunCooldown(),
-    fx: () => {
-      if (G.state.negate) return;
-      G.state.negate = true;
-    },
-  },
-  // 청운 도인 (정파)
-  yusu: {
-    npc: 'dosa',
-    level: 1,
-    br: 'yu',
-    name: '유수파',
-    effect: r => `스칠 때 그 자리에 청기 파동 · 위력 ${pct(3.5 * cardBoost('dosa', r))}`,
-    trig: 'graze',
-    cd: 0.12,
-    fx: d => aoe(d.x, d.y - 20, 80, D() * 3.5 * cardBoost('dosa'), BR.yu.color),
-  },
-  taeguk: {
-    npc: 'dosa',
-    level: 2,
-    br: 'yu',
-    name: '태극운검',
-    effect: r => `스친 탄을 추적탄으로 되돌려 보냄 · 위력 ${pct(3 * cardBoost('dosa', r))}`,
-    trig: 'graze',
-    fx: d => {
-      if (d.h) d.h.dead = true;
-      fireShot(d.x, d.y, 0, D() * 3 * cardBoost('dosa'), { kind: 'orb', color: BR.yu.color, homing: true, vy: 700 });
-    },
-  },
-  // 철벽 노승 (정파)
-  bungsan: {
-    npc: 'monk',
-    level: 1,
-    br: 'gang',
-    name: '붕산권',
-    effect: r => `근접 처치한 자리에 충격파 · 위력 ${pct(5 * cardBoost('monk', r))}`,
-    trig: 'nearKill',
-    cd: 0.1,
-    fx: d => aoe(d.e.x, d.e.y, 95, D() * 5 * cardBoost('monk'), BR.gang.color),
-  },
-  art_cheolgap: {
-    npc: 'monk',
-    level: 2,
-    br: 'art',
-    name: '철갑공',
-    effect: r => `${cheolgapCooldown(r)}초마다 피격 1회를 막는 보호막 (최대 1개)`,
-    trig: 'tick',
-    cd: () => cheolgapCooldown(),
-    fx: () => {
-      if (!G.player.shield) {
-        G.player.shield = 1;
-        ring(G.player.x, G.player.y, BR.art.color, 10, 70, 0.4);
-      }
-    },
-  },
-  // 비연 낭자 (사파)
-  janyoung: {
-    npc: 'yeonhyeop',
-    level: 1,
-    br: 'yu',
-    name: '잔영검',
-    effect: r => `좌우 전환할 때 잔상이 검기 2발 발사 · 위력 ${pct(2.2 * cardBoost('yeonhyeop', r))}`,
-    trig: 'step',
-    cd: 0.22,
-    fx: d => {
-      for (const o of [-9, 9])
-        fireShot(d.x + o, G.player.y - 25, 0, D() * 2.2 * cardBoost('yeonhyeop'), { kind: 'qi', color: BR.yu.color });
-    },
-  },
-  mancheon: {
-    npc: 'yeonhyeop',
-    level: 2,
-    br: 'yu',
-    name: '만천화우',
-    effect: r => `좌우 전환할 때 비도 3자루를 부채꼴로 투척 · 위력 ${pct(3 * cardBoost('yeonhyeop', r))}`,
-    trig: 'step',
-    cd: 0.26,
-    fx: () => fan(3, 0.32, D() * 3 * cardBoost('yeonhyeop'), '#bdf7ea', 'knife', 'mancheon'),
-  },
-  // 녹림 의적 (사파)
-  uihyeop: {
-    npc: 'uijeok',
-    level: 1,
-    br: 'gang',
-    name: '의협난도',
-    effect: r => `한 줄 전멸 때 5방향 관통 도기 · 위력 ${pct(5 * cardBoost('uijeok', r))}`,
-    trig: 'rowClear',
-    cd: 0.2,
-    fx: () => {
-      for (const vx of [-320, -160, 0, 160, 320])
-        fireShot(G.player.x, G.player.y - 40, vx, D() * 5 * cardBoost('uijeok'), {
-          kind: 'gang',
-          pierce: true,
-          w: 8,
-          color: '#ffb38f',
+    cd: () => GITAN.every,
+    effect: L => `${GITAN.every}초마다 추적 기탄 ${at(GITAN.shots, L)}발 · 위력 ${pct(GITAN.power)}`,
+    fx: (_, L) => {
+      const n = at(GITAN.shots, L);
+      for (let i = 0; i < n; i++)
+        fireShot(G.player.x, G.player.y - 30, (i - (n - 1) / 2) * 160, D() * GITAN.power, {
+          kind: 'orb',
+          color: BR.gi.color,
+          homing: true,
+          vy: 650,
         });
     },
   },
-  art_dobeop: {
-    npc: 'uijeok',
-    level: 2,
-    br: 'art',
-    name: '녹림도법',
-    effect: r => `1.4초마다 7방향 도기 · 위력 ${pct(2.5 * cardBoost('uijeok', r))}`,
-    trig: 'tick',
-    cd: 1.4,
-    fx: () => fan(7, 0.2, D() * 2.5 * cardBoost('uijeok'), '#ffc179', 'knife', 'dobeop'),
+  taeguk: {
+    name: '태극운검',
+    br: 'yu',
+    axis: '공격력',
+    trig: 'graze',
+    cd: () => TAEGUK.gap,
+    effect: L => `스칠 때 추적탄 · 위력 ${pct(at(TAEGUK.power, L))} (${TAEGUK.gap}초에 한 번)`,
+    fx: (_, L) =>
+      fireShot(G.player.x, G.player.y - 30, 0, D() * at(TAEGUK.power, L), {
+        kind: 'orb',
+        color: BR.yu.color,
+        homing: true,
+        vy: 700,
+      }),
   },
-  // 혈마 밀사 (사파)
-  geomu: {
-    npc: 'milsa',
-    level: 1,
-    br: 'gi',
-    name: '검우',
-    effect: r => `필살기를 쓰면 ${rainSeconds(r)}초간 검의 비`,
-    trig: 'blast',
-    fx: () => {
-      G.state.rain = rainSeconds();
-      G.state.rainTimer = 0;
+  art_dobeop: {
+    name: '녹림도법',
+    br: 'art',
+    axis: '발사체',
+    trig: 'tick',
+    cd: () => DOBEOP.every,
+    effect: L => `${DOBEOP.every}초마다 ${at(DOBEOP.blades, L)}방향 도기 · 위력 ${pct(DOBEOP.power)}`,
+    fx: (_, L) => fan(at(DOBEOP.blades, L), DOBEOP.spread, D() * DOBEOP.power, '#ffc179', 'knife', 'dobeop'),
+  },
+  janyoung: {
+    name: '잔영검',
+    br: 'yu',
+    axis: '발사체',
+    trig: 'step',
+    cd: () => JANYOUNG.gap,
+    effect: L =>
+      `좌우로 움직일 때 검기 ${at(JANYOUNG.shots, L)}발 · 위력 ${pct(JANYOUNG.power)} (${JANYOUNG.gap}초에 한 번)`,
+    fx: (d, L) => {
+      const n = at(JANYOUNG.shots, L);
+      for (let i = 0; i < n; i++)
+        fireShot(d.x + (i - (n - 1) / 2) * 12, G.player.y - 25, 0, D() * JANYOUNG.power, {
+          kind: 'qi',
+          color: BR.yu.color,
+        });
     },
+  },
+  bungsan: {
+    name: '붕산권',
+    br: 'gang',
+    axis: '범위',
+    trig: 'nearKill',
+    cd: () => 0.1,
+    effect: L => `근접 처치한 자리에 충격파 · 반경 ${at(BUNGSAN.radius, L)} · 위력 ${pct(BUNGSAN.power)}`,
+    fx: (d, L) => aoe(d.e.x, d.e.y, at(BUNGSAN.radius, L), D() * BUNGSAN.power, BR.gang.color),
   },
   art_cheonma: {
-    npc: 'milsa',
-    level: 2,
-    br: 'art',
     name: '천마군림',
-    effect: r => `3초마다 가장 강한 적에게 천마 검강 · 위력 ${pct(9 * cardBoost('milsa', r))}`,
+    br: 'art',
+    axis: '쿨타임',
     trig: 'tick',
-    cd: 3,
+    cd: L => at(CHEONMA.every, L),
+    effect: L => `${at(CHEONMA.every, L)}초마다 가장 강한 적에게 천마 검강 · 위력 ${pct(CHEONMA.power)}`,
     fx: () => {
       const e = strongestEnemy();
-      if (e) column(e.x, D() * 9 * cardBoost('milsa'), '#f6bc83', 36, 'cheonma');
+      if (e) column(e.x, D() * CHEONMA.power, '#f6bc83', 36, 'cheonma');
     },
+  },
+  eogeom: {
+    name: '어검진',
+    br: 'yu',
+    axis: '발사체',
+    trig: 'aura',
+    effect: L => `비검 ${at(EOGEOM.swords, L)}자루가 주위를 돌며 닿는 적을 벤다 · 위력 ${pct(EOGEOM.power)}`,
+    fx: (dt: number, L, s) => {
+      s.angle = (s.angle ?? 0) + dt * 4.2;
+      for (const p of swordPositions(L, s.angle))
+        for (const e of [...G.enemies]) {
+          if (e.dead || (e.orbHit || 0) > G.time) continue;
+          if (Math.hypot(e.x - p.x, e.y - p.y) < (e.boss ? 60 : e.r) + 10) {
+            e.orbHit = G.time + EOGEOM.again;
+            hitEnemy(e, D() * EOGEOM.power, visualSkill);
+          }
+        }
+    },
+  },
+  hongryeonhwa: {
+    name: '홍련화',
+    br: 'gang',
+    axis: '지속 시간',
+    trig: 'window',
+    effect: L => {
+      const w = WINDOWS.hongryeonhwa,
+        on = at(w.on, L);
+      return on >= w.period
+        ? '모든 공격이 늘 치명타 (피해 2배)'
+        : `${w.period}초 중 ${on}초 동안 모든 공격이 치명타 (피해 2배)`;
+    },
+  },
+  grimja: {
+    name: '그림자 분신',
+    br: 'yu',
+    axis: '지속 시간',
+    trig: 'window',
+    effect: L => {
+      const w = WINDOWS.grimja,
+        on = at(w.on, L);
+      return on >= w.period
+        ? '분신 2개가 늘 기본 공격을 따라 쏜다'
+        : `${w.period}초 중 ${on}초 동안 분신 2개가 기본 공격을 따라 쏜다`;
+    },
+  },
+  gwanchang: {
+    name: '관창',
+    br: 'gang',
+    axis: '쿨타임',
+    trig: 'tick',
+    cd: L => at(GWANCHANG.every, L),
+    effect: L => `${at(GWANCHANG.every, L)}초마다 정면으로 관통 창 · 위력 ${pct(GWANCHANG.power)}`,
+    fx: () =>
+      fireShot(G.player.x, G.player.y - 42, 0, D() * GWANCHANG.power, {
+        kind: 'gang',
+        pierce: true,
+        w: 16,
+        vy: 1100,
+        color: '#e8ae88',
+      }),
   },
 };
 
-/** A skill's period or cooldown in seconds. */
-export const cooldown = (d: SkillDef) => (typeof d.cd === 'function' ? d.cd() : d.cd || 0);
+/** A skill's period or cooldown in seconds at a level. */
+export const cooldown = (d: SkillDef, L: number) => d.cd?.(L) ?? 0;
 
-/** A skill's 효과 line, worded for the 인연 card level (the run's, or the one given). */
-export function skillEffect(id: string, rank = cardRank(SKILLS[id].npc)): string {
-  return SKILLS[id].effect(rank);
+/** A skill's 효과 line at a level (1 to SKILL_LEVEL_MAX). */
+export function skillEffect(id: SkillId, level: number): string {
+  return SKILLS[id].effect(level);
 }

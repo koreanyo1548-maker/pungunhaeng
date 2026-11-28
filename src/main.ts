@@ -9,14 +9,14 @@ import './styles/encounter.css';
 import './ui/input';
 import './scenes/gacha';
 import './scenes/roster';
-import './scenes/cards';
+// (scenes/cards.ts, the 인연 screen, is not loaded while 인연 are not used: 2026-11, 공명 replaced them)
 import './debug/debug';
 import { load } from './core/assets';
 import { registerQuestListeners } from './systems/quest';
 import { registerAbilityListeners } from './systems/abilities';
 import { frame } from './systems/loop';
 
-// order matters: quest progress is counted before abilities react to the same event
+// order matters: 조짐 progress is counted before 공명 기술 react to the same event
 registerQuestListeners();
 registerAbilityListeners();
 load();

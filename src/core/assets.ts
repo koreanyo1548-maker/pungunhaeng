@@ -146,6 +146,11 @@ export const skillIconIndex = {
   art_dobeop: 6,
   art_cheolgap: 13,
   art_cheonma: 9,
+  // 공명 기술 that were entry skills (어검진, 홍련화, 그림자 분신, 관창) use the icons nearest them
+  eogeom: 10,
+  hongryeonhwa: 6,
+  grimja: 0,
+  gwanchang: 7,
 };
 export function skillImage(id) {
   return skillPictures[skillIconIndex[id] ?? 15] || '';

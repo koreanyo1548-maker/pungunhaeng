@@ -38,14 +38,13 @@ function tile(id: HeroId): Tile {
   };
 }
 
-/** The 영웅 popup: the portrait, then the level, 성급, trait and entry skill; tabs 레벨 (the basic shot, attack,
+/** The 영웅 popup: the portrait, then the level, 성급 and trait; tabs 레벨 (the basic shot, attack,
  *  레벨업) and 성급 (pieces, what each 성급 brings). A hero not joined yet shows how to join in the 레벨 tab. */
 function detail(id: HeroId): Detail {
   const h = HEROES[id],
     stars = heroStars(id),
     L = Math.max(0, stars - 1),
-    caption = `${h.projectile}${h.trait.scope === 'party' ? ' · 지원형' : ''}`;
-  const seconds = h.entry.seconds(L);
+    caption = h.projectile;
   const level = profile.levels[id],
     cap = heroLevelCap(id);
   const sections = [
@@ -57,19 +56,12 @@ function detail(id: HeroId): Detail {
       title: `특성 「${h.trait.name}」`,
       body: h.trait.desc(L) + (h.trait.pending ? ` (${h.trait.pending})` : ''),
     },
-    {
-      title: `등장 기술 「${h.entry.name}」`,
-      body: (seconds ? seconds + '초 · ' : '') + h.entry.desc(L),
-    },
   ];
   const track = {
     title: '',
     steps: PIECE_STEPS.map((need, i) => ({
       label: `★${i + 1}`,
-      text:
-        `조각 ${need}개 · ${i ? '' : '합류 · '}최대 Lv ${(i + 1) * LEVELS_PER_STAR} · ${h.trait.desc(i)}` +
-        (h.entry.seconds(i) ? ` · 등장 ${h.entry.seconds(i)}초` : '') +
-        (i === 2 || i === 4 ? ` · ${h.entry.name} 강화` : ''),
+      text: `조각 ${need}개 · ${i ? '' : '합류 · '}최대 Lv ${(i + 1) * LEVELS_PER_STAR} · ${h.trait.desc(i)}`,
       state: (i + 1 < stars ? 'done' : i + 1 === stars ? 'current' : 'next') as 'done' | 'current' | 'next',
     })),
   };

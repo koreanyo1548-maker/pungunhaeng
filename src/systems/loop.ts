@@ -21,7 +21,7 @@ import { moveElite, updateElite } from './elite';
 import { BASELINE } from '../data/baseline';
 
 import { updateEncounter } from './encounter';
-import { enemySpeed, grazeReach, hazardSpeed, magnetReach, updateHeroEffect } from './hero-effects';
+import { grazeReach, magnetReach } from './hero-effects';
 import { syncHUD } from '../ui/hud';
 
 export function update(dt) {
@@ -32,7 +32,6 @@ export function update(dt) {
     dt *= 0.12;
   }
   G.time += dt;
-  G.state.enteredStep = false;
   G.state.elapsed += dt;
   // the run speeds up with the stage's progress (systems/ladder.ts); 무아지경 runs BASELINE.hyper.speed times faster
   const pace = speedFactor() * (G.state.hyper > 0 ? BASELINE.hyper.speed : 1);
@@ -55,8 +54,6 @@ export function update(dt) {
   updatePlayer(dt);
 
   if (!updatePhase(dt)) return;
-  updateHeroEffect(dt);
-  if (G.mode !== 'play') return;
   updateSkills(dt);
   if (G.mode !== 'play') return;
   updateElite(dt);
@@ -165,7 +162,7 @@ function updateEnemies(dt: number): boolean {
       if (!moveElite(e, dt)) return false;
       continue;
     }
-    e.y += dt * descent * descentFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1) * enemySpeed();
+    e.y += dt * descent * descentFactor() * (G.state.hyper > 0 ? BASELINE.hyper.descent : 1);
     if (G.state.stage >= 3) e.x = e.baseX + Math.sin(G.state.stageTime * 1.1 + e.row) * 10;
     if (G.state.hyper > 0 && e.y > G.player.y - 220) {
       kill(e, true);
@@ -204,10 +201,9 @@ function updateHazards(dt: number): boolean {
       h.warn -= dt;
       continue;
     }
-    const slow = hazardSpeed();
     // 운석 fall faster as the rows do (the same factor; their warning stays the same)
-    h.y += h.vy * dt * slow * (h.kind === 'meteor' ? descentFactor() : 1);
-    h.x += (h.vx || 0) * dt * slow;
+    h.y += h.vy * dt * (h.kind === 'meteor' ? descentFactor() : 1);
+    h.x += (h.vx || 0) * dt;
     const d = Math.hypot(h.x - G.player.x, h.y - G.player.y);
     if (!h.grazed && !h.dead && d >= h.r + 10 && d < h.r + 10 + grazeR && G.player.hp > 0) {
       graze(h);

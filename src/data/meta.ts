@@ -1,7 +1,8 @@
 // Meta progression numbers: what is kept between runs. See docs/meta-progression-plan.md.
 // 엽전 left at the end of a run is banked and spent on 뽑기 (hero pieces) and hero 레벨업. One piece unlocks a
-// hero; more raise its 성급 (★1 to ★5), and each 성급 opens ten more levels. 인연 grow by 호감도: every time an
-// 인연's 의뢰 is followed (docs/combat-stats.md, docs/meta-progression-plan.md).
+// hero; more raise its 성급 (★1 to ★5), and each 성급 opens ten more levels. 인연 grew by 호감도 (every time an
+// 인연's 의뢰 was followed); 2026-11: disconnected while 인연 are not used (공명 replaced them in play)
+// (docs/combat-stats.md, docs/meta-progression-plan.md, docs/resonance-plan.md).
 
 import { HERO_IDS, NPC_IDS, PLAYABLE_HEROES, playable } from './roster';
 import type { HeroId, NpcId } from './roster';
@@ -43,17 +44,14 @@ export const levelCap = (stars: number) => Math.max(1, stars * LEVELS_PER_STAR);
 /** 엽전 to go from `level` to the next */
 export const levelCost = (level: number) => level * 20;
 
-// ---- in a run (provisional numbers)
-/** 엽전 an 의뢰 pays when it does not raise an 인연: defied, or the 인연 is already at level 3 */
-export const QUEST_COINS = 50;
-
 /** What a run reads. Copied from the profile when the run starts, so a seed and a snapshot replay the same run. */
 export type Meta = {
   /** each hero's 성급 minus one: 0 (★1, or not unlocked) to 4 (★5) */
   heroes: Record<HeroId, number>;
   /** each hero's level (1 and up): raises the attack (docs/combat-stats.md) */
   levels: Record<HeroId, number>;
-  /** each 인연's level from 호감도, 0 to 5: raises that 인연's skills (+10% per level above 1) */
+  /** each 인연's level from 호감도, 0 to 5. It raised that 인연's skills (+10% per level above 1); 2026-11: nothing
+   *  reads it since 공명 replaced the 인연 skills (kept for the 인연 rework) */
   cards: Record<NpcId, number>;
   /** each hero's equipped gear, as factors (docs/equipment-plan.md): on while that hero fights */
   gear: Record<HeroId, FactorEntry[]>;

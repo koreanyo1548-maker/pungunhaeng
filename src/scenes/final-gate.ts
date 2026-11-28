@@ -2,15 +2,17 @@
 // special stage 심마 will become; nothing opens it now.
 import { G } from '../core/context';
 import { BR } from '../data/branches';
-import { NPCS } from '../data/npcs';
+import { SKILLS } from '../data/skills';
 import { SIMMA } from '../data/stages';
 import { openChoice } from './choice';
 
 export function openFinalGate(onEnter: () => void) {
-  const met = Object.keys(G.state.bond).filter(k => G.state.bond[k] > 0),
-    list = met.length
-      ? met.map(k => `<b style="color:${BR[NPCS[k].br].color}">${NPCS[k].name}</b> (${G.state.bond[k]}단계)`).join(', ')
-      : '없음';
+  // (2026-11: it listed the 인연 met; 인연 are not used since 공명, so it lists the 공명 기술 held)
+  const list = G.state.skills.length
+    ? G.state.skills
+        .map(s => `<b style="color:${BR[SKILLS[s.id].br].color}">${SKILLS[s.id].name}</b> (Lv ${s.level})`)
+        .join(', ')
+    : '없음';
   openChoice({
     eyebrow: '특별 스테이지',
     title: SIMMA.name,
@@ -18,9 +20,9 @@ export function openFinalGate(onEnter: () => void) {
     cards: [
       {
         color: SIMMA.color,
-        tag: '지난 인연',
+        tag: '지난 공명',
         title: SIMMA.enter,
-        desc: '<b>함께한 인연:</b> ' + list,
+        desc: '<b>공명 기술:</b> ' + list,
         onPick: onEnter,
       },
     ],

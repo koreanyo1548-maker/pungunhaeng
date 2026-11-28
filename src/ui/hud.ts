@@ -1,16 +1,14 @@
 import { G } from '../core/context';
 import { profile } from '../core/profile';
-import { artImage, heroPictures, npcPictures, skillImage } from '../core/assets';
-import { ambientPictures } from '../core/ambient-art';
+import { artImage, skillImage } from '../core/assets';
 import { $, H, W } from '../core/dom';
 import { fmt } from '../core/math';
 import { BR, COND } from '../data/branches';
-import { HEROES } from '../data/heroes';
-import { DRAW_COST, NPC_IDS, PLAYABLE_HEROES } from '../data/meta';
-import { NPCS } from '../data/npcs';
+import { DRAW_COST, PLAYABLE_HEROES } from '../data/meta';
 import { SKILLS } from '../data/skills';
 import { region, stageDistance } from '../systems/flow';
 import { meetProgress } from '../systems/encounter';
+import { windowOn } from '../systems/skill-state';
 
 export function notify(text, duration = 1.5, portrait?: string) {
   $('toast').textContent = text;
@@ -32,12 +30,11 @@ export function showBest() {
 /** The bank of 엽전 on the title screen. */
 export function showBank() {
   $('bankCoins').textContent = fmt(profile.coins) + '냥';
-  // the three ways in on the title: how far each one has come, and a mark on 뽑기 when a draw can be paid for
+  // the ways in on the title: how far each one has come, and a mark on 뽑기 when a draw can be paid for
+  // (2026-11: the 인연 tile is hidden while 인연 are not used; index.html, scenes/cards.ts)
   const heroes = PLAYABLE_HEROES.filter(id => profile.heroes[id] > 0).length,
-    bonds = NPC_IDS.reduce((a, id) => a + profile.bonds[id], 0),
     canDraw = profile.coins >= DRAW_COST;
   $('hubHeroes').textContent = `${heroes} / ${PLAYABLE_HEROES.length}`;
-  $('hubCards').textContent = `호감도 ${bonds}`;
   $('hubDraw').textContent = canDraw ? '뽑기 가능' : `1회 ${DRAW_COST}냥`;
   $('hubBadge').classList.toggle('hidden', !canDraw);
   $('openGacha').classList.toggle('ready', canDraw);
@@ -56,13 +53,13 @@ export function syncHUD() {
     ).join('');
     $('hearts').setAttribute('aria-label', `남은 체력 ${G.player.hp}`);
   }
-  // the stage box: the stage, the time to the next 만남 at the latest (the bar), and the distance left to the boss
+  // the stage box: the stage, the time to the next 공명의 조짐 at the latest (the bar), and the distance left to the boss
   const left = Math.max(0, stageDistance() - G.state.distance),
     gauge = meetProgress();
-  $('stage').textContent = `S${G.state.stage} ${region().name} · 만남 ${Math.floor(gauge * 100)}%`;
+  $('stage').textContent = `S${G.state.stage} ${region().name} · 조짐 ${Math.floor(gauge * 100)}%`;
   syncQuestHUD();
   $('stageName').textContent =
-    G.state.phase === 'flight' ? `만남 ${G.state.encounters}번 · 보스까지 ${fmt(left)}m` : `${region().boss} 출현`;
+    G.state.phase === 'flight' ? `공명 ${G.state.resonances}번 · 보스까지 ${fmt(left)}m` : `${region().boss} 출현`;
   $('stagefill').style.width = (G.state.phase === 'flight' ? Math.min(100, gauge * 100) : 0) + '%';
   $('bombcount').textContent = G.state.bombs;
   $('blast').disabled = !G.state.bombs || G.mode !== 'play' || ['clear', 'warning'].includes(G.state.phase);
@@ -86,19 +83,24 @@ export function syncHUD() {
   }
 }
 export function syncQuestHUD() {
-  const key = G.state.skills.map(s => s.id).join();
+  // the 공명 기술 held, with their level; a chip lights when its skill goes off (or while a window skill is on)
+  const key = G.state.skills.map(s => s.id + s.level).join();
   if (key !== G.skillsKey) {
     G.skillsKey = key;
     $('skills').innerHTML = G.state.skills
       .map(s => {
         const d = SKILLS[s.id];
-        return `<span class="chip" data-id="${s.id}" title="${d.name} (${NPCS[d.npc].name} ${d.level}단계)" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}<i class="stars">${d.level}</i></span>`;
+        return `<span class="chip" data-id="${s.id}" title="${d.name} Lv ${s.level}" style="--c:${BR[d.br].color}">${artImage(skillImage(s.id))}<i class="stars">${s.level}</i></span>`;
       })
       .join('');
   }
   for (const el of $('skills').children) {
-    const sk = G.state.skills.find(x => x.id === (el as HTMLElement).dataset.id);
-    el.classList.toggle('lit', !!sk && G.time - (sk.flash ?? -9) < 0.3);
+    const id = (el as HTMLElement).dataset.id,
+      sk = G.state.skills.find(x => x.id === id);
+    el.classList.toggle(
+      'lit',
+      !!sk && (G.time - (sk.flash ?? -9) < 0.3 || ((id === 'hongryeonhwa' || id === 'grimja') && windowOn(id))),
+    );
   }
   {
     const cb = $('combo');
@@ -113,15 +115,14 @@ export function syncQuestHUD() {
   el.classList.toggle('hidden', !show);
   if (!show) return;
   el.style.setProperty('--c', BR[q.br].color);
-  $('questTitle').textContent = { follow: '따름', defy: '거스름', help: '돕기', ignore: '무시' }[q.mode] ?? '';
-  $('questImg').classList.toggle('defy', q.mode === 'defy');
+  $('questTitle').textContent = '조짐';
   el.classList.toggle('hot', !q.done && !q.failed && q.prog / q.target >= 0.8);
-  const qp = (q.npc ? npcPictures[q.npc] : q.who && ambientPictures[q.who.art + '-neutral']) || '';
+  const qp = skillImage('sign');
   if ($('questImg').dataset.src !== qp) {
     $('questImg').dataset.src = qp;
     $('questImg').src = qp;
   }
-  $('questText').textContent = q.done ? '의뢰 성공' : q.failed ? '의뢰 실패' : COND[q.t].label;
+  $('questText').textContent = q.done ? '공명' : q.failed ? '흩어짐' : COND[q.t].label;
   $('questCount').textContent = Math.floor(q.prog) + ' / ' + q.target;
   $('questFill').style.width = Math.min(100, (q.prog / q.target) * 100) + '%';
 }

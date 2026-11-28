@@ -25,7 +25,6 @@ try {
             '/src/core/context.ts',
             '/src/core/profile.ts',
             '/src/core/ambient-art.ts',
-            '/src/scenes/encounter.ts',
             '/src/scenes/gacha.ts',
             '/src/render/renderer.ts',
           ].map(x => import(x)),
@@ -33,45 +32,12 @@ try {
       );
       while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       document.getElementById('start').click();
-      ((a = 0, b = 1) => {
-        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
-        const h = [...document.querySelectorAll('#choice .party-hero')];
-        h[a].click();
-        h[b].click();
-        document.getElementById('formationConfirm').click();
-      })();
+      // one hero a run (2026-11): the first
+      document.querySelectorAll('#choice .party-hero')[0].click();
+      document.getElementById('formationConfirm').click();
     });
     assert.equal(await p.evaluate(() => Object.keys(M.ambientPictures).length), 13);
-    // passers-by (forced) in portrait order; helping one takes its 의뢰 and adds 정 or 사 (rolled per passer-by)
-    for (let n = 0; n < 4; n++) {
-      await p.evaluate(n => {
-        M.G.state.passers = n;
-        M.G.state.forceNpc = 'passer';
-        M.G.state.coins = 40;
-        M.G.mode = 'play';
-        M.openEncounter();
-      }, n);
-      await p.waitForFunction(() => {
-        let im = document.querySelector('#choice .npc-choice-art');
-        return im?.complete && im.naturalWidth === 314;
-      });
-      await p.screenshot({ path: `${out}/${width}-passer-${n + 1}.png` });
-      const before = await p.evaluate(() => ({ points: M.G.state.good + M.G.state.evil }));
-      await p.locator('#choice .act').first().click();
-      const after = await p.evaluate(() => ({
-        points: M.G.state.good + M.G.state.evil,
-        quest: M.G.state.quest?.t,
-        mode: M.G.mode,
-        toast: document.querySelector('#toast img')?.getAttribute('src'),
-      }));
-      assert.equal(after.points, before.points + 1);
-      assert.equal(after.quest, 'kills');
-      assert.equal(after.mode, 'play');
-      assert.ok(after.toast?.startsWith('data:image/png'));
-      await p.waitForFunction(() => document.querySelector('#toast img')?.complete);
-      await p.evaluate(() => M.draw());
-      await p.screenshot({ path: `${out}/${width}-thanks-${n + 1}.png` });
-    }
+    // (2026-11: the passers-by and their 의뢰 were removed with 공명; their portraits stay in the sheet, unused)
     await p.evaluate(() => {
       document.getElementById('choice').classList.add('hidden');
       M.profile.coins = 1000;
@@ -86,7 +52,7 @@ try {
     );
     await p.screenshot({ path: `${out}/${width}-hero-piece.png` });
     assert.deepEqual(errors, []);
-    console.log(`PASS ${width}: four passer portraits + thanks, help (적 처치 의뢰, 정·사), hero piece icon`);
+    console.log(`PASS ${width}: ambient pictures loaded, hero piece icon`);
     await p.close();
   }
 } finally {

@@ -16,7 +16,6 @@ import { TUNE } from '../data/tune';
 import { runSummary } from '../scenes/result';
 import { closeQuest } from './quest';
 import { VICTORY_SCORE, runBonus } from './score';
-import { VIRTUE_BONUS } from './alignment';
 import { factor } from './factors';
 import { openBox } from './gear';
 import { gearFactors, gearName } from '../data/gear';
@@ -46,7 +45,7 @@ export function difficulty() {
 export function stageDistance() {
   return region().distance;
 }
-/** health of an enemy tier (1 to 6): the shots of the reference growth (Lv1, no 인연) × its attack. No distance
+/** health of an enemy tier (1 to 6): the shots of the reference growth (Lv1, no 공명 기술) × its attack. No distance
  *  multiplier: health grows only with the tier ladder (systems/ladder.ts). */
 export const enemyHealth = (tier: number) => tierHealth(tier, TUNE.attack);
 /** the boss's health: BASELINE.bossSeconds of the reference basic attack (one shot a volley) */
@@ -69,14 +68,14 @@ export function start() {
   // Everything a run takes from the profile, fixed for the whole run (see core/profile.ts).
   const meta = metaSnapshot();
   G.state = createRunState(meta);
-  G.player = createPlayer(W, PLAYER_Y, () => G.state.heroHealth[G.state.formation[G.state.active]]);
+  G.player = createPlayer(W, PLAYER_Y, () => G.state.heroHealth[G.state.hero]);
   $('toast').classList.remove('show');
   showBest();
   syncHUD();
   tone(440, 0.2, 'triangle', 0.2, 880);
-  // the stage on the lobby card, then the 편대 screen
+  // the stage on the lobby card, then the hero of the run
   G.state.stage = lobbyStage();
-  go('formation');
+  go('hero');
 }
 export function pause() {
   if (G.mode === 'play') {
@@ -103,13 +102,13 @@ export function end(victory = false) {
   G.state.victory = victory;
   if (victory) G.state.score += VICTORY_SCORE;
   closeQuest();
-  // 정산 (systems/score.ts): 정 adds to the score; 사 and the share of the 기준 점수 add to the 엽전 left, which go to
-  // the bank with the clear bonus; beating the boss opens the next stage.
+  // 정산 (systems/score.ts): the share of the 기준 점수 adds to the 엽전 left, which go to the bank with the clear
+  // bonus; beating the boss opens the next stage. (2026-11: the 정 score bonus and the 사 엽전 bonus went with 정·사.)
   G.state.baseScore = Math.round(G.state.score);
-  const b = runBonus(G.state.score, G.state.stage, G.state.good, G.state.evil, factor('virtueScorePct'));
-  // 거리 점수 보너스 (gear): a share of the distance run, in metres, added after the 정도 bonus
+  const b = runBonus(G.state.score, G.state.stage);
+  // 거리 점수 보너스 (a factor): a share of the distance run, in metres
   const distanceBonus = Math.floor(G.state.distance * factor('distanceScorePct'));
-  G.state.score = Math.round(G.state.score * (1 + b.scoreBonus)) + distanceBonus;
+  G.state.score = Math.round(G.state.score) + distanceBonus;
   const record = G.state.score > profile.best;
   if (record) profile.best = Math.floor(G.state.score);
   const kept = settle(G.state.coins, false, b.coinBonus),
@@ -122,20 +121,14 @@ export function end(victory = false) {
   // the result (docs/meta-progression-plan.md): the title, the score and the 엽전 banked, each with its bonuses
   const row = (label: string, value: string) => `<div class="result-row"><span>${label}</span><b>${value}</b></div>`;
   const left = G.state.coins,
-    fromEvil = Math.floor(left * G.state.evil * VIRTUE_BONUS),
-    fromTier = kept - left - fromEvil;
+    fromTier = kept - left;
   $('resultTitle').textContent = victory ? '강호행 승리' : '강호행 실패';
   $('newRecord').classList.toggle('hidden', !record);
   $('scoreRows').innerHTML =
-    row('기본 점수', fmt(G.state.baseScore)) +
-    (b.scoreBonus
-      ? row(`정도 보너스 +${pct(b.scoreBonus)}`, '+' + fmt(G.state.score - distanceBonus - G.state.baseScore))
-      : '') +
-    (distanceBonus ? row('거리 점수 보너스', '+' + fmt(distanceBonus)) : '');
+    row('기본 점수', fmt(G.state.baseScore)) + (distanceBonus ? row('거리 점수 보너스', '+' + fmt(distanceBonus)) : '');
   $('finalScore').textContent = fmt(G.state.score);
   $('coinRows').innerHTML =
     row('남은 엽전', fmt(left) + '냥') +
-    (fromEvil ? row(`사도 보너스 +${pct(G.state.evil * VIRTUE_BONUS)}`, `+${fmt(fromEvil)}냥`) : '') +
     (b.tier ? row(`기준 점수 달성 +${pct(b.tier)}`, `+${fmt(fromTier)}냥`) : '') +
     (banked > kept ? row('보스 처치', `+${fmt(banked - kept)}냥`) : '');
   $('bankedCoins').textContent = fmt(banked) + '냥';

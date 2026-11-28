@@ -7,21 +7,21 @@
     "exact": true,
     "resampling": "LANCZOS; lossless encoding relative to the resized image"
   },
-  "fileCount": 47,
-  "originalBytes": 80178224,
-  "webpBytes": 29221516,
-  "savedBytes": 50956708,
-  "reductionPercent": 63.55,
+  "fileCount": 48,
+  "originalBytes": 82249973,
+  "webpBytes": 29694480,
+  "savedBytes": 52555493,
+  "reductionPercent": 63.9,
   "build": {
-    "fileCount": 46,
-    "resizedCount": 39,
-    "originalPngBytes": 78526130,
-    "fullsizeWebpBytes": 51421140,
-    "mobileWebpBytes": 28200584,
-    "savedBytes": 23220556,
-    "reductionPercent": 45.16,
-    "decodedPixelsBefore": 69570132,
-    "decodedPixelsAfter": 35892076
+    "fileCount": 47,
+    "resizedCount": 40,
+    "originalPngBytes": 80597879,
+    "fullsizeWebpBytes": 52933936,
+    "mobileWebpBytes": 28673548,
+    "savedBytes": 24260388,
+    "reductionPercent": 45.83,
+    "decodedPixelsBefore": 70988772,
+    "decodedPixelsAfter": 36246736
   },
   "files": [
     {
@@ -98,6 +98,21 @@
       "fullsizeWebpBytes": 1819770,
       "sourceSha256": "04198cd70a0a6d847427fcc22c6d9fbd61c21ed387ad2fe0285e3c7ae18ebc63",
       "webpSha256": "f7ea71b0864c42a43e65f9049bf050a3f295b9e38f55e0a8bc4efcb4bd218357"
+    },
+    {
+      "source": "art/originals/characters/pungun-portrait.png",
+      "runtime": "src/assets/images/characters/pungun-portrait.webp",
+      "sourceWidth": 1028,
+      "sourceHeight": 1380,
+      "width": 514,
+      "height": 690,
+      "includedInBuild": true,
+      "resized": true,
+      "originalBytes": 2071749,
+      "webpBytes": 472964,
+      "fullsizeWebpBytes": 1512796,
+      "sourceSha256": "a40d2f4842a9030cb068280c228e7d39967db75d8a334a09a18b66e63c451850",
+      "webpSha256": "c291f82b4dc9972066bf7b049db82230d239c7ef365eb1f5f478fb9eea5e04d7"
     },
     {
       "source": "art/originals/combat-projectiles.png",

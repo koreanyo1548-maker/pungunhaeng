@@ -6,11 +6,11 @@
     "method": 6,
     "exact": true
   },
-  "fileCount": 47,
-  "originalBytes": 80236970,
-  "webpBytes": 52442072,
-  "savedBytes": 27794898,
-  "reductionPercent": 34.64,
+  "fileCount": 48,
+  "originalBytes": 82308719,
+  "webpBytes": 53954868,
+  "savedBytes": 28353851,
+  "reductionPercent": 34.45,
   "files": [
     {
       "source": "art/originals/ambient/inn-collection.png",
@@ -481,6 +481,16 @@
       "webpBytes": 1767908,
       "sourceSha256": "c82d04a7411a1be294bcb06b6cccd853e52910729b21e988fd260d7d43286383",
       "webpSha256": "7eafbb5785d02392a1a108b78d6365ee6e56314a3d676e6ba0efd4b75b1e9996"
+    },
+    {
+      "source": "art/originals/characters/pungun-portrait.png",
+      "runtime": "src/assets/images/characters/pungun-portrait.webp",
+      "width": 1028,
+      "height": 1380,
+      "originalBytes": 2071749,
+      "webpBytes": 1512796,
+      "sourceSha256": "a40d2f4842a9030cb068280c228e7d39967db75d8a334a09a18b66e63c451850",
+      "webpSha256": "f5f827b7e1549acca37803d0e491da99a91129f0e8571137ab8b233e291057df"
     }
   ]
 }

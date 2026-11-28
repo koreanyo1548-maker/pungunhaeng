@@ -43,7 +43,7 @@ const pct = (n: number) => Math.round(n * 100) + '%';
 
 export const HEROES: Record<HeroId, Hero> = {
   pungun: {
-    art: { frames: { sheet: 'hero-run', row: 0 }, portrait: { sheet: 'portraits', col: 0, row: 0 }, swapPose: 0 },
+    art: { frames: { sheet: 'hero-run', row: 0 }, portrait: { sheet: 'characters/pungun-portrait' }, swapPose: 0 },
     name: '풍운객',
     terrain: 'ground',
     tint: null,

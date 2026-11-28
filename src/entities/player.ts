@@ -71,7 +71,8 @@ export function shoot() {
   G.player.muzzle = 0.09;
   G.player.swing = 1;
   G.player.swingCount++;
-  if (G.player.swingCount % 3 === 0) paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
+  if (activeHeroId() !== 'pungun' && G.player.swingCount % 3 === 0)
+    paintFX(1, G.player.x + 15, G.player.y - 35, 82, 0.22, -0.55, 0, 0.5);
   // Every hero shoots the same: one shot a volley at every level (the level raises its power), two lines side by side
   // while the 듀얼샷 item lasts; traits and entry skills add aim, piercing, erasing or clones.
   const extra = basicShotOptions(),
@@ -93,6 +94,7 @@ export function shoot() {
         phase: G.time,
         skill: 'cast' in HEROES[activeHeroId()].art ? activeHeroId() : undefined,
         basic: true,
+        art: activeHeroId() === 'pungun' ? 'slime' : undefined,
         ...extra,
       });
   if (G.state.hyper <= 0) tone(850, 0.065, 'sine', 0.035, 250);

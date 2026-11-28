@@ -1,4 +1,5 @@
 import { loadBattleItemArt } from './battle-item-art';
+import { loadSlimeBattleArt, slimeFrames } from './slime-battle-art';
 import { loadGearArt } from '../render/gear-art';
 import { showLobby } from '../ui/lobby';
 import imageDimensions from '../assets/image-dimensions.json';
@@ -249,6 +250,8 @@ export async function load() {
       G.worlds.push(c);
     }
     await loadNewArt();
+    await loadSlimeBattleArt();
+    heroAnimations.pungun = slimeFrames;
     await loadCombatArt();
     await loadPortraitProps();
     await Promise.all([loadSkillArt(), loadAmbientArt(), loadGearArt(), loadBattleItemArt()]);

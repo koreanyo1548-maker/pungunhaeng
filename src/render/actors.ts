@@ -10,6 +10,7 @@ import { blade, drawVfxSprite } from './projectiles';
 import { enemyFrameIndex } from './util';
 import { movementTier, region, skyStage } from '../systems/flow';
 import { activeFrames, activeHeroId } from '../systems/formation';
+import { BAT_DRAW_SIZE, SLIME_HOVER_FPS } from '../core/slime-battle-art';
 
 export function drawActor(type, x, y, size, pose = 0, angle = 0, hit = 0, sx = 1, sy = 1) {
   const im = G.enemyFrames[type]?.[pose] || G.sprite[type];
@@ -34,6 +35,18 @@ export function drawEnemy(e) {
   }
   if (e.chest) {
     drawChest(e);
+    return;
+  }
+  if (!e.boss && !e.elite) {
+    const art = enemyArt(e),
+      recoil = (e.recoil || 0) / 0.12;
+    if (!art.image) return;
+    ctx.save();
+    ctx.translate(e.x, e.y - recoil * 4);
+    drawVfxSprite(art.image, 0, 0, art.size);
+    if (e.hit > 0 && art.white)
+      drawVfxSprite(art.white, 0, 0, art.size, art.size, 0, Math.min(0.65, (e.hit / 0.055) ** 2 * 0.65));
+    ctx.restore();
     return;
   }
   const flying = skyStage() && !e.boss;
@@ -89,7 +102,9 @@ export function drawEnemy(e) {
   drawActor(e.type, e.x, e.y + bob - recoil * 5, e.size, pose, angle, e.hit, sx, sy);
 }
 export function drawHeroSprite(pose, x, y, angle = 0, alpha = 1, ghost = false) {
-  if (!ghost && drawSwapPose(activeHeroId(), x, y, angle, alpha)) return;
+  const slime = activeHeroId() === 'pungun';
+  if (!slime && !ghost && drawSwapPose(activeHeroId(), x, y, angle, alpha)) return;
+  if (slime) pose = reduced ? 0 : Math.floor(G.time * SLIME_HOVER_FPS) % 4;
   const im = activeFrames()[pose];
   if (!im) return;
   ctx.save();
@@ -162,22 +177,7 @@ export function drawMartialPlayer() {
     ctx.stroke();
     ctx.restore();
   }
-  // The red sash arcs out on a lateral step and decays after acceleration.
-  if (activeHeroId() === 'pungun' && G.player.step > 0) {
-    const force = G.player.step / 0.19;
-    ctx.strokeStyle = '#b64b3e';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(G.player.x, G.player.y + 8);
-    ctx.quadraticCurveTo(
-      G.player.x - G.player.stepDir * 30 * force,
-      G.player.y + 26,
-      G.player.x - G.player.stepDir * 48 * force,
-      G.player.y + 36,
-    );
-    ctx.stroke();
-  }
-  if (borrowedSword()) {
+  if (borrowedSword() && activeHeroId() !== 'pungun') {
     ctx.save();
     ctx.shadowColor = '#bff8ea';
     ctx.shadowBlur = 14;
@@ -194,7 +194,7 @@ export function drawMartialPlayer() {
     ctx.restore();
   }
   drawHeroSprite(heroPose(), G.player.x, G.player.y + bob - hop, G.player.tilt * (tier === 2 ? 0.65 : 1.5));
-  if (G.player.swing > 0) {
+  if (G.player.swing > 0 && activeHeroId() !== 'pungun') {
     const t = 1 - G.player.swing;
     ctx.save();
     ctx.translate(G.player.x, G.player.y - hop - 20);
@@ -221,7 +221,15 @@ export function drawEnemyAura(e) {
   if (!e.boss) {
     ctx.fillStyle = '#16292d44';
     ctx.beginPath();
-    ctx.ellipse(e.x, e.y + e.size * 0.39, e.r * 0.7, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      e.x,
+      e.y + (e.elite || e.chest || e.rock ? e.size : BAT_DRAW_SIZE) * 0.39,
+      e.r * 0.7,
+      5,
+      0,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
   }
   if (movementTier() === 2 && !e.boss) {

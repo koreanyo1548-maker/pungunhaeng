@@ -6,11 +6,11 @@
     "method": 6,
     "exact": true
   },
-  "fileCount": 43,
-  "originalBytes": 75842783,
-  "webpBytes": 49318882,
-  "savedBytes": 26523901,
-  "reductionPercent": 34.97,
+  "fileCount": 47,
+  "originalBytes": 80236970,
+  "webpBytes": 52442072,
+  "savedBytes": 27794898,
+  "reductionPercent": 34.64,
   "files": [
     {
       "source": "art/originals/ambient/inn-collection.png",
@@ -441,6 +441,46 @@
       "webpBytes": 2013780,
       "sourceSha256": "6215c6797aa61f9e89b05f612c339b66ccaf20b26a7551842b8161ca55d1d2ec",
       "webpSha256": "7a3daf7b689dcf725e9c177775134c61c1ba6fa65b193ed38d802b2cf7843ec5"
+    },
+    {
+      "source": "art/originals/slime-battle/hero-hover.png",
+      "runtime": "src/assets/images/slime-battle/hero-hover.webp",
+      "width": 1088,
+      "height": 272,
+      "originalBytes": 330156,
+      "webpBytes": 253712,
+      "sourceSha256": "d02d4d3fa23e311d3612fddeedf1a7e006f5ff3babe15e0759e81255cbd48368",
+      "webpSha256": "6cf63df1017fb04beb6c3441a98419360bd5e15e4f8e76817aad3eddcd421f7d"
+    },
+    {
+      "source": "art/originals/slime-battle/bat-wings.png",
+      "runtime": "src/assets/images/slime-battle/bat-wings.webp",
+      "width": 1024,
+      "height": 1536,
+      "originalBytes": 1450197,
+      "webpBytes": 1057470,
+      "sourceSha256": "d87b337315aa4f32eede81021545057fe9f9412ca8e08c7507fa7a0f58d72f77",
+      "webpSha256": "6ce8fca7efb452d815f750804fbad6fc2bed8d3c1927e60da9a6c19f3edb5483"
+    },
+    {
+      "source": "art/originals/slime-battle/shot.png",
+      "runtime": "src/assets/images/slime-battle/shot.webp",
+      "width": 256,
+      "height": 256,
+      "originalBytes": 57026,
+      "webpBytes": 44100,
+      "sourceSha256": "2e7397271f0cf910d716dc3fc82e43ddef91f9578ae23daf26455148ec87249e",
+      "webpSha256": "bb7e94b7f3d7e94c50c4597376f9a83cc82383a15fc2932a60d3fd7c2330d37d"
+    },
+    {
+      "source": "art/originals/slime-battle/world.png",
+      "runtime": "src/assets/images/slime-battle/world.webp",
+      "width": 971,
+      "height": 1619,
+      "originalBytes": 2556808,
+      "webpBytes": 1767908,
+      "sourceSha256": "c82d04a7411a1be294bcb06b6cccd853e52910729b21e988fd260d7d43286383",
+      "webpSha256": "7eafbb5785d02392a1a108b78d6365ee6e56314a3d676e6ba0efd4b75b1e9996"
     }
   ]
 }

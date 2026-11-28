@@ -335,6 +335,38 @@
         1
       ],
       "reason": "배경 한 구간 너비 418px로 480px 전장보다 작아 유지"
+    },
+    "slime-battle/hero-hover.webp": {
+      "scale": 1,
+      "grid": [
+        4,
+        1
+      ],
+      "reason": "슬라임 전투 시안: 플레이어 114px, 적 96px, 탄 80px, 배경 480px 표시"
+    },
+    "slime-battle/bat-wings.webp": {
+      "scale": 1,
+      "grid": [
+        4,
+        6
+      ],
+      "reason": "슬라임 전투 시안: 플레이어 114px, 적 96px, 탄 80px, 배경 480px 표시"
+    },
+    "slime-battle/shot.webp": {
+      "scale": 1,
+      "grid": [
+        1,
+        1
+      ],
+      "reason": "슬라임 전투 시안: 플레이어 114px, 적 96px, 탄 80px, 배경 480px 표시"
+    },
+    "slime-battle/world.webp": {
+      "scale": 0.5,
+      "grid": [
+        1,
+        1
+      ],
+      "reason": "슬라임 전투 시안: 플레이어 114px, 적 96px, 탄 80px, 배경 480px 표시"
     }
   }
 }

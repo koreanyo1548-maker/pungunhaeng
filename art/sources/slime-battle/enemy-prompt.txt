@@ -1,0 +1,9 @@
+Create a production game animation atlas from attached exact bat imp reference. TRANSPARENT background. Precisely FOUR columns and SIX rows of equal square cells (24 sprites), no text, no borders, no shadows, each creature fully inside its cell with safe padding. Front-facing squat round chibi bat monster, huge face, small legs, black charcoal armor, red eyes, large bat wings. Preserve reference design and art finish. All six ranks have SAME head/body size and same maximum wing span; never grow by rank.
+Each ROW is one rank and columns are FOUR different phases of one wingbeat: column1 wings midway spread; column2 wings raised upward strongly; column3 wings spread horizontal widely; column4 wings swept downward. Head and body stay stationary and consistent throughout all four poses, only wings and slight feet motion. Wings always visible and symmetrical, no duplicates, no body rotation.
+Row1 reference crimson membranes, charcoal simple helmet, short silver horns, ruby forehead.
+Row2 teal membranes, silver helmet brow, short swept horns, cyan diamond.
+Row3 violet membranes, violet silver cheek armor, double horn prongs, amethyst diamond.
+Row4 amber membranes, dark gold helmet, two gold swept horns, orange gem.
+Row5 scarlet membranes, silver-black helmet, small ruby three-point crown between horns, red gem.
+Row6 pale violet membranes, dark violet helmet, ornate silver five-point crown between horns, bright lavender gem.
+Keep decoration coherent across four columns of each row. Cartoon gothic painterly anime finish exactly like reference. Compact and broad, large bright face, strong outline, legible at 96 pixels. Important: identical character size in every cell and clear equal 4x6 grid.

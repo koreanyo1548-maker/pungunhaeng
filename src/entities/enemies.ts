@@ -241,7 +241,7 @@ export function kill(e, byHyper = false) {
       }
       emit('kill', { e });
     }
-    // a passer-by's 적 처치 의뢰 counts every kill but 무아지경's; a 연속 처치 의뢰 leaves 무아지경 kills out
+    // an 적 처치 count takes every kill but 무아지경's; a 연속 처치 조짐 leaves 무아지경 kills out
     if (byHyper) hyperQuestKill();
     else questEvent('kills');
   }

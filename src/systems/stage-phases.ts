@@ -1,9 +1,9 @@
 // Phases of a stage: flight → warning → boss → clear. Each phase has an optional enter (runs once when the phase
 // starts) and update (runs every simulation step while the phase is active). setPhase is the only way to change
 // phase, so every transition inside a stage is listed here. Leaving the stage (clear → 결과, a full 처치 게이지 →
-// 만남) goes through the run flow in scene-flow.ts.
+// 공명의 조짐 and the 공명 choice) goes through the run flow in scene-flow.ts.
 //
-//   flight  rows and hazards spawn (pickups drop from kills); after stageDistance() metres → warning (however many 만남 came)
+//   flight  rows and hazards spawn (pickups drop from kills); after stageDistance() metres → warning (however many 조짐 came)
 //   warning field is cleared, boss intro plays for phaseTimer → boss
 //   boss    the boss fights; its death (entities/enemies.ts kill) → clear
 //   clear   the stage is announced, then the run ends with a victory
@@ -43,7 +43,7 @@ const PHASES: Record<Phase, PhaseDef> = {
   },
   warning: {
     enter: () => {
-      // no 만남 from here on; an 의뢰 still running carries into the boss fight
+      // no 조짐 from here on; one still running carries into the boss fight
       G.state.meetReady = false;
       G.state.meetArrive = undefined;
       bossSpawn();
@@ -109,7 +109,7 @@ function updateFlight(dt) {
   if (!shower && terrain === 'cloud' && G.state.rowTimer > 0.5) G.state.rowTimer -= dt * 0.25;
 }
 
-/** clear phase: the stage is announced and the field emptied (the 의뢰 stays open until the result) */
+/** clear phase: the stage is announced and the field emptied (a 조짐 stays open until the result) */
 function enterClear() {
   G.state.phaseTimer = 2.4;
   G.hazards = [];

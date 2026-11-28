@@ -1,5 +1,8 @@
-// 인연: each 인연's 호감도 and level. Opened from the title. Read only: 호감도 rises by 1 every time the 인연's 의뢰 is
-// followed in a run (core/profile.ts addBond). The level (1·3·6·10·15 호감도) strengthens their three skills.
+// 인연: each 인연's 호감도 and level. Was opened from the title. Read only: 호감도 rose by 1 every time the 인연's 의뢰
+// was followed in a run (core/profile.ts addBond); the level (1·3·6·10·15 호감도) strengthened their skills.
+// 2026-11 (공명, docs/resonance-plan.md): disconnected while 인연 are not used. main.ts no longer imports this screen,
+// its title tile is hidden (index.html), nothing raises 호감도 and the 인연 skills are gone (data/npcs.ts `levels`
+// keeps their old ids). Kept for the 인연 rework (daughters ↔ the protagonist).
 import { npcPictures } from '../core/assets';
 import { $ } from '../core/dom';
 import { profile } from '../core/profile';
@@ -7,7 +10,6 @@ import { BR } from '../data/branches';
 import { LEVEL_MAX, NPC_IDS, PIECE_STEPS, pieceLevel, pipText } from '../data/meta';
 import type { NpcId } from '../data/meta';
 import { NPCS } from '../data/npcs';
-import { SKILLS, skillEffect } from '../data/skills';
 import { openCollection } from '../ui/collection';
 import type { Collection, Detail, Tile } from '../ui/collection';
 
@@ -56,10 +58,8 @@ function detail(id: NpcId): Detail {
       now,
       goal,
     },
-    sections: n.levels.map((skill, i) => ({
-      title: `${i + 1}단계 「${SKILLS[skill].name}」`,
-      body: skillEffect(skill, shown),
-    })),
+    // the 인연 skills were removed (공명 기술 replaced them); only their levels are listed
+    sections: n.levels.map((_, i) => ({ title: `${i + 1}단계`, body: `인연 ${shown}단계 · 쉬는 중` })),
     track: {
       title: '인연 단계 · 호감도로 오른다',
       steps: PIECE_STEPS.map((need, i) => ({

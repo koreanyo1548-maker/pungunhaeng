@@ -2,7 +2,7 @@
 // The game rules read only `factor(id)`. Sources:
 //   - 장비: the fighting hero's gear, copied into the run's snapshot when it starts (core/profile.ts metaSnapshot)
 //   - 영웅 특성: the traits that are factors (홍련 치명타, 아영 공격력), while they are on (systems/hero-effects.ts)
-// A hero's level gives the attack itself (hero-effects heroAttack). 인연 skills learned in a run are not factors.
+// A hero's level gives the attack itself (hero-effects heroAttack). 공명 기술 learned in a run are not factors.
 import { G } from '../core/context';
 import { addFactors } from '../data/factors';
 import type { FactorId, Factors } from '../data/factors';

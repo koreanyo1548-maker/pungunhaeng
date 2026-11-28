@@ -1,7 +1,6 @@
 import { createHeroHealth, BASE_HEALTH } from './hero-health';
 import type { Meta } from '../data/meta';
 import { BASELINE } from '../data/baseline';
-import { MEET_ODDS } from '../data/npcs';
 import type { RunState, Player, Enemy, Shot, HeroHealth } from './state-types';
 
 export function createRunState(meta: Meta): RunState {
@@ -11,7 +10,7 @@ export function createRunState(meta: Meta): RunState {
     distance: 0,
     coins: 0,
     kills: 0,
-    /** 필살기: one at the start of a run, no maximum (운학 and 혈마 밀사 add more) */
+    /** 필살기: one at the start of a run, no maximum (운학's trait and gear add more) */
     bombs: 1,
     hyper: 0,
     /** seconds left of 자석 and 점수 두 배 (in-play items) */
@@ -39,33 +38,23 @@ export function createRunState(meta: Meta): RunState {
     runPhase: 0,
     jumpPhase: 0,
     skills: [],
-    met: {},
     quest: null,
     path: [],
     grazes: 0,
-    rain: 0,
-    rainTimer: 0,
-    negate: false,
     blasting: false,
     spearTimer: 1.5,
     victory: false,
-    formation: ['pungun', 'cheolhyeol'],
-    active: 0,
-    effect: null,
+    hero: 'pungun',
     lastHurt: -9,
-    forceNpc: null,
-    good: 0,
-    evil: 0,
-    meetOdds: { passer: MEET_ODDS.passer, good: MEET_ODDS.good, evil: MEET_ODDS.evil },
-    bond: {},
-    /** the first 만남 comes BASELINE.meet.first s into the flight (systems/encounter.ts) */
+    /** the first 조짐 comes BASELINE.meet.first s into the flight (systems/encounter.ts) */
     meetTimer: BASELINE.meet.first,
     meetWait: BASELINE.meet.first,
-    /** the score at the end of the run before the 정 bonus (for the measurements) */
+    /** the score at the end of the run before the end-of-run bonuses (for the measurements) */
     baseScore: 0,
     meetReady: false,
+    pickReady: false,
     encounters: 0,
-    passers: 0,
+    resonances: 0,
     spent: 0,
     meta,
   };
@@ -91,7 +80,6 @@ export function createPlayer(W: number, PLAYER_Y: number, getHealth: () => HeroH
       h.maxHp = Math.max(BASE_HEALTH, value);
       h.hp = Math.min(h.hp, h.maxHp);
     },
-    shield: 0,
     inv: 2,
     fire: 0,
     tilt: 0,

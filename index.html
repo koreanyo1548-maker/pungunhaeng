@@ -37,7 +37,7 @@
             <button class="icon-button" id="pause" aria-label="일시정지">Ⅱ</button>
           </div>
           <div class="stage-hud" id="stageHud">
-            <div><b id="stage">STAGE 1</b><span id="stageName">만남 0번 · 보스까지 12,000m</span></div>
+            <div><b id="stage">STAGE 1</b><span id="stageName">공명 0번 · 보스까지 12,000m</span></div>
             <i><b id="stagefill"></b></i>
           </div>
           <div class="bossbar hidden" id="bossbar">
@@ -45,7 +45,7 @@
             <i><b id="bossfill"></b></i><small id="bossState">접근 중</small>
           </div>
           <div class="quest-strip hidden" id="questHud">
-            <img class="quest-img" id="questImg" alt="" draggable="false" /><b id="questTitle">따름</b
+            <img class="quest-img" id="questImg" alt="" draggable="false" /><b id="questTitle">조짐</b
             ><span id="questText"></span><i><b id="questFill"></b></i><em id="questCount"></em>
           </div>
           <div class="skills" id="skills"></div>
@@ -73,7 +73,7 @@
           <h2>풍운<span>행</span></h2>
           <div class="hero-art">
             <div class="halo"></div>
-            <img id="heroArt" alt="편대 선봉" /><img id="heroArt2" alt="편대 후발" />
+            <img id="heroArt" alt="출전 영웅" /><img id="heroArt2" alt="" hidden />
           </div>
           <div class="launch">
             <div class="stage-pick">
@@ -88,7 +88,10 @@
               <button class="hub-tile" id="openRoster">
                 <span class="hub-icon"><img id="hubHeroIcon" alt="" /></span><b>영웅</b
                 ><small id="hubHeroes"></small></button
-              ><button class="hub-tile" id="openCards">
+              ><!-- 인연 (scenes/cards.ts) is hidden while 인연 are not used (2026-11, 공명 replaced them) --><button
+                class="hub-tile hidden"
+                id="openCards"
+              >
                 <span class="hub-icon"><img id="hubCardIcon" alt="" /></span><b>인연</b
                 ><small id="hubCards"></small></button
               ><button class="hub-tile" id="openGacha">

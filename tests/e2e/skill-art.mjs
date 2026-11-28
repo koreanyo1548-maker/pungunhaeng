@@ -45,13 +45,9 @@ try {
       );
       while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       document.getElementById('start').click();
-      ((a = 0, b = 1) => {
-        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
-        const h = [...document.querySelectorAll('#choice .party-hero')];
-        h[a].click();
-        h[b].click();
-        document.getElementById('formationConfirm').click();
-      })();
+      // one hero a run (2026-11): the first
+      document.querySelectorAll('#choice .party-hero')[0].click();
+      document.getElementById('formationConfirm').click();
       const { G } = M;
       G.banner = null;
       G.bossIntro = null;
@@ -66,9 +62,6 @@ try {
         G.state.skills = [];
         G.state.bombs = 2;
         G.state.hyper = 0;
-        G.state.negate = false;
-        G.state.rain = 0;
-        G.player.shield = 0;
         G.player.inv = 0;
         G.player.hp = 2;
         G.player.maxHp = 3;
@@ -78,7 +71,6 @@ try {
         G.labels = [];
         G.paintedFX = [];
         G.rings = [];
-        G.state.active = 0;
         G.mode = 'play';
         G.state.phase = 'flight';
         G.enemies = [
@@ -101,7 +93,7 @@ try {
       };
     });
     const ids = await page.evaluate(() => Object.keys(M.SKILLS));
-    assert.equal(ids.length, 18, 'six 인연 × three levels');
+    assert.equal(ids.length, 10, 'ten 공명 기술');
     assert.equal(await page.evaluate(() => M.skillAnimationSnapshot().loaded), 14);
     for (const id of ids) {
       const result = await page.evaluate(id => {
@@ -110,10 +102,9 @@ try {
         M.learn(id);
         const d = SKILLS[id],
           e = G.enemies[0];
-        if (d.trig === 'tick') M.updateSkills(1 / 60);
-        else if (d.trig !== 'passive') M.trig(d.trig, { x: e.x, y: e.y, e, h: { x: e.x, y: e.y, vx: 0, vy: 200 } });
-        else if (id === 'swaegap') M.hitEnemy(e, 10);
-        else if (id === 'biyeon') M.graze({ x: 180, y: 500, vx: 0, vy: 200 });
+        // learning shows the skill once at the hero; then it goes off by its trigger
+        if (['tick', 'aura', 'window'].includes(d.trig)) M.updateSkills(1 / 60);
+        else M.trig(d.trig, { x: e.x, y: e.y, e });
         M.updateSkillAnimations(0.12);
         M.draw();
         return {
@@ -132,36 +123,16 @@ try {
       resetArtCase();
       const { G } = M;
       M.learn('art_cheonma');
+      M.updateSkillAnimations(0); // the learning cue
+      M.clearSkillAnimations();
       G.enemies = [];
       M.updateSkills(1 / 60);
       M.updateSkillAnimations(0);
       const noTarget = M.skillAnimationSnapshot().cues.length + G.strikes.length;
-      resetArtCase();
-      M.learn('art_cheolgap');
-      M.updateSkills(1 / 60);
-      M.updateSkillAnimations(0);
-      const created = M.skillAnimationSnapshot().shield;
-      M.damagePlayer();
-      M.updateSkillAnimations(0);
-      const after = M.skillAnimationSnapshot();
-      resetArtCase();
-      M.learn('hoechun');
-      M.updateSkills(1 / 60);
-      M.updateSkillAnimations(0);
-      const armed = M.skillAnimationSnapshot().negate;
-      M.damagePlayer();
-      M.updateSkillAnimations(0);
-      const pill = M.skillAnimationSnapshot();
       M.clearSkillAnimations();
-      return { armed, noTarget, created, after, pill, reset: M.skillAnimationSnapshot() };
+      return { noTarget, reset: M.skillAnimationSnapshot() };
     });
-    assert.equal(lifecycle.armed, true, '회춘단 arms on its first period');
-    assert.equal(lifecycle.noTarget, 0);
-    assert.equal(lifecycle.created, true);
-    assert.equal(lifecycle.after.shield, false);
-    assert.ok(lifecycle.after.cues.some(c => c.id === 'art_cheolgap' && c.impact));
-    assert.ok(!lifecycle.after.cues.some(c => c.id === 'art_cheolgap' && !c.impact));
-    assert.equal(lifecycle.pill.negate, false);
+    assert.equal(lifecycle.noTarget, 0, '천마군림 shows nothing with no target');
     assert.equal(lifecycle.reset.cues.length, 0);
     // An area blast keeps its area visual even when the per-target cues fill the per-skill limit
     // or sit right on its centre.
@@ -174,7 +145,7 @@ try {
         baseX: 140 + i * 40,
         y: 300 + (i % 2) * 40,
       }));
-      M.withSkill('yusu', () => M.aoe(240, 310, 150, 1, '#7fe6cf'));
+      M.withSkill('bungsan', () => M.aoe(240, 310, 150, 1, '#7fe6cf'));
       return M.skillAnimationSnapshot().cues.map(c => c.size);
     });
     assert.ok(area.includes(300), 'area cue missing after a blast that hit six targets');
@@ -200,27 +171,20 @@ try {
       return { first: fire(5) };
     });
     assert.equal(names.first, 5, 'a skill is called out every time it goes off (once a second at most)');
+    // every hero in play with the 공명 기술 that stay on the hero (어검진's swords, 그림자 분신's clones)
     for (const hero of await page.evaluate(() => Object.keys(M.HEROES))) {
       await page.evaluate(hero => {
         resetArtCase();
-        // the vanguard falls and this hero enters: entry pose, entry skill and its look
-        const first = hero === 'pungun' ? 'hongryeon' : 'pungun';
-        for (const h of Object.values(M.G.state.heroHealth)) Object.assign(h, { hp: 1, maxHp: 1, fallen: false });
-        M.G.state.effect = null;
-        M.G.state.formation = [first, hero];
-        M.G.state.active = 0;
-        M.G.player.inv = 0;
-        M.G.state.hyper = 0;
-        M.G.player.hp = 1;
-        M.damagePlayer();
-        if (M.G.state.formation[M.G.state.active] !== hero || !M.G.state.effect)
-          throw new Error('no entry for ' + hero);
+        M.G.state.hero = hero;
+        M.learn('eogeom');
+        M.learn('grimja');
+        M.G.state.skills.find(s => s.id === 'grimja').level = 3;
         M.updateSkillAnimations(0.12);
         M.draw();
       }, hero);
-      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/entry-${hero}.png` });
+      if (reducedMotion === 'no-preference') await page.screenshot({ path: `${out}/hero-${hero}.png` });
     }
-    console.log(`PASS ${reducedMotion}: 18 인연 skills, 12 entries, no-op guards, consumption and reset`);
+    console.log(`PASS ${reducedMotion}: 10 공명 기술, every hero with swords and clones, no-op guards and reset`);
     await context.close();
   }
   assert.deepEqual(failures, []);

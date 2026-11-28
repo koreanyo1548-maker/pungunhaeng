@@ -43,13 +43,9 @@ try {
     p.evaluate(() => {
       while (!document.getElementById('stagePrev').disabled) document.getElementById('stagePrev').click(); // S1
       M.start();
-      ((a = 0, b = 1) => {
-        for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
-        const h = [...document.querySelectorAll('#choice .party-hero')];
-        h[a].click();
-        h[b].click();
-        document.getElementById('formationConfirm').click();
-      })();
+      // one hero a run (2026-11): the first
+      document.querySelectorAll('#choice .party-hero')[0].click();
+      document.getElementById('formationConfirm').click();
     });
   await begin();
   await p.evaluate(() => {
@@ -57,7 +53,7 @@ try {
     M.end(false);
   });
   assert.equal(await p.evaluate(() => M.profile.best), 99999);
-  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('pungun-profile-v2')).best), 99999);
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('pungun-profile-v3')).best), 99999);
   await begin();
   await p.evaluate(() => {
     M.G.state.score = 100000;
@@ -87,22 +83,14 @@ try {
   assert.deepEqual(ownership, ['outer', 'inner', 'outer', undefined]);
   // Exercise the real restart path, including renderer-owned state and simulation collections.
   const reset = await p.evaluate(() => {
-    M.G.state.skills.push({ id: 'mancheon' });
+    M.G.state.skills.push({ id: 'gitan', level: 2 });
     M.G.shots.push({ x: 20, y: 20 });
     M.G.hazards.push({ x: 30, y: 30 });
     M.skillCue('mancheon', 240, 400);
     M.skillAura('muyoung', 2);
     M.G.player.hp = 1;
     M.G.state.coins = 42;
-    Object.assign(M.G.state, {
-      good: 4,
-      evil: 2,
-      meetOdds: { passer: 0, good: 8, evil: 2 },
-      bond: { yakseon: 2 },
-      meetTimer: 3,
-      encounters: 3,
-      passers: 2,
-    });
+    Object.assign(M.G.state, { meetTimer: 3, encounters: 3, resonances: 2, pickReady: true });
     M.G.state.meetReady = true;
     M.start();
     return {
@@ -115,13 +103,11 @@ try {
       cues: M.skillAnimationSnapshot().cues.length,
       auras: M.skillAnimationSnapshot().auras.length,
       run: [
-        M.G.state.good + M.G.state.evil,
-        Object.values(M.G.state.meetOdds).join(':'),
-        Object.keys(M.G.state.bond).length,
         M.G.state.meetTimer,
         M.G.state.meetReady,
+        M.G.state.pickReady,
         M.G.state.encounters,
-        M.G.state.passers,
+        M.G.state.resonances,
       ].join(),
     };
   });
@@ -134,11 +120,11 @@ try {
     best: 100000,
     cues: 0,
     auras: 0,
-    run: '0,6:2:2,0,10,false,0,0',
+    run: '0,false,false,0,0',
   });
   assert.deepEqual(errors, []);
   console.log(
-    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart (scale, 인연 levels, 만남 wait reset)',
+    'PASS imported best display/persistence, lower and higher run settlement, nested skill scope, real restart (공명 기술, 조짐 wait reset)',
   );
 } finally {
   await b.close();

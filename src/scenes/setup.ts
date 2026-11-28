@@ -12,36 +12,26 @@ export function traitText(id: HeroId, L: number) {
   const t = HEROES[id].trait;
   return `<b>특성 「${t.name}」</b> ${t.desc(L)}${t.pending ? ` <i>(${t.pending})</i>` : ''}`;
 }
-/** "등장 기술 「불굴」 15초 · …": what the hero does when entering as the second of the party. */
-export function entryText(id: HeroId, L: number) {
-  const e = HEROES[id].entry,
-    s = e.seconds(L);
-  return `<b>등장 기술 「${e.name}」</b> ${s ? s + '초 · ' : ''}${e.desc(L)}`;
-}
-/** 편대 편성 (one screen, docs/terms.md): an info window (the hero last touched: portrait, 성급 stars, level, trait,
- *  entry skill), the party's two slots (선봉, 후발) and the roster grid. Tapping a hero puts it in the next free slot
- *  (two at most); tapping a chosen one takes it out, and the 후발 moves up to 선봉. 출발 starts once both are set.
- *  The last run's party is filled in to begin with (profile.formation). Locked heroes are dim and do nothing. */
-export function openFormation() {
+/** 영웅 고르기 (one screen, 2026-11: one hero a run, no more 편대 of two): an info window (the hero chosen: portrait,
+ *  성급 stars, level, trait) and the roster grid. Tapping a hero chooses it; 출발 starts. The last run's hero is
+ *  chosen to begin with (profile.formation). Locked heroes are dim and do nothing.
+ *  (The party-* class names and styles are those of the old 편대 screen.) */
+export function openHeroPick() {
   const ids = [...PLAYABLE_HEROES].sort((a, b) => Number(heroOwned(b)) - Number(heroOwned(a)));
-  const party: HeroId[] = profile.formation.filter(id => heroOwned(id)).slice(0, 2);
-  let shown: HeroId | null = party[1] ?? party[0] ?? null;
+  let chosen: HeroId | null = profile.formation.find(id => heroOwned(id)) ?? ids.find(id => heroOwned(id)) ?? null;
   G.mode = 'choice';
   G.keys.clear();
   G.pointer = null;
   const root = $('choice');
   root.classList.remove('reward-screen', 'formation-screen', 'encounter-screen');
   root.classList.add('party-screen');
-  $('choiceEyebrow').textContent = '편대 편성';
-  $('choiceTitle').textContent = '편대';
+  $('choiceEyebrow').textContent = '출전';
+  $('choiceTitle').textContent = '영웅';
   $('choiceSub').innerHTML = '';
   const box = $('choiceCards');
   box.className = 'cards party-cards';
-  box.innerHTML = `<div class="party-info" aria-live="polite"></div>
-    <div class="party-slots"><span class="party-label">편대</span><button class="party-slot" data-slot="0"></button><button class="party-slot" data-slot="1"></button></div>
-    <div class="party-grid"></div>`;
+  box.innerHTML = `<div class="party-info" aria-live="polite"></div><div class="party-grid"></div>`;
   const info = box.querySelector('.party-info') as HTMLElement,
-    slots = [...box.querySelectorAll('.party-slot')] as HTMLButtonElement[],
     grid = box.querySelector('.party-grid') as HTMLElement;
   const go = document.createElement('button');
   go.id = 'formationConfirm';
@@ -52,29 +42,18 @@ export function openFormation() {
   box.after(go);
 
   const draw = () => {
-    // the info window: the hero last touched
-    if (shown) {
-      const h = HEROES[shown],
-        L = G.state.meta.heroes[shown];
-      info.innerHTML = `<div class="party-pic">${artImage(heroPictures[shown], 'party-portrait')}<span class="stars">${starText(pieceLevel(profile.heroes[shown]))}</span></div>
-        <div class="party-text"><h3>${h.name}<span class="party-level">Lv ${profile.levels[shown]}</span></h3><span class="tag">${h.projectile}${h.trait.scope === 'party' ? ' · 지원형' : ''}</span><p>${traitText(shown, L)}<br>${entryText(shown, L)}</p></div>`;
-    } else
-      info.innerHTML =
-        '<p class="party-empty">함께 갈 고수 둘을 고른다. 1번은 선봉, 2번은 선봉이 쓰러지면 나서는 후발이다.</p>';
-    slots.forEach((el, i) => {
-      const id = party[i];
-      el.classList.toggle('on', !!id);
-      el.innerHTML = `<span class="party-n">${i + 1}</span>${id ? `${artImage(heroPictures[id], 'party-slot-art')}<span>${HEROES[id].name}</span>` : `<span class="party-slot-empty">${i ? '후발' : '선봉'}</span>`}`;
-    });
+    if (chosen) {
+      const h = HEROES[chosen],
+        L = G.state.meta.heroes[chosen];
+      info.innerHTML = `<div class="party-pic">${artImage(heroPictures[chosen], 'party-portrait')}<span class="stars">${starText(pieceLevel(profile.heroes[chosen]))}</span></div>
+        <div class="party-text"><h3>${h.name}<span class="party-level">Lv ${profile.levels[chosen]}</span></h3><span class="tag">${h.projectile}</span><p>${traitText(chosen, L)}</p></div>`;
+    } else info.innerHTML = '<p class="party-empty">함께 갈 영웅 하나를 고른다.</p>';
     for (const el of grid.children as HTMLCollectionOf<HTMLButtonElement>) {
-      const at = party.indexOf(el.dataset.id as HeroId);
-      el.classList.toggle('sel', at >= 0);
-      el.setAttribute('aria-pressed', String(at >= 0));
-      const n = el.querySelector('.party-n') as HTMLElement;
-      n.textContent = at >= 0 ? String(at + 1) : '';
-      n.hidden = at < 0;
+      const on = el.dataset.id === chosen;
+      el.classList.toggle('sel', on);
+      el.setAttribute('aria-pressed', String(on));
     }
-    go.disabled = party.length < 2;
+    go.disabled = !chosen;
   };
   for (const id of ids) {
     const el = document.createElement('button'),
@@ -83,35 +62,22 @@ export function openFormation() {
     el.dataset.id = id;
     el.style.setProperty('--c', HEROES[id].color);
     el.disabled = locked;
-    el.innerHTML = `<span class="party-n" hidden></span>${locked ? '<span class="party-lock">잠김</span>' : ''}${artImage(heroPictures[id], 'party-hero-art')}<h3>${HEROES[id].name}</h3>`;
+    el.innerHTML = `${locked ? '<span class="party-lock">잠김</span>' : ''}${artImage(heroPictures[id], 'party-hero-art')}<h3>${HEROES[id].name}</h3>`;
     el.onclick = () => {
       if (G.mode !== 'choice' || locked) return;
-      const at = party.indexOf(id);
-      if (at >= 0) party.splice(at, 1);
-      else if (party.length < 2) party.push(id);
-      else return;
-      shown = id;
+      chosen = id;
       draw();
     };
     grid.appendChild(el);
   }
-  slots.forEach(
-    (el, i) =>
-      (el.onclick = () => {
-        if (!party[i]) return;
-        shown = party[i];
-        draw();
-      }),
-  );
   go.onclick = () => {
-    if (G.mode !== 'choice' || party.length < 2) return;
-    G.state.formation = [party[0], party[1]];
-    G.state.active = 0;
-    profile.formation = [party[0], party[1]];
+    if (G.mode !== 'choice' || !chosen) return;
+    G.state.hero = chosen;
+    profile.formation = [chosen];
     saveProfile();
     root.classList.add('hidden');
     root.classList.remove('party-screen');
-    done('formation');
+    done('hero');
   };
   draw();
   root.classList.remove('hidden');

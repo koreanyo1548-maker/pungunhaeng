@@ -1,6 +1,6 @@
 // 정예 적 (docs/equipment-plan.md, 2장): the way to 장비 in a run. One comes every run. When the party is set, rolls
 // decide in which tier step: step 2 with BASELINE.elite.chances[0], else step 3 with [1], else step 4 for sure (the
-// 정예 적 등장 factor of the 선봉's gear adds to each chance, so it tends to come earlier), and at a random distance
+// 정예 적 등장 factor of the hero's gear adds to each chance, so it tends to come earlier), and at a random distance
 // in that step. It never comes during a 운석 소나기: reaching its distance then, it waits for the shower to end (a
 // shower that starts once it is out is left as it is). It comes down swaying at one steady speed, stops in front of
 // the hero, then goes on down out of the bottom of the screen; touching it is a hit. Every hit takes one of its health, whatever the damage, so what

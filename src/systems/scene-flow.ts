@@ -4,9 +4,10 @@ import { rollElite } from './elite';
 // (done), and this file alone decides what comes next, so changing the order of a run means editing the
 // transitions below, not the scenes.
 //
-//   title (the stage card, ui/lobby.ts) ─강호에 나서기→ formation (선봉 and 후발 on one screen) → stage
+//   title (the stage card, ui/lobby.ts) ─강호에 나서기→ hero (the one hero of the run) → stage
 //   stage: flight → warning → boss → clear (phases, see systems/stage-phases.ts)
-//            ├ 처치 게이지 full → encounter (인연 의뢰 or 행인) → back to the same stage
+//            ├ 공명의 조짐 due → encounter (its card) → back to the same stage
+//            ├ 조짐 met → resonance (choose a 공명 기술) → back to the same stage
 //            └ death → result
 //   boss beaten → result (victory, the next stage opens)
 //
@@ -14,10 +15,11 @@ import { rollElite } from './elite';
 import { G } from '../core/context';
 import { resumePlay } from '../scenes/choice';
 import { openEncounter } from '../scenes/encounter';
-import { openFormation } from '../scenes/setup';
+import { openHeroPick } from '../scenes/setup';
+import { openResonance } from '../scenes/resonance';
 import { beginStage, end } from './flow';
 
-export type Scene = 'title' | 'formation' | 'stage' | 'encounter' | 'result';
+export type Scene = 'title' | 'hero' | 'stage' | 'encounter' | 'resonance' | 'result';
 
 function enter(scene: Scene) {
   G.scene = scene;
@@ -28,14 +30,16 @@ function enter(scene: Scene) {
 export function go(scene: Scene, arg?: any): void {
   enter(scene);
   switch (scene) {
-    case 'formation':
-      return openFormation();
+    case 'hero':
+      return openHeroPick();
     case 'stage':
       resumePlay();
       beginStage();
       return;
     case 'encounter':
       return openEncounter();
+    case 'resonance':
+      return openResonance();
     case 'result':
       return end(!!arg);
   }
@@ -44,11 +48,12 @@ export function go(scene: Scene, arg?: any): void {
 /** A scene reports that it finished; the transition is decided here. */
 export function done(scene: Scene, outcome?: any): void {
   switch (scene) {
-    case 'formation': // the party is set (G.state.formation)
+    case 'hero': // the hero is set (G.state.hero)
       applyStartTraits();
       rollElite();
       return go('stage');
-    case 'encounter': // an interrupt: the stage keeps running where it paused
+    case 'encounter': // interrupts: the stage keeps running where it paused
+    case 'resonance':
       enter('stage');
       return resumePlay();
     case 'stage':

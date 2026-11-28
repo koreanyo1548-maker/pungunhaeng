@@ -1,5 +1,5 @@
-// The lobby (title screen, docs/meta-progression-plan.md): the party's portraits (선봉 in front, 후발 behind; empty
-// before the first run) and the stage card, turned with the arrows. It shows the stages opened and the next locked
+// The lobby (title screen, docs/meta-progression-plan.md): the last run's hero (empty before the first run) and the
+// stage card, turned with the arrows. It shows the stages opened and the next locked
 // one; it opens on the highest open stage. 강호에 나서기 sets out to the stage on the card (systems/flow.ts start).
 import { $ } from '../core/dom';
 import { heroPictures } from '../core/assets';
@@ -35,18 +35,15 @@ function draw() {
   start.classList.toggle('off', locked);
 }
 
-/** The lobby as it opens: the party's portraits and the highest open stage. */
+/** The lobby as it opens: the last hero's portrait and the highest open stage. */
 export function showLobby() {
   shown = Math.min(profile.stages, STAGE_COUNT);
-  const [first, second] = profile.formation;
-  for (const [id, hero] of [
-    ['heroArt', first],
-    ['heroArt2', second],
-  ] as const) {
-    const img = $(id) as HTMLImageElement;
-    img.hidden = !hero;
-    if (hero) img.src = heroPictures[hero];
-  }
+  // the last run's hero (one a run since 2026-11; the second portrait of the old 편대 stays hidden)
+  const hero = profile.formation[0],
+    img = $('heroArt') as HTMLImageElement;
+  img.hidden = !hero;
+  if (hero) img.src = heroPictures[hero];
+  ($('heroArt2') as HTMLImageElement).hidden = true;
   draw();
 }
 

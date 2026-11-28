@@ -1,6 +1,6 @@
 // 뽑기: spend banked 엽전 on hero pieces. Runs between runs only (title, result screen).
 // Draws use Math.random, never the seeded run streams (core/rng.ts), so drawing cannot change any run.
-// 인연 are not drawn: they grow by 호감도 in runs (core/profile.ts addBond).
+// 인연 are not drawn (and not used since 공명, 2026-11).
 import { profile, saveProfile } from '../core/profile';
 import { DRAW_COST, PIECES_MAX, PLAYABLE_HEROES, pieceLevel } from '../data/meta';
 

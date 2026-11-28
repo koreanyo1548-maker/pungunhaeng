@@ -61,10 +61,11 @@ export const BASELINE = {
   itemDrop: { chance: 0.03, weights: { magnet: 4, double: 4, dual: 4, hyper: 2 } },
   /** seconds an item (not 엽전) hangs at the top of its pop before it falls */
   itemHang: 0.45,
-  /** 만남 (systems/encounter.ts): the first comes `first` s into the flight; an 의뢰 (an 인연's or a passer-by's) has
-   *  `quest` s of flight. Met, its reward shows for `reward` s, then `after` s later the next 만남 comes; run out, the
-   *  next comes `after` s later. Who comes is announced for `arrive` s before the cards open. */
-  meet: { first: 10, quest: 60, reward: 1.4, after: 3, arrive: 1.5 },
+  /** 공명의 조짐 (systems/encounter.ts): the first comes `first` s into the flight (at once, 2026-11: was 10); each
+   *  has `quest` s of flight. Met, the 공명 choice opens, its banner shows for `reward` s, then `after` s later the
+   *  next 조짐 comes; run out, the next comes `after` s later. It is announced for `arrive` s before its card opens
+   *  (not the first: it opens with the stage). */
+  meet: { first: 0, quest: 60, reward: 1.4, after: 3, arrive: 1.5 },
   /** 보물상자: chance a row holds one (about 2 in the ~115 rows of a run); its health is the step's strong tier (k+1)
    *  and it bursts into `coins` 엽전 */
   chest: { perRow: 0.018, coins: 20 },

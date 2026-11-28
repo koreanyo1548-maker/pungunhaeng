@@ -69,7 +69,7 @@ export function openChoice(o) {
       const row = document.createElement('div');
       row.className = 'acts';
       for (const [i, a] of c.acts.entries()) {
-        // a 만남 with one 의뢰 (o.tap): its details, no button; a tap anywhere (or the countdown) takes it
+        // a 공명의 조짐 card (o.tap): its details, no button; a tap anywhere (or the countdown) takes it
         if (o.tap) {
           const offer = document.createElement('section');
           offer.className = 'encounter-offer only';
@@ -97,12 +97,6 @@ export function openChoice(o) {
         } else row.appendChild(b);
       }
       el.appendChild(row);
-      if (o.encounter && o.rules) {
-        const rules = document.createElement('details');
-        rules.className = 'encounter-rules';
-        rules.innerHTML = `<summary>정·사와 만남 규칙 보기</summary><p>${o.rules}</p>`;
-        el.appendChild(rules);
-      }
     } else
       el.onclick = () => {
         if (G.mode !== 'choice') return;
@@ -130,7 +124,7 @@ export function openChoice(o) {
   syncHUD();
 }
 
-/** A tap anywhere on the screen (but the rules) takes the 의뢰; after `seconds` it is taken by itself. The countdown
+/** A tap anywhere on the screen takes the 조짐; after `seconds` it is taken by itself. The countdown
  *  runs on the frame clock, so the test clock drives it too. */
 function tapToGo(seconds: number, go: () => void) {
   const root = $('choice'),

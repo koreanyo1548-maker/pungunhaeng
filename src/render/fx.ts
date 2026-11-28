@@ -1,5 +1,5 @@
 import { battleChestFrame, CHEST_ORIGIN_Y } from '../core/battle-item-art';
-import { updateSkillAnimations, drawSkillFrame, drawSwordRain } from '../render/skill-animation';
+import { updateSkillAnimations, drawSkillFrame } from '../render/skill-animation';
 import { updateContactFX, drawContactFX } from './contact-fx';
 import { G } from '../core/context';
 import { projectileArt, combatProjectileArt } from '../core/assets';
@@ -9,7 +9,6 @@ import { fxRandom } from '../core/rng';
 import { drawActor } from './actors';
 import { drawVfxSprite } from './projectiles';
 import { region } from '../systems/flow';
-import { rainSeconds } from '../data/skills';
 import { drawPfx, pfx, ramp, updatePfx } from './pfx';
 import { updateCallouts } from './callout';
 
@@ -280,7 +279,6 @@ export function drawFinisher() {
   ctx.restore();
 }
 export function drawSkillFX() {
-  if (G.state.rain > 0) drawSwordRain(G.state.rain, rainSeconds());
   // Damage is still resolved instantly along the full column; the slim trail marks its reach.
   for (const s of G.strikes) {
     const t = s.life / s.total;

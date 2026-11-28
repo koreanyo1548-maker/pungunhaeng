@@ -84,14 +84,17 @@ export async function openGame(
         for (let k = 0; k < i; k++) document.getElementById('stageNext').click();
         document.getElementById('start').click();
       }, i),
-    /** the 편대 screen: clear the party, pick the heroes at grid indexes a and b (선봉, 후발), then 출발 */
+    /** the hero screen: pick the hero at grid index a, then 출발 (one hero a run since 2026-11). Older builds (the
+     *  편대 screen with two slots): clear the party, pick a and b (선봉, 후발), then 출발 */
     party: (a = 0, b = 1) =>
       page.evaluate(
         ([a, b]) => {
-          for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
           const h = [...document.querySelectorAll('#choice .party-hero')];
-          h[a].click();
-          h[b].click();
+          if (document.querySelector('#choice .party-slot')) {
+            for (const el of [...document.querySelectorAll('#choice .party-hero.sel')].reverse()) el.click();
+            h[a].click();
+            h[b].click();
+          } else h[a].click();
           document.getElementById('formationConfirm').click();
         },
         [a, b],
@@ -106,7 +109,7 @@ export async function openGame(
         el.click();
         return true;
       }, title),
-    /** take the 만남's 의뢰: a tap on its card (2026-11: one 의뢰, no choice). Older builds: the i-th action button */
+    /** take the 공명의 조짐 (older builds: the 만남's 의뢰): a tap on its card. Older builds: the i-th action button */
     act: i =>
       page.evaluate(i => {
         const card = document.querySelector('#choice.encounter-screen .card');
